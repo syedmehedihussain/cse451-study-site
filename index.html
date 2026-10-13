@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSE451 Software Engineering</title>
+<meta name="description" content="A live, local study site for CSE451 Software Engineering at IUB: all eight lectures rebuilt as readable lessons with diagrams, calculators, quizzes and exam answers.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-root="." data-slug="home">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<main id="main" class="shell">
+
+<section class="hero">
+  <h1>Software engineering, without opening the slides</h1>
+  <p>All eight CSE451 lectures rebuilt as readable lessons, with live calculators for every formula, quizzes, and model answers in the exam's own format.</p>
+  <div class="ctas"><a class="btn primary" href="lectures/01-software-and-se.html">Start lecture 1</a><a class="btn" href="exam.html">Exam prep</a></div>
+</section>
+
+<div class="split">
+  <a class="panel dark-panel" href="exam.html#mid">
+    <h3>Mid exam: lectures 1 to 4</h3>
+    <p>30 marks, 90 minutes. Short answers and Bangladeshi case studies. <span data-prog-text="Mid"></span>.</p>
+    <div class="prog" data-prog="Mid"></div>
+  </a>
+  <a class="panel" href="exam.html#final">
+    <h3>Final exam: lectures 5 to 8</h3>
+    <p>30 marks. Quality, testing, SCM, estimation, scheduling, risk. <span data-prog-text="Final"></span>.</p>
+    <div class="prog" data-prog="Final"></div>
+  </a>
+  <a class="panel" href="project.html">
+    <h3>Project walkthrough</h3>
+    <p>UniRide, 8 tasks, 120 marks. A guide and a private workspace for your own answers.</p>
+  </a>
+</div>
+
+<section id="lectures">
+  <h2 class="home-h2">The course</h2>
+  <p class="home-p">Each lecture follows the slide order, then ends with worked exercises, exam questions with model answers, a quiz and a checklist. Mark a lecture as studied at the bottom of its page.</p>
+  <div class="card-list" id="lecture-list"></div>
+</section>
+
+<section>
+  <h2 class="home-h2">How each page works</h2>
+  <div class="cards two">
+    <div class="c"><h4>Plain words first</h4><p>Most text uses short, simple sentences. Exact definitions you must memorise sit in blue boxes.</p></div>
+    <div class="c"><h4>Every formula is live</h4><p>COCOMO, function points, PERT, EVA, availability, V(G), RRL and more are calculators, prefilled with the slide's own exercise so you can check each step.</p></div>
+    <div class="c"><h4>Practice that answers back</h4><p>Classifiers tell you why an answer is right. Quizzes keep your best score. Checklists remember what you ticked.</p></div>
+    <div class="c"><h4>Exam-shaped answers</h4><p>Model answers follow the course template: define, apply to the case, fix, and use a table where you compare.</p></div>
+  </div>
+</section>
+
+</main>
+<footer id="site-footer"></footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

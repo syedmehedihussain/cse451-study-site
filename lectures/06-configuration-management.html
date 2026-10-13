@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration Management</title>
+<meta name="description" content="CSE451 Lecture 6: SCM tasks, SCIs, baselines, repository, five layers, version control, SemVer, change control, audit, status reporting, CI/CD and the MediTrack case.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="06-configuration-management">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 06 &nbsp;/&nbsp; Final exam</p>
+  <h1>Software configuration management</h1>
+  <p class="summary">Controlling change across the software life cycle: identification, version control, change control, auditing and reporting. Then the whole chapter applied to one regulated project, MediTrack.</p>
+  <p class="meta"><span><b>Source</b> Lecture 6, 20 slides</span><span><b>Reading</b> about 40 min</span><span><b>Exercise</b> MediTrack Q1 to Q5 (25 marks)</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<section id="scm">
+<h2 data-short="What is SCM"><span class="n">01</span>What is software configuration management?</h2>
+<div class="box exact"><span class="lbl">Exam text: definition</span><p>SCM is a set of umbrella activities, applied throughout the software process (not at the end), that identify change, control change, ensure change is properly implemented, and report change to everyone who has a stake in it. SCM protects the project from uncontrolled change without blocking justifiable change.</p></div>
+<div class="box exact"><span class="lbl">Exam text: First Law of System Engineering (Bersoff)</span><p>Wherever you are in the life cycle the system will change, and the desire to change it never goes away.</p></div>
+<p>SCM assumes change, and engineers for it.</p>
+<h3>The five SCM tasks</h3>
+<div class="cards">
+  <div class="c"><h4><span class="idx">1</span> Identification</h4><p>Name, classify and track every artefact as an SCI.</p></div>
+  <div class="c"><h4><span class="idx">2</span> Version control</h4><p>Manage versions and variants and their dependencies.</p></div>
+  <div class="c"><h4><span class="idx">3</span> Change control</h4><p>Evaluate, approve, implement and verify each change.</p></div>
+  <div class="c"><h4><span class="idx">4</span> Configuration audit</h4><p>Confirm the change was made correctly and completely.</p></div>
+  <div class="c"><h4><span class="idx">5</span> Status reporting</h4><p>Who changed what, when, and what it affects.</p></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>I-V-C-A-S</strong>: "I Very Carefully Audit Software".</p></div>
+<h3>Four sources of change</h3>
+<div class="cards two">
+  <div class="c"><h4>New business or market conditions</h4><p>Revised requirements, new rules.</p></div>
+  <div class="c"><h4>Business reorganisation or growth</h4><p>Changed priorities and team structure.</p></div>
+  <div class="c"><h4>New stakeholder needs</h4><p>Added functions, new data, new services.</p></div>
+  <div class="c"><h4>Budget or schedule constraints</h4><p>Re-scoping of the system.</p></div>
+</div>
+<div class="box real"><span class="lbl">Real life</span><p>The Linux kernel absorbs about 75,000 commits a year from about 4,000 developers. Every one is an SCM transaction with a traceable author, reviewer and release. SCM underpins every regulated release: IEC 62304 medical software, DO-178C avionics, ISO 26262 automotive.</p></div>
+</section>
+
+<section id="sci">
+<h2 data-short="Configuration items"><span class="n">02</span>Software configuration items (SCIs)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>A Software Configuration Item is any named, uniquely identified unit of information created during the software process that is placed under configuration control.</p></div>
+<p>The complete set of SCIs for a product is its <b>software configuration</b>. SCIs may be <b>basic objects</b> (one document, one source file) or <b>aggregate objects</b> (a design model made of many diagrams).</p>
+<div class="cards">
+  <div class="c"><h4>Requirements</h4><p>SRS, use cases, user stories, acceptance criteria, traceability matrix.</p></div>
+  <div class="c"><h4>Design</h4><p>Architecture document, UML models, DB schema, interface specs.</p></div>
+  <div class="c"><h4>Source and build</h4><p>Source code, build scripts, lockfiles, migration scripts, config files.</p></div>
+  <div class="c"><h4>Test</h4><p>Test plan, test cases, test data, automation scripts, coverage reports.</p></div>
+  <div class="c"><h4>Documentation</h4><p>User manual, installation guide, API docs, release notes.</p></div>
+  <div class="c"><h4>Environment</h4><p>Dockerfiles, IaC templates, CI config, compiler and library versions.</p></div>
+</div>
+<div class="box key"><span class="lbl">Rule of thumb</span><p>If losing it, or losing track of which version is which, would hurt the project, it is an SCI. Put another way: an artefact is an SCI if a later version of the product would be wrong or unreproducible without it.</p></div>
+<div class="box real"><span class="lbl">Real life</span><p>Google keeps about 2 billion lines of code for almost all products in a single versioned monorepo, so every SCI in the company shares one identification scheme. Tools: Git + Git LFS, JFrog Artifactory / Sonatype Nexus, Jira and Confluence, DOORS.</p></div>
+</section>
+
+<section id="baselines">
+<h2 data-short="Baselines"><span class="n">03</span>Baselines: the control point</h2>
+<div class="box exact"><span class="lbl">Exam text (after IEEE Std 610.12)</span><p>A baseline is a specification or product that has been formally reviewed and agreed upon, that thereafter serves as the basis for further development, and that may be changed only through formal change control procedures.</p></div>
+<p>Before a baseline, change is cheap and informal. After a baseline, every change must be requested, evaluated and approved.</p>
+<figure class="fig">
+<svg viewBox="0 0 360 170" role="img" aria-label="Work products go through formal technical review to become approved baselines stored in the project database; changes come back as modified SCIs">
+  <defs><marker id="bl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g font-size="9" text-anchor="middle" font-weight="600">
+  <rect x="6" y="20" width="96" height="36" rx="5" class="f-box"/><text x="54" y="35">Engineering</text><text x="54" y="47">work products</text>
+  <rect x="132" y="20" width="96" height="36" rx="5" class="f-sunk"/><text x="180" y="35">Formal technical</text><text x="180" y="47">review</text>
+  <rect x="258" y="20" width="96" height="36" rx="5" class="f-key"/><text x="306" y="35">Approved and</text><text x="306" y="47">baselined</text>
+  <rect x="246" y="108" width="120" height="40" rx="5" class="f-acc-t"/><text x="306" y="125">Project database</text><text x="306" y="138" font-weight="400" font-size="8">stored baselines</text>
+  <rect x="6" y="108" width="96" height="40" rx="5" class="f-box"/><text x="54" y="125">Modified SCIs</text><text x="54" y="138" font-weight="400" font-size="8">(change request)</text></g>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#bl)"><path d="M102,38 H130"/><path d="M228,38 H256"/><path d="M306,56 V106"/><path d="M246,128 H104"/><path d="M54,108 V58"/></g>
+  <path d="M180,56 V82 H54" class="s-line" stroke-dasharray="3 3"/><text x="120" y="78" font-size="8" class="t-muted">errors found and corrected</text>
+  <text x="175" y="122" font-size="8" class="t-muted" text-anchor="middle">check-out a copy</text>
+</svg>
+<figcaption>A developer may extract a copy for work, but the baselined version itself is never edited in place. It is superseded by a new, formally approved version. Check-out / check-in enforces this. <span class="src">Slide 6</span></figcaption>
+</figure>
+<div class="tscroll"><table><tr><th>Baseline</th><th>Established when</th><th>Contains</th></tr>
+<tr><td>Functional</td><td>SRS reviewed and signed off</td><td>Requirements SCIs</td></tr>
+<tr><td>Allocated / Design</td><td>Design review passed</td><td>Architecture, UML, schema</td></tr>
+<tr><td>Developmental</td><td>Code complete, unit-tested</td><td>Source, build scripts</td></tr>
+<tr><td>Product</td><td>System test passed, released</td><td>Executable, docs, test set</td></tr>
+<tr><td>Operational</td><td>Deployed to production</td><td>Release image + config</td></tr></table></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>F-A-D-P-O</strong>: "Five Angry Ducks Paddle Over". Functional, Allocated, Developmental, Product, Operational.</p></div>
+<p class="small muted">Tools: Git tags and annotated release tags, release/* branches, Jira "Fix Version", immutable artefact repositories, signed release manifests. IEC 62304 and DO-178C make baselining auditable evidence: a regulator must be able to rebuild the exact version that was shipped.</p>
+</section>
+
+<section id="repository">
+<h2 data-short="Repository"><span class="n">04</span>The SCM repository</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>The SCM repository is the set of mechanisms and data structures (typically a database) that acts as the centre for accumulation and storage of software engineering information, allowing a team to manage change effectively.</p></div>
+<div class="cards">
+  <div class="c"><h4>Data integrity</h4><p>Validates entries; a change to one SCI cannot silently break dependants.</p></div>
+  <div class="c"><h4>Information sharing</h4><p>One authoritative copy for every team member and every tool.</p></div>
+  <div class="c"><h4>Tool integration</h4><p>Editors, build, test and issue tools operate on the same objects.</p></div>
+  <div class="c"><h4>Data integration</h4><p>Relationships and dependencies between SCIs are stored, not guessed.</p></div>
+  <div class="c"><h4>Methodology enforcement</h4><p>Workflow rules (review before merge) are applied by the repository.</p></div>
+  <div class="c"><h4>Document standardisation</h4><p>Templates and required metadata are built into the object model.</p></div>
+</div>
+<p>It stores: configuration objects, versions and variants, dependency links, change history, review and audit records.</p>
+<div class="box mem"><span class="lbl">Memory aid: six repository functions</span><p><strong>I-S-T-D-M-D</strong>: "Integrity, Sharing, Tools, Data, Methodology, Documents".</p></div>
+</section>
+
+<section id="layers">
+<h2 data-short="Five SCM layers"><span class="n">05</span>The five SCM layers</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 250" role="img" aria-label="Five concentric layers: identification in the centre, then version control, change control, configuration auditing, status reporting outside">
+  <circle cx="125" cy="125" r="118" class="f-box"/><circle cx="125" cy="125" r="94" class="f-sunk"/><circle cx="125" cy="125" r="70" class="f-box"/><circle cx="125" cy="125" r="46" class="f-sunk"/><circle cx="125" cy="125" r="24" class="f-acc-t"/>
+  <g font-size="8.5" text-anchor="middle" font-weight="650"><text x="125" y="128">SCI</text><text x="125" y="92">Identification</text><text x="125" y="68">Version control</text><text x="125" y="44">Change control</text><text x="125" y="20">Configuration auditing</text></g>
+  <text x="125" y="238" font-size="8.5" text-anchor="middle" font-weight="650">Status reporting (outermost)</text>
+  <g font-size="8.5"><text x="255" y="40" font-weight="700">Read from the inside out:</text><text x="255" y="56">an SCI flows outward</text><text x="255" y="70">through every layer</text><text x="255" y="84">during its lifetime.</text></g>
+</svg>
+</figure>
+<div class="tscroll"><table><tr><th>Layer</th><th>What it does</th></tr>
+<tr><td>Identification</td><td>Every new SCI gets a unique name, type and owner. This layer always applies.</td></tr>
+<tr><td>Version control</td><td>Each SCI is assigned to a specific version of the software; all changes are captured with who, what, when and why.</td></tr>
+<tr><td>Change control</td><td>Applies only once a change is requested against a baselined SCI: evaluation, approval, implementation, verification.</td></tr>
+<tr><td>Configuration auditing</td><td>Checks that the change was made as specified and that all related SCIs were updated consistently.</td></tr>
+<tr><td>Status reporting</td><td>The record of every SCI (name, creation date, version, change history) published to stakeholders.</td></tr></table></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>Change control applies <em>only</em> to baselined SCIs. Identification <em>always</em> applies. Automotive SPICE and CMMI level-3 appraisals check all five layers separately: a team with version control but no audit layer fails the configuration-management process area.</p></div>
+</section>
+
+<section id="versions">
+<h2 data-short="Version control and SemVer"><span class="n">06</span>Version control, branching and semantic versioning</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Version control combines tools and procedures to manage different versions of configuration objects. It records every change to every file together with the reason for the change and the identity of who made it and when.</p></div>
+<div class="cards">
+  <div class="c"><h4>Version database</h4><p>Stores all versions and variants.</p></div>
+  <div class="c"><h4>Version management</h4><p>Constructs a specific version on demand.</p></div>
+  <div class="c"><h4>Make facility</h4><p>Builds the release from selected versions.</p></div>
+  <div class="c"><h4>Issue tracking</h4><p>Links each change back to a request or defect.</p></div>
+</div>
+<figure class="fig">
+<svg viewBox="0 0 360 170" role="img" aria-label="Release-flow branching: main, feature branch, release branch with tag, hotfix branch">
+  <g font-size="8.5" class="t-mono"><text x="4" y="34">main</text><text x="4" y="74">feature/sms</text><text x="4" y="114">release/2.3</text><text x="4" y="154">hotfix/alarm</text></g>
+  <line x1="74" y1="30" x2="352" y2="30" class="s-ink" stroke-width="2.2"/>
+  <path d="M110,30 Q120,70 140,70 H220 Q240,70 250,30" class="s-acc" stroke-width="2"/>
+  <path d="M160,30 Q170,110 190,110 H352" class="s-ink" stroke-width="2"/>
+  <path d="M260,110 Q270,150 290,150 H310 Q325,150 330,110" class="s-bad" stroke-width="2"/>
+  <path d="M320,150 Q340,90 345,30" class="s-bad" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <g class="f-ink"><circle cx="110" cy="30" r="4"/><circle cx="160" cy="30" r="4"/><circle cx="250" cy="30" r="4"/><circle cx="345" cy="30" r="4"/><circle cx="210" cy="110" r="4"/><circle cx="330" cy="110" r="4"/></g>
+  <rect x="190" y="118" width="54" height="16" rx="3" class="f-acc-t"/><text x="217" y="129" font-size="8" text-anchor="middle" class="t-mono">v2.3.0</text>
+  <rect x="304" y="118" width="54" height="16" rx="3" class="f-trap"/><text x="331" y="129" font-size="8" text-anchor="middle" class="t-mono">v2.3.1</text>
+</svg>
+<figcaption>A hotfix branches from the release branch, is tagged as a patch, and is merged back into main so the fix is not lost.</figcaption>
+</figure>
+<div class="box exact"><span class="lbl">Exam text: semantic versioning MAJOR.MINOR.PATCH</span><p><b>MAJOR</b>: incompatible / breaking change (2.3.1 &rarr; 3.0.0). <b>MINOR</b>: new capability, backward compatible (2.3.1 &rarr; 2.4.0). <b>PATCH</b>: backward-compatible bug fix only (2.3.0 &rarr; 2.3.1).</p></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>When MINOR goes up, PATCH resets to 0. When MAJOR goes up, both MINOR and PATCH reset to 0. And: a <b>version</b> replaces its predecessor in time; a <b>variant</b> coexists with it (a hospital build and a clinic build of the same release).</p></div>
+<div class="calc" id="sv">
+  <div class="head"><strong>Simulator: semantic versioning</strong><span class="tag">MediTrack Q2</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Starting version<input type="text" id="sv-start" value="2.3.0"></label></div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <button class="btn" type="button" data-b="patch">+ Bug fix (PATCH)</button><button class="btn" type="button" data-b="minor">+ New feature (MINOR)</button><button class="btn" type="button" data-b="major">+ Breaking change (MAJOR)</button><button class="btn" type="button" data-b="reset">Reset</button>
+    </div>
+    <div class="flow" id="sv-chain"></div>
+  </div>
+</div>
+<div class="sorter" data-options="PATCH|MINOR|MAJOR">
+  <div class="head"><strong>Practice: which number goes up?</strong><span class="score"></span></div>
+  <div class="sort" data-a="PATCH" data-why="A defect fix; behaviour corrected, API unchanged."><p class="item">The vitals alarm fires one unit late; it is corrected.</p></div>
+  <div class="sort" data-a="MINOR" data-why="A new feature that does not break existing clients."><p class="item">Add SMS alerts for on-call nurses.</p></div>
+  <div class="sort" data-a="MAJOR" data-why="Removing a public endpoint breaks clients."><p class="item">Remove the deprecated REST v1 API.</p></div>
+  <div class="sort" data-a="MAJOR" data-why="Changing a public contract incompatibly is breaking."><p class="item">Rename the "amount" field in the public payment API to "value".</p></div>
+  <div class="sort" data-a="MINOR" data-why="An optional new parameter keeps old calls working."><p class="item">Add an optional "currency" parameter to the payment API.</p></div>
+</div>
+<h3>Branching strategies</h3>
+<div class="tscroll"><table><tr><th>Strategy</th><th>Best for</th><th>Trade-off</th></tr>
+<tr><td>Trunk-based</td><td>Fast CI/CD, feature flags</td><td>Needs a strong test suite</td></tr>
+<tr><td>GitHub Flow</td><td>Web apps, continuous deploy</td><td>One live version only</td></tr>
+<tr><td>GitFlow</td><td>Versioned / regulated releases</td><td>Heavier merge overhead</td></tr></table></div>
+<div class="box real"><span class="lbl">Real life</span><p>Google and Meta run trunk-based development at scale, hiding unfinished work behind feature flags rather than long-lived branches. Tools: Git branch/merge/rebase, pull and merge requests with CODEOWNERS, Gerrit, semantic-release, Conventional Commits, Changesets.</p></div>
+</section>
+
+<section id="change-control">
+<h2 data-short="Change control"><span class="n">07</span>The change control process</h2>
+<div class="tscroll"><table><tr><th>Stage</th><th>Steps</th></tr>
+<tr><td>1 Evaluate and decide</td><td>Need for change recognised &rarr; change request submitted &rarr; developer evaluates &rarr; <b>change report</b> &rarr; Change Control Authority (CCA / CCB) decides. Approved &rarr; queued for action. Denied &rarr; user informed, closed.</td></tr>
+<tr><td>2 Implement</td><td>Assign engineers to the configuration objects &rarr; <b>"check out"</b> the SCIs (lock / branch) &rarr; make the change (design, code, tests, docs) &rarr; formal technical review &rarr; <b>"check in"</b> the SCIs.</td></tr>
+<tr><td>3 Verify</td><td>Establish a baseline for testing &rarr; perform SQA and regression testing &rarr; <b>software configuration audit (SCA)</b> &rarr; review the change against all configuration items.</td></tr>
+<tr><td>4 Release</td><td>Promote change for inclusion in the next release &rarr; rebuild the appropriate version &rarr; include the change in the new version &rarr; distribute / deploy the new version.</td></tr></table></div>
+<div class="flow"><span>Request</span><i>&rarr;</i><span>Change report</span><i>&rarr;</i><span class="hl">CCB decides</span><i>&rarr;</i><span>Check out</span><i>&rarr;</i><span>Change + review</span><i>&rarr;</i><span>Check in</span><i>&rarr;</i><span>Test + audit</span><i>&rarr;</i><span>Rebuild + release</span></div>
+<div class="box mem"><span class="lbl">Memory aid: the four stages</span><p><strong>E-I-V-R</strong>: "Every Idea Verified, Released".</p></div>
+<div class="box key"><span class="lbl">Key point</span><p>Check-out / check-in are the access-control and synchronisation mechanisms. An SCI that is checked out is locked or branched, and cannot be checked in until review passes.</p></div>
+<div class="box real"><span class="lbl">Real life</span><p>ITIL change management splits requests into standard, normal and emergency paths. Emergency fixes bypass the CAB meeting but are audited retrospectively within 24 hours. Tools: Jira Service Management, ServiceNow, Azure DevOps Boards, merge requests with required reviewers, Engineering Change Orders (ECO).</p></div>
+</section>
+
+<section id="audit">
+<h2 data-short="Audit and status reporting"><span class="n">08</span>Configuration audit and status reporting</h2>
+<div class="box key"><span class="lbl">Review vs audit</span><p>A formal technical review checks whether the modified SCI is technically <b>correct</b>. The configuration audit is complementary: it checks whether the change was made the way the <b>process</b> requires.</p></div>
+<div class="box exact"><span class="lbl">Exam text: the five audit questions</span><ol><li>Was the change specified in the Engineering Change Order actually made, and were any extra, unrequested modifications sneaked in?</li><li>Was a formal technical review held to assess technical correctness?</li><li>Was the software process and the SCM procedure followed?</li><li>Has the change been highlighted in the SCI, with date, author and reason recorded?</li><li>Were all related SCIs (design, tests, user manual) updated consistently?</li></ol></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>Scope, Review, Process, Record, Related</strong>: "Some Reviewers Prefer Reading Receipts".</p></div>
+<p>Audits may be manual reviews, or fully automated checks inside the CI pipeline.</p>
+<h3>Configuration status reporting (CSR)</h3>
+<p>An SCM task that answers four questions for every change, and publishes the answers so that nobody works from a stale assumption:</p>
+<div class="cards two">
+  <div class="c"><h4>What happened?</h4><p>Which SCI changed, and from which version to which.</p></div>
+  <div class="c"><h4>Who did it?</h4><p>Author, reviewer and approving authority.</p></div>
+  <div class="c"><h4>When did it happen?</h4><p>Request, approval, implementation and release dates.</p></div>
+  <div class="c"><h4>What else is affected?</h4><p>Dependent SCIs, tests and documents requiring update.</p></div>
+</div>
+<p><b>Useful CSR metrics</b>: change request approval rate, mean change cycle time, configuration stability, change backlog, unapproved-change count.</p>
+<div class="box exact"><span class="lbl">Exam text: formulas</span><p class="mono small">Approval rate = approved &divide; decided &times; 100 (decided = approved + rejected)<br>Mean cycle time = &Sigma; cycle times &divide; n<br>Median cycle time = middle value of the sorted list<br>Configuration stability = (total &minus; changed) &divide; total &times; 100</p></div>
+<div class="calc" id="csr">
+  <div class="head"><strong>Calculator: CSR metrics</strong><span class="tag">MediTrack Q4</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Approved<input type="number" id="cs-a" value="15" min="0"></label>
+      <label class="field">Rejected<input type="number" id="cs-r" value="6" min="0"></label>
+      <label class="field">Pending<input type="number" id="cs-p" value="3" min="0"></label>
+      <label class="field">Baselined SCIs<input type="number" id="cs-t" value="180" min="1"></label>
+      <label class="field">SCIs modified<input type="number" id="cs-c" value="27" min="0"></label>
+    </div>
+    <label class="field">Cycle times of approved requests (days, comma separated)<input type="text" id="cs-ct" value="2, 3, 5, 1, 4, 6, 2, 3, 8, 2, 4, 5, 3, 2, 10"></label>
+    <div class="out" id="cs-out"></div>
+    <div class="bars" id="cs-bars" style="height:120px"></div><div class="bar-labels" id="cs-lbl"></div>
+  </div>
+</div>
+<div class="box real"><span class="lbl">Real life</span><p>US Executive Order 14028 requires suppliers to federal agencies to ship a Software Bill of Materials (SBOM): effectively a machine-readable configuration audit of every dependency. Tools: git log / blame / bisect, SPDX and CycloneDX, Jira dashboards, Grafana, OPA and GitHub branch protection.</p></div>
+</section>
+
+<section id="cicd">
+<h2 data-short="CI/CD and modern SCM"><span class="n">09</span>SCM in the CI/CD pipeline, GitOps and supply chain</h2>
+<p>Modern SCM is executable: the pipeline itself enforces identification, version control and auditing on every commit.</p>
+<div class="flow"><span><b>Commit</b><br><small class="muted">signed, on a feature branch</small></span><i>&rarr;</i><span><b>CI build</b><br><small class="muted">reproducible, pinned deps</small></span><i>&rarr;</i><span><b>Automated tests</b><br><small class="muted">unit, integration, regression, security</small></span><i>&rarr;</i><span><b>Artefact</b><br><small class="muted">immutable, versioned image</small></span><i>&rarr;</i><span class="hl"><b>Release and deploy</b><br><small>tagged, auto release notes</small></span></div>
+<div class="cards">
+  <div class="c"><h4>Reproducible builds</h4><p>Same source + same pinned dependencies + same toolchain &rArr; byte-identical artefact. Lockfiles (package-lock.json, go.sum, poetry.lock) are themselves SCIs.</p></div>
+  <div class="c"><h4>Immutable artefacts</h4><p>A published artefact is never overwritten. A fix produces a new version number, never a silent replacement of v2.3.0.</p></div>
+  <div class="c"><h4>Traceability</h4><p>Commit &rarr; change request &rarr; test run &rarr; artefact &rarr; deployment must form an unbroken chain, so any production binary can be traced to its source.</p></div>
+</div>
+<p>Release train: commit &rarr; build &rarr; test &rarr; stage &rarr; production, with the version number carried unchanged through every stage. If it is rebuilt, it is a different version. Amazon reached a deployment roughly every 11.7 seconds by making the pipeline, not a person, the change-control gate.</p>
+<h3>Where the discipline is heading</h3>
+<div class="cards">
+  <div class="c"><h4>GitOps</h4><p>The Git repository is the single declarative source of truth for infrastructure as well as code. A controller reconciles the running system with the committed state, so drift is corrected automatically. Every infra change is a reviewed PR; rollback = revert a commit.</p><span class="ex">ArgoCD, Flux</span></div>
+  <div class="c"><h4>Infrastructure as Code</h4><p>Servers, networks, clusters and pipeline definitions become versioned SCIs. Environments become reproducible from the repository.</p><span class="ex">Terraform, Pulumi, CloudFormation, Ansible, Kubernetes + Helm</span></div>
+  <div class="c"><h4>Supply-chain integrity</h4><p>A configuration includes hundreds of third-party dependencies. Managing them, and proving where each came from, is now core SCM.</p><span class="ex">SBOM (SPDX, CycloneDX), Dependabot / Renovate, Sigstore, SLSA</span></div>
+</div>
+<p class="small">The slide marks this as an extension of the source chapter. After the SolarWinds build-system compromise, provenance and reproducible builds moved from good practice to a procurement requirement.</p>
+</section>
+
+<section id="meditrack">
+<h2 data-short="MediTrack exercise"><span class="n">10</span>Exercise: the MediTrack patient monitoring system</h2>
+<div class="box real"><span class="lbl">Scenario</span><p>MediTrack is a hospital patient-monitoring web application classified as IEC 62304 Class B. A six-developer team maintains it. The production release is v2.3.0, baselined as B3 on 01-Sep. The repository has main, release/2.3 and short-lived feature branches. Three change requests are open: <b>CR-104</b> (critical defect: the vitals alarm threshold fires one unit late), <b>CR-111</b> (add SMS alerting for on-call nurses) and <b>CR-118</b> (remove the deprecated REST v1 API).</p></div>
+<div class="sorter" data-options="Functional|Developmental|Product|Operational|Not an SCI">
+  <div class="head"><strong>Q1 as a classifier: SCI or not, and which baseline? (6 marks)</strong><span class="score"></span></div>
+  <div class="sort" data-a="Functional" data-why="SCI. The basis of all later work."><p class="item">SRS v4.2</p></div>
+  <div class="sort" data-a="Developmental" data-why="SCI. Source under version control."><p class="item">alarm_engine.py</p></div>
+  <div class="sort" data-a="Developmental" data-why="SCI. Needed for a reproducible build. Often forgotten."><p class="item">package-lock.json</p></div>
+  <div class="sort" data-a="Product" data-why="SCI. Verification evidence for the release."><p class="item">Test_Plan v2</p></div>
+  <div class="sort" data-a="Product" data-why="SCI. Test results are not repeatable without it."><p class="item">Anonymised test dataset</p></div>
+  <div class="sort" data-a="Not an SCI" data-why="Operational data, not configuration."><p class="item">Live patient records</p></div>
+  <div class="sort" data-a="Operational" data-why="SCI. The environment is part of the release. Often forgotten."><p class="item">terraform/prod.tf</p></div>
+  <div class="sort" data-a="Product" data-why="SCI. Ships with the product."><p class="item">User_Manual v2.3</p></div>
+  <div class="sort" data-a="Not an SCI" data-why="No product depends on it."><p class="item">Stand-up meeting notes</p></div>
+  <div class="sort" data-a="Not an SCI" data-why="Personal, not shared or required."><p class="item">A developer's local IDE settings</p></div>
+  <div class="rule">7 SCIs, 3 non-SCIs. The environment (Terraform) and the dependency lockfile are SCIs: omitting them is the most common student error, and the most common cause of "it built last month, not today".</div>
+</div>
+<div class="ex-card">
+  <header><span class="marks">4 marks</span><h3>Q2: semantic versioning</h3><p>Starting from v2.3.0, give the version number produced by each change and the order of release.</p></header>
+  <details><summary>Solution</summary><div class="sol">
+    <div class="tscroll"><table><tr><th>CR</th><th>Type</th><th>Version</th><th>Reason</th></tr>
+    <tr><td>CR-104</td><td>PATCH</td><td class="mono">2.3.0 &rarr; 2.3.1</td><td>Defect fix: behaviour corrected, API unchanged</td></tr>
+    <tr><td>CR-111</td><td>MINOR</td><td class="mono">2.3.1 &rarr; 2.4.0</td><td>New feature, existing clients unaffected</td></tr>
+    <tr><td>CR-118</td><td>MAJOR</td><td class="mono">2.4.0 &rarr; 3.0.0</td><td>Public endpoint removed: clients break</td></tr></table></div>
+    <p>Release order: <b class="mono">2.3.0 &rarr; 2.3.1 &rarr; 2.4.0 &rarr; 3.0.0</b>. The safety fix ships first, from a hotfix branch cut off release/2.3; it must not wait for CR-111.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">6 marks</span><h3>Q3: change control routing</h3><p>CR-104 is patient-safety critical; CR-111 is a planned enhancement. Describe the path each follows (request, approval authority, branch, testing, audit, release) and where they differ.</p></header>
+  <details><summary>Solution</summary><div class="sol">
+    <div class="tscroll"><table><tr><th>Step</th><th>CR-111: standard path (enhancement)</th><th>CR-104: emergency path (safety defect)</th></tr>
+    <tr><td>1</td><td>Request logged; developer produces change report (impact, effort, risk)</td><td>Raised as Critical; emergency CCB (2 approvers, asynchronous)</td></tr>
+    <tr><td>2</td><td>Weekly CCB reviews and approves; queued to release 2.4</td><td>hotfix/alarm branched directly from release/2.3</td></tr>
+    <tr><td>3</td><td>feature/sms branched from main; implement + unit and integration tests</td><td>Minimal targeted fix + focused regression on the alarm subsystem</td></tr>
+    <tr><td>4</td><td>Pull request: 2 reviewers incl. CODEOWNER &rarr; merge to main</td><td>Expedited technical review, then deploy</td></tr>
+    <tr><td>5</td><td>release/2.4 cut; full regression suite + configuration audit</td><td>Retrospective audit within 24 h; ECO record completed after the fact</td></tr>
+    <tr><td>6</td><td>Baseline B4 established, tagged v2.4.0, released</td><td>Merged back into main and release/2.4 so the fix is not lost</td></tr></table></div>
+    <p><b>Where they differ</b>: approval authority (weekly CCB vs emergency CCB), branch origin (main vs release/2.3), regression scope (full vs targeted) and audit timing (before release vs within 24 h). What never differs: an audit trail is produced.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">6 marks</span><h3>Q4: CSR metrics</h3><p>In September the CCB logged 24 change requests: 15 approved, 6 rejected, 3 pending. Cycle times of the 15 approved requests (days): 2, 3, 5, 1, 4, 6, 2, 3, 8, 2, 4, 5, 3, 2, 10. 180 baselined SCIs, 27 modified. Compute approval rate, mean and median cycle time, and configuration stability. (Use the calculator in section 08 to check.)</p></header>
+  <details><summary>Solution</summary><div class="sol">
+    <p><b>Approval rate</b> = 15 &divide; (15 + 6) &times; 100 = <b>71.4%</b>. Against all 24 logged requests it is 62.5%; 3 are still pending a decision.</p>
+    <p><b>Mean cycle time</b> = 60 &divide; 15 = <b>4.0 days</b>. (Cycle time = date approved &rarr; date change released.)</p>
+    <p><b>Median</b>: sorted 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 8, 10 &rarr; 8th value = <b>3.0 days</b>. Median &lt; mean: two long requests (8 and 10 days) skew the average upward. Report both.</p>
+    <p><b>Configuration stability</b> = (180 &minus; 27) &divide; 180 &times; 100 = <b>85.0%</b>. 15% of the baseline churned in one month: high for a Class B medical product nearing release.</p>
+    <p><b>Interpretation</b>: two thirds of requests clear in &le; 4 days, so the process is not the bottleneck. The 8 and 10-day tail waited for the weekly CCB. 85% stability plus 3 pending requests means the release is not ready to freeze. Action: move low-risk requests to a pre-approved standard-change list.</p>
+  </div></details>
+</div>
+<div class="sorter" data-options="OK|Fails Q1: scope|Fails Q2 and Q3: review and process|Fails Q5: related SCIs">
+  <div class="head"><strong>Q5 as a classifier: audit the release/2.3 commit log (3 marks)</strong><span class="score"></span></div>
+  <div class="sort" data-a="OK" data-why="Linked to a CR and reviewed."><p class="item mono small">c9f1a2 fix alarm threshold, CR-104, reviewed by S. Rahman</p></div>
+  <div class="sort" data-a="Fails Q1: scope" data-why="Scope creep: an unrequested refactor was bundled into an approved change. Was only the change specified in the ECO made?"><p class="item mono small">7b3d0e CR-104 fix + refactored the logging module</p></div>
+  <div class="sort" data-a="Fails Q2 and Q3: review and process" data-why="Bypassed control: a baselined SCI was modified with no change request and no reviewer."><p class="item mono small">2a44c1 update thresholds (no CR, no reviewer)</p></div>
+  <div class="sort" data-a="OK" data-why="Version bump and release notes are part of a correct release."><p class="item mono small">55ee90 bump version to 2.3.1, update release notes</p></div>
+  <div class="sort" data-a="Fails Q5: related SCIs" data-why="Inconsistent update: code changed but the test plan and user manual were not."><p class="item mono small">d1c7b8 CR-104 code fix; Test_Plan and User_Manual untouched</p></div>
+</div>
+</section>
+
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">11</span>More exam practice with model answers</h2>
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Case: Nagad app release</h3><p>Nagad's app is at v5.8.2. Pending: (1) a crash when the balance is exactly zero; (2) a new "pay utility bill by QR" feature; (3) the old login API that takes a PIN in the URL is removed for security. A developer pushed a "quick fix" to the release branch at 2 am without a ticket. (a) Give the version after each change in release order. [3] (b) Which audit questions does the 2 am push fail, and what should happen now? [3] (c) Name the five SCM layers and say which layer would have stopped the 2 am push. [4]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><b>(a)</b> 5.8.2 &rarr; <b>5.8.3</b> (crash fix, PATCH) &rarr; <b>5.9.0</b> (new compatible feature, MINOR) &rarr; <b>6.0.0</b> (breaking removal, MAJOR). The crash fix ships first from a hotfix branch.</p>
+    <p><b>(b)</b> It fails Q2 (no formal technical review) and Q3 (the SCM procedure was not followed: no change request, no CCB). Q4 also fails if no reason was recorded. Now: raise a retrospective change request, review the change, run regression tests, record it in the ECO, or revert it.</p>
+    <p><b>(c)</b> Identification, version control, change control, configuration auditing, status reporting. <b>Change control</b> should have stopped it: the release branch holds baselined SCIs, so a change needs a request and approval. In practice, branch protection with required reviewers enforces this; the <b>audit</b> layer detects it afterwards.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: baselines</h3><p>Define a baseline (IEEE). Name the five typical baselines and say when each is established. Why is the baselined version never edited in place?</p></header>
+  <details><summary>Model answer</summary><div class="sol"><p>A baseline is a specification or product that has been formally reviewed and agreed upon, that thereafter serves as the basis for further development, and that may be changed only through formal change control procedures. Functional (SRS signed off), Allocated / design (design review passed), Developmental (code complete, unit-tested), Product (system test passed, released), Operational (deployed to production). It is never edited in place because a regulator or team must be able to rebuild the exact version that shipped; a change produces a new, approved version (v1.0 &rarr; v1.1) through check-out and check-in.</p></div></details>
+</div>
+</section>
+
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">12</span>Quiz</h2>
+<div class="quiz" id="q6">
+  <div class="mcq"><p class="q">SCM activities are applied:</p><div class="opts"><button>Only at the end, before release</button><button data-ok>Throughout the software process, as umbrella activities</button><button>Only during coding</button><button>Only after a defect</button></div><p class="why">SCM is a set of umbrella activities applied throughout.</p></div>
+  <div class="mcq"><p class="q">Which is NOT an SCI?</p><div class="opts"><button>package-lock.json</button><button>terraform/prod.tf</button><button data-ok>Live customer records</button><button>Test data set</button></div><p class="why">Operational data is not configuration.</p></div>
+  <div class="mcq"><p class="q">After a baseline is set, a change needs:</p><div class="opts"><button>An informal chat</button><button data-ok>Formal change control</button><button>Nothing</button><button>A new project</button></div><p class="why">Request, evaluate, approve.</p></div>
+  <div class="mcq"><p class="q">Which baseline is set when the SRS is signed off?</p><div class="opts"><button data-ok>Functional</button><button>Developmental</button><button>Product</button><button>Operational</button></div><p class="why">Functional baseline = requirements SCIs.</p></div>
+  <div class="mcq"><p class="q">Which SCM layer always applies to every new SCI?</p><div class="opts"><button data-ok>Identification</button><button>Change control</button><button>Auditing</button><button>Status reporting</button></div><p class="why">Change control applies only to baselined SCIs.</p></div>
+  <div class="mcq"><p class="q">From 4.2.7, a new backward-compatible feature gives:</p><div class="opts"><button>4.2.8</button><button data-ok>4.3.0</button><button>5.0.0</button><button>4.3.7</button></div><p class="why">MINOR up, PATCH resets.</p></div>
+  <div class="mcq"><p class="q">A hospital build and a clinic build of the same release are:</p><div class="opts"><button>Versions</button><button data-ok>Variants</button><button>Baselines</button><button>Branches only</button></div><p class="why">A variant coexists; a version replaces its predecessor.</p></div>
+  <div class="mcq"><p class="q">Which branching model suits versioned, regulated releases?</p><div class="opts"><button>Trunk-based</button><button>GitHub Flow</button><button data-ok>GitFlow</button><button>No branches</button></div><p class="why">GitFlow, at the cost of heavier merges.</p></div>
+  <div class="mcq"><p class="q">The configuration audit asks mainly whether:</p><div class="opts"><button>The code is fast</button><button data-ok>The change was made the way the process requires</button><button>The users like it</button><button>The design is elegant</button></div><p class="why">The FTR checks correctness; the audit checks process.</p></div>
+  <div class="mcq"><p class="q">20 approved, 5 rejected, 5 pending. Approval rate =</p><div class="opts"><button>66.7%</button><button data-ok>80.0%</button><button>75.0%</button><button>20.0%</button></div><p class="why">20 / (20 + 5) = 80%. Pending are not decided.</p></div>
+  <div class="mcq"><p class="q">250 SCIs, 40 modified. Configuration stability =</p><div class="opts"><button>16%</button><button data-ok>84%</button><button>86%</button><button>40%</button></div><p class="why">(250 &minus; 40) / 250 = 84%.</p></div>
+  <div class="mcq"><p class="q">A commit that fixes CR-20 and also refactors an unrelated module fails which audit question?</p><div class="opts"><button data-ok>Was only the specified change made (no extras)?</button><button>Were related SCIs updated?</button><button>Is the date recorded?</button><button>None</button></div><p class="why">Scope creep fails audit question 1.</p></div>
+</div>
+</section>
+
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">13</span>Exam checklist</h2>
+<p><span class="check-progress" data-for="ck6"></span></p>
+<ul class="checklist" id="ck6" data-key="main">
+  <li>Write the SCM definition and Bersoff's First Law; list the 5 tasks and 4 sources of change.</li>
+  <li>Define an SCI; give 6 categories; decide SCI or not for any artefact.</li>
+  <li>Write the IEEE baseline definition; draw the baseline flow; list the 5 baselines.</li>
+  <li>Define the SCM repository and its 6 functions.</li>
+  <li>Draw the five SCM layers and explain each.</li>
+  <li>Define version control; separate version and variant; draw a hotfix branch.</li>
+  <li>Apply SemVer to a sequence of changes.</li>
+  <li>Compare trunk-based, GitHub Flow and GitFlow.</li>
+  <li>Walk through the 4-stage change control process with check-out/check-in.</li>
+  <li>State the 5 audit questions and the 4 CSR questions; audit a commit log.</li>
+  <li>Compute approval rate, mean and median cycle time, and configuration stability.</li>
+  <li>Explain reproducible builds, immutable artefacts, traceability, GitOps, IaC and SBOM.</li>
+  <li>Route a standard vs an emergency change and state the four differences.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE,$=S.$,$$=S.$$,fmt=S.fmt;
+  /* SemVer */
+  var chain=[];
+  function parse(v){var m=String(v).trim().replace(/^v/,"").split(".").map(function(x){return parseInt(x,10)||0;});while(m.length<3)m.push(0);return m.slice(0,3);}
+  function draw(){var v=parse($("#sv-start").value),h='<span class="hl mono">v'+v.join(".")+'</span>';chain.forEach(function(c){if(c==="patch")v[2]++;if(c==="minor"){v[1]++;v[2]=0;}if(c==="major"){v[0]++;v[1]=0;v[2]=0;}h+='<i>&rarr; '+c.toUpperCase()+'</i><span class="mono">v'+v.join(".")+'</span>';});$("#sv-chain").innerHTML=h;}
+  $$("#sv [data-b]").forEach(function(b){b.addEventListener("click",function(){var k=b.getAttribute("data-b");if(k==="reset")chain=[];else chain.push(k);draw();});});
+  $("#sv-start").addEventListener("input",draw); draw();
+  /* CSR */
+  S.live($("#csr"),function(){
+    var a=S.num("#cs-a"),r=S.num("#cs-r"),p=S.num("#cs-p"),t=S.num("#cs-t"),c=S.num("#cs-c");
+    var ct=$("#cs-ct").value.split(/[,\s]+/).filter(function(x){return x!=="";}).map(Number).filter(isFinite);
+    var s=ct.slice().sort(function(x,y){return x-y;}),n=s.length,mean=n?s.reduce(function(x,y){return x+y;},0)/n:0,med=n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):0;
+    $("#cs-out").innerHTML='<div class="hl"><span>Approval rate (of decided)</span><b>'+fmt(a+r?a/(a+r)*100:0,1)+'%</b></div><div><span>Approved of all logged</span><b>'+fmt(a+r+p?a/(a+r+p)*100:0,1)+'%</b></div><div><span>Mean cycle time</span><b>'+fmt(mean,1)+' days</b></div><div><span>Median cycle time</span><b>'+fmt(med,1)+' days</b></div><div><span>Configuration stability</span><b>'+fmt(t?(t-c)/t*100:0,1)+'%</b></div><div><span>Sorted cycle times</span><b style="font-size:.8rem">'+s.join(", ")+'</b></div>';
+    var cnt={};s.forEach(function(x){cnt[x]=(cnt[x]||0)+1;});var ks=Object.keys(cnt).map(Number).sort(function(x,y){return x-y;}),mx=Math.max.apply(null,ks.map(function(k){return cnt[k];}).concat([1]));
+    $("#cs-bars").innerHTML=ks.map(function(k){return '<div class="bar"><span class="val">'+cnt[k]+'</span><div class="fill'+(k>mean?" acc":"")+'" style="height:'+(cnt[k]/mx*100)+'%"></div></div>';}).join("");
+    $("#cs-lbl").innerHTML=ks.map(function(k){return '<span>'+k+' d</span>';}).join("");
+  });
+})();
+</script>
+</body>
+</html>

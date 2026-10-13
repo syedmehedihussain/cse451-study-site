@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniRide Project Walkthrough</title>
+<meta name="description" content="The CSE451 progressive project (UniRide): the brief, the eight tasks, how to approach each one, and a private workspace for your own answers.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-root="." data-slug="project">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Progressive project &nbsp;/&nbsp; CLO2</p>
+  <h1>UniRide project walkthrough</h1>
+  <p class="summary">The semester project, task by task: what each task asks for, which lecture and calculator to use, how to approach it, and a workspace that saves your own answers in this browser.</p>
+  <p class="meta"><span><b>Source</b> CSE451 CLO2 progressive project template</span><span><b>Marks</b> 120, scaled for CLO2</span><span><b>Team</b> 4 developers, 14 weeks</span></p>
+</header>
+
+<div class="prose">
+
+<section id="brief">
+<h2 data-short="The brief"><span class="n">01</span>The brief: UniRide</h2>
+<p>IUB runs shuttle buses between pick-up points in Dhaka and the Bashundhara campus, all on paper today. UniRide is a web and Android system that digitises the whole service.</p>
+<div class="cards">
+  <div class="c"><h4>Route and trip management</h4><p>Routes, stops, timetables; a bus and a driver assigned to each trip.</p></div>
+  <div class="c"><h4>Seat reservation</h4><p>Search, reserve 1+ seats, QR boarding pass, cancel before cut-off, automatic waitlist promotion.</p></div>
+  <div class="c"><h4>Live tracking</h4><p>GPS on every bus; the app shows the bus and the ETA at your stop.</p></div>
+  <div class="c"><h4>Boarding and attendance</h4><p>Driver scans the QR; no-shows flagged when the bus leaves.</p></div>
+  <div class="c"><h4>Payment</h4><p>Semester pass or per-trip wallet topped up via mobile financial service; every transaction auditable.</p></div>
+  <div class="c"><h4>Notification and reporting</h4><p>Delays, cancellations, waitlist, reminders; occupancy, on-time, revenue, no-show, fuel and maintenance reports.</p></div>
+</div>
+<h3>Constraints you must design for</h3>
+<div class="tscroll"><table><tr><th>Fact</th><th>Value</th><th>Where it matters</th></tr>
+<tr><td>Users</td><td>about 8,000; up to 2,500 at once, 07:00 to 09:00</td><td>Performance NFRs, load tests, FP factors</td></tr>
+<tr><td>Coverage</td><td>Weak mobile signal on routes; devices must re-sync</td><td>Robustness NFRs, offline design, risk</td></tr>
+<tr><td>Phones</td><td>Many low-cost Android phones, limited memory</td><td>UI design, efficiency, portability</td></tr>
+<tr><td>Hosting</td><td>Only two virtual machines</td><td>Architecture, availability, risk</td></tr>
+<tr><td>Data</td><td>Location and payment are personal; settled payments immutable</td><td>Security NFRs, SCM, audit</td></tr>
+<tr><td>Service window</td><td>06:00 to 22:00, 7 days</td><td>Availability arithmetic (Task 5.2)</td></tr>
+<tr><td>Targets</td><td>&ge; 99.5% availability; confirmation &le; 2 s for 95%; bus position never older than 15 s</td><td>Measurable NFRs, tests</td></tr>
+<tr><td>Team</td><td>4 student developers, 14 weeks, 1 part-time designer, fixed budget</td><td>Process model, estimation, schedule</td></tr>
+<tr><td>Customer</td><td>Transport Office manager: one meeting a week</td><td>Process model, elicitation</td></tr>
+<tr><td>Unsettled</td><td>Reporting and fee rules (fee policy under revision)</td><td>Process model, change control, risk</td></tr></table></div>
+<div class="box trap"><span class="lbl">Rules that cost marks</span><ul><li>Every numerical answer must show formula, substituted values and result. A correct number with no working gets no accuracy marks.</li><li>Use the standard notation from the lectures for every diagram.</li><li>Copying the slide examples (SmartCanteen, CampusEats, UniCafe, MediTrack, Library system) counts as non-submission.</li><li>Late submission of a task forfeits its VIVA marks. VIVA marks reward defending <em>your own</em> decisions.</li></ul></div>
+<div class="box key"><span class="lbl">How this page helps</span><p>It explains the method for each task and links to the calculator that checks your arithmetic. It does not hand you the answers: you enter your own numbers, which is also what the viva will test.</p></div>
+</section>
+
+<section id="tracker">
+<h2 data-short="Progress"><span class="n">02</span>Marks map and progress</h2>
+<div class="tscroll"><table><tr><th>Task</th><th>Topic</th><th>Lecture</th><th class="num">Marks</th></tr>
+<tr><td>1</td><td>Software process: characterisation, model selection, lifecycle</td><td>1, 2</td><td class="num">10</td></tr>
+<tr><td>2</td><td>Requirements engineering</td><td>3</td><td class="num">22</td></tr>
+<tr><td>3</td><td>Design: modularity, independence, UI</td><td>4</td><td class="num">16</td></tr>
+<tr><td>4</td><td>Product metrics</td><td>4</td><td class="num">14</td></tr>
+<tr><td>5</td><td>Quality attributes</td><td>5</td><td class="num">10</td></tr>
+<tr><td>6</td><td>Testing strategy and test design</td><td>5</td><td class="num">18</td></tr>
+<tr><td>7</td><td>Project management</td><td>7</td><td class="num">18</td></tr>
+<tr><td>8</td><td>Risk management</td><td>8</td><td class="num">12</td></tr>
+<tr class="total"><td colspan="3">Total</td><td class="num">120</td></tr></table></div>
+<p class="small">Each sub-task is marked on Completeness, Accuracy and VIVA. Every task uses the output of the tasks before it: the requirements of Task 2 are what you design in Task 3, size in Task 4, test in Task 6 and schedule in Task 7.</p>
+<div class="slot"><label for="ws-overview">Your project walkthrough</label><p class="hint">Write the story of your project here: your team, your process, key decisions and why. This is your viva script. Saved automatically in this browser. <span class="saved">saved</span></p><textarea id="ws-overview" data-ws="overview" rows="8" placeholder=""></textarea></div>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap"><button class="btn primary" type="button" id="export">Download all my notes (.md)</button></div>
+</section>
+
+<section id="task1">
+<h2 data-short="Task 1 process"><span class="n">03</span>Task 1: product characterisation, model selection, lifecycle <span class="tag">10 marks</span></h2>
+<p><span class="check-progress" data-for="t1"></span></p>
+<ul class="checklist" id="t1" data-key="t1">
+  <li>1.1 Place UniRide in application domains (one sentence each).</li>
+  <li>1.1 Four software vs hardware characteristics, each with a UniRide consequence.</li>
+  <li>1.1 Three plausible failure causes, each mapped to the phase where the fault enters.</li>
+  <li>1.1 Predict the maintenance split (corrective, adaptive, perfective, preventive) and justify from the brief.</li>
+  <li>1.1 Two myths the Transport Office or your team may hold, with the reality.</li>
+  <li>1.2 Shortlist three models; fill the criteria table; pick one in &le; 150 words; say why each other one was rejected.</li>
+  <li>1.3 Draw your 14-week lifecycle: time-boxes, milestones, artefacts, reviews, and where Tasks 2 to 8 happen.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>Use the facts in the brief as evidence. Unsettled fee rules and one meeting a week point away from pure waterfall. A fixed 14-week window points to timeboxing. GPS, payment and peak load are risks a model must handle. Compare your choice using the model comparison table and the "choose the model" classifier in <a href="lectures/02-process-models.html#choose">Lecture 2</a>. For maintenance, start from the 20/48/16/16 baseline in <a href="lectures/01-software-and-se.html#maintenance">Lecture 1</a> and adjust it (unsettled fee policy and new OS versions push adaptive up).</p></div>
+<div class="slot"><label for="ws-t1">My Task 1 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t1" data-ws="t1" rows="7"></textarea></div>
+</section>
+
+<section id="task2">
+<h2 data-short="Task 2 requirements"><span class="n">04</span>Task 2: requirements engineering <span class="tag">22 marks</span></h2>
+<p><span class="check-progress" data-for="t2"></span></p>
+<ul class="checklist" id="t2" data-key="t2">
+  <li>2.1 At least 8 stakeholder groups in the table; power-interest grid; strategy per quadrant.</li>
+  <li>2.1 Three elicitation techniques justified by the constraints; five context-free questions.</li>
+  <li>2.2 At least 12 FRs and 6 NFRs; each NFR with metric, target and verification method; MoSCoW.</li>
+  <li>2.3 Six user stories (INVEST checked, 2+ acceptance criteria each).</li>
+  <li>2.3 Use-case diagram: 6+ use cases, GPS device and payment gateway as secondary actors, one include and one extend.</li>
+  <li>2.3 Fully dressed narrative for "Reserve a Seat" with 3+ alternate flows (trip full, payment declined, network lost).</li>
+  <li>2.4 Boundary / control / entity table from a grammatical parse; CRC cards for Reservation and Trip.</li>
+  <li>2.4 ERD with keys, cardinality, modality and any weak entity.</li>
+  <li>2.4 State diagram for Reservation (5+ states, event / guard / action) and a level-1 DFD for booking.</li>
+  <li>2.5 One requirements conflict resolved win-win; review checklist (8+ questions) applied to 3 requirements.</li>
+  <li>2.5 Traceability matrix (5 requirements &rarr; use case, module, test); change-control flow; define the baseline and when it freezes.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>The brief already gives measurable targets (99.5%, 2 s for 95%, 15 s). Turn every other wish into a number with the testability checker in <a href="lectures/03-requirements-engineering.html#srs">Lecture 3</a>. Write stories with the story builder there. Follow the IUB food pre-order worked exercise for the shape of each deliverable, but use UniRide content: copying it is non-submission.</p></div>
+<div class="slot"><label for="ws-t2">My Task 2 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t2" data-ws="t2" rows="7"></textarea></div>
+</section>
+
+<section id="task3">
+<h2 data-short="Task 3 design"><span class="n">05</span>Task 3: design, modularity and user interface <span class="tag">16 marks</span></h2>
+<p><span class="check-progress" data-for="t3"></span></p>
+<ul class="checklist" id="t3" data-key="t3">
+  <li>3.1 Six or more modules: responsibility, interface, hidden information, dependencies; diagram; justify the count with the cost curve.</li>
+  <li>3.2 Classify BookingManager's cohesion and its coupling to the payment gateway, with evidence.</li>
+  <li>3.2 Refactor; before and after diagrams; re-classify and name the mechanism (interface, DI, event, adapter).</li>
+  <li>3.2 Two cross-cutting concerns and how you handle them without duplication.</li>
+  <li>3.3 Mandel's three golden rules, each with one UniRide decision.</li>
+  <li>3.3 Three user profiles and task analysis for "reserve a seat".</li>
+  <li>3.3 Annotated wireframes for trip search/booking and live tracking (5+ principles each).</li>
+  <li>3.3 Evaluate the draft login screen, list violations, draw a corrected wireframe.</li>
+  <li>3.3 Fitts's law reasoning for the "Confirm booking" button on a 6.1-inch phone; state a minimum touch size.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>BookingManager does many unrelated jobs and shares a global CONFIG and a static currentTrip: classify it with the cohesion and coupling ladders and classifiers in <a href="lectures/04-design-and-metrics.html#independence">Lecture 4</a>, and use the StudentManager exercise as a model of the reasoning. For the module count, try the modularity slider. For the login screen, compare with Exercise 2 there, and use the Fitts calculator with your own D and W.</p></div>
+<div class="slot"><label for="ws-t3">My Task 3 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t3" data-ws="t3" rows="7"></textarea></div>
+</section>
+
+<section id="task4">
+<h2 data-short="Task 4 metrics"><span class="n">06</span>Task 4: product metrics <span class="tag">14 marks</span></h2>
+<p><span class="check-progress" data-for="t4"></span></p>
+<ul class="checklist" id="t4" data-key="t4">
+  <li>4.1 Count EI, EO, EQ, ILF, EIF from your own catalogue; justify each weight; rate all 14 factors with a reason; FP.</li>
+  <li>4.2 WMC, DIT, NOC, CBO, RFC, LCOM for Reservation and one more class, with counting basis and interpretation.</li>
+  <li>4.2 Two of Whitmire's nine characteristics where your design scores worst.</li>
+  <li>4.3a Halstead: vocabulary, length, estimated length N&#770; = n1 log2 n1 + n2 log2 n2, volume; compare N with N&#770;.</li>
+  <li>4.3b SMI for the given release and what it means for maintenance.</li>
+  <li>4.3c Two testing metrics with targets and reasons.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>Use the FP calculator in <a href="lectures/04-design-and-metrics.html#fp">Lecture 4</a> with your counts; carry your final FP forward to Task 7.1. The Halstead calculator there works from a statement, so for 4.3a apply the formulas directly to the given n1, n2, N1, N2, and add N&#770; (the estimated length) yourself. Use the SMI calculator for 4.3b.</p></div>
+<div class="slot"><label for="ws-t4">My Task 4 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t4" data-ws="t4" rows="7"></textarea></div>
+</section>
+
+<section id="task5">
+<h2 data-short="Task 5 quality"><span class="n">07</span>Task 5: quality attributes <span class="tag">10 marks</span></h2>
+<p><span class="check-progress" data-for="t5"></span></p>
+<ul class="checklist" id="t5" data-key="t5">
+  <li>5.1 Rewrite the six stakeholder wishes in the six-part form, with metric, target, verification and ISO 25010 characteristic.</li>
+  <li>5.2 Monthly scheduled service time in minutes (06:00 to 22:00, 30 days).</li>
+  <li>5.2 Maximum downtime and error budget at 99.5%.</li>
+  <li>5.2 Achieved availability from MTBF and MTTR; how many nines.</li>
+  <li>5.2 % of error budget consumed by the two outages; the release policy that follows.</li>
+  <li>5.3 Trade-off matrix for the six attributes; the two sharpest conflicts, decision, sacrifice and acceptance criterion.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>The window is 16 hours a day, not 24: scheduled minutes = 16 &times; 60 &times; 30. Then budget = (1 &minus; 0.995) &times; that. Check your arithmetic with the availability calculator in <a href="lectures/05-quality-and-testing.html#availability">Lecture 5</a> (set the period to your scheduled hours). Use the six-part scenario and the trade-off matrix in the same lecture.</p></div>
+<div class="slot"><label for="ws-t5">My Task 5 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t5" data-ws="t5" rows="7"></textarea></div>
+</section>
+
+<section id="task6">
+<h2 data-short="Task 6 testing"><span class="n">08</span>Task 6: testing strategy and test design <span class="tag">18 marks</span></h2>
+<p><span class="check-progress" data-for="t6"></span></p>
+<ul class="checklist" id="t6" data-key="t6">
+  <li>6.1 V-model with test levels; unit, component, integration point, SUT, acceptance; environment and test data (GPS traces, payment responses).</li>
+  <li>6.1 Integration strategy justified by your Task 3.1 modules; every stub and driver for payment and GPS.</li>
+  <li>6.1 System-test entry and exit criteria; smoke-test content; regression selection policy.</li>
+  <li>6.2 Flow graph of computeFare with nodes, edges, regions and predicate nodes.</li>
+  <li>6.2 V(G) three ways; basis paths; one test per path with hand-computed expected output.</li>
+  <li>6.2 Statement and branch coverage of your set; any untested branch and the extra test.</li>
+  <li>6.3 Equivalence classes for every input of the reservation rule; boundary values (on, off, out).</li>
+  <li>6.3 Decision table for conditions (i) to (v), collapsed with don't-cares; minimal test set with justification.</li>
+  <li>6.4 Coverage, branch and mutation targets by module risk; CI/CD pipeline with tools; defect metrics with release gates.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>Number the nodes from the given line numbers and count edges carefully: the V(G) calculator in <a href="lectures/05-quality-and-testing.html#basis">Lecture 5</a> tells you if your three methods disagree. Watch out: computeFare has an early "return REJECT", which adds an edge to the exit. Use the BVA generator for 1 to 168 hours and 1 to 4 seats, and the UniCafe case as the pattern for the plan, gates and pipeline.</p></div>
+<div class="slot"><label for="ws-t6">My Task 6 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t6" data-ws="t6" rows="7"></textarea></div>
+</section>
+
+<section id="task7">
+<h2 data-short="Task 7 management"><span class="n">09</span>Task 7: estimation, scheduling, tracking <span class="tag">18 marks</span></h2>
+<p><span class="check-progress" data-for="t7"></span></p>
+<ul class="checklist" id="t7" data-key="t7">
+  <li>7.1 FP &rarr; KLOC at 53 LOC/FP; organic COCOMO effort, duration and staff; compare with your team of 4.</li>
+  <li>7.1 Second estimate at 11 FP per person-month; reconcile into a range; place it on the cone of uncertainty.</li>
+  <li>7.1 Make-buy for map and GPS tracking: build, reuse open source, or buy an SDK.</li>
+  <li>7.2 Three-level WBS; activity-on-node network for A to J.</li>
+  <li>7.2 ES, EF, LS, LF, slack for every activity; critical path and duration; Gantt with four milestones.</li>
+  <li>7.2 Split total effort by 40-20-40 into person-days.</li>
+  <li>7.3 te and variance per critical activity; &mu; and &sigma;; P(&le; 14 weeks) and P(&le; 16 weeks); published date and buffer.</li>
+  <li>7.4 BCWS, BCWP, ACWP at week 8; SV, CV, SPI, CPI; EAC and ETC; diagnosis and one corrective action on the critical path.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>All the tools are in <a href="lectures/07-project-management.html">Lecture 7</a>. Paste the A to J activity list into the CPM calculator (one line per task: "ID, weeks, predecessors"), then type your critical path's a, m, b into the PERT calculator. For EVA, BCWS = &Sigma; budget &times; planned %, BCWP = &Sigma; budget &times; actual %, ACWP = &Sigma; actual effort; then use the EVA calculator. Write every step by hand in the submission.</p></div>
+<div class="slot"><label for="ws-t7">My Task 7 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t7" data-ws="t7" rows="7"></textarea></div>
+</section>
+
+<section id="task8">
+<h2 data-short="Task 8 risk"><span class="n">10</span>Task 8: risk management <span class="tag">12 marks</span></h2>
+<p><span class="check-progress" data-for="t8"></span></p>
+<ul class="checklist" id="t8" data-key="t8">
+  <li>8.1 Ten or more risks: checklist category; project / technical / business; known / predictable / unpredictable; "Given that..., there is a risk that..., which would result in...".</li>
+  <li>8.2 Risk table in BDT; sorted by RE; cut-off line justified; heat map; RMMM for the top three.</li>
+  <li>8.3a RRL for R-01 and the decision.</li>
+  <li>8.3b Decision tree for the GPS component (build vs buy), expected costs, decision, two non-financial factors.</li>
+  <li>8.3c One risk for each of avoid, transfer, mitigate, accept, with why.</li>
+  <li>8.4 Trigger, frequency and owner for the top five; planned risk burndown over 14 weeks; contingency % with justification.</li>
+</ul>
+<div class="box key"><span class="lbl">How to approach it</span><p>Build your register in the workbench in <a href="lectures/08-risk-management.html#workbench">Lecture 8</a>: add your own rows (BDT works the same as $), and it ranks them, draws the heat map, and computes RRL and the reserve. Use the RRL calculator for 8.3a and the decision-tree calculator in Lecture 7 for 8.3b.</p></div>
+<div class="slot"><label for="ws-t8">My Task 8 answers</label><p class="hint">Saved automatically. <span class="saved">saved</span></p><textarea id="ws-t8" data-ws="t8" rows="7"></textarea></div>
+</section>
+
+</div>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="assets/app.js"></script>
+<script>
+document.getElementById("export").addEventListener("click",function(){
+  var parts=["# UniRide project notes",""],names={overview:"Project walkthrough",t1:"Task 1",t2:"Task 2",t3:"Task 3",t4:"Task 4",t5:"Task 5",t6:"Task 6",t7:"Task 7",t8:"Task 8"};
+  document.querySelectorAll("[data-ws]").forEach(function(t){parts.push("## "+names[t.getAttribute("data-ws")],"",t.value||"(empty)","");});
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([parts.join("\n")],{type:"text/markdown"}));a.download="uniride-notes.md";document.body.appendChild(a);a.click();a.remove();
+});
+</script>
+</body>
+</html>

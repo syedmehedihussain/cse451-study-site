@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requirements Engineering</title>
+<meta name="description" content="CSE451 Lecture 3: the seven RE tasks, stakeholders, elicitation, analysis models, SRS, validation, change control and baselines.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="03-requirements-engineering">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 03 &nbsp;/&nbsp; Mid exam</p>
+  <h1>Requirements engineering</h1>
+  <p class="summary">Discovering, modelling, negotiating, specifying, validating and managing what a software system must do. Most costly faults start here, so this lecture is about catching them before any code exists.</p>
+  <p class="meta"><span><b>Source</b> Lecture 3, 30 slides</span><span><b>Reading</b> about 50 min</span><span><b>Exercise</b> IUB campus food pre-order app</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<section id="requirement">
+<h2 data-short="What is a requirement"><span class="n">01</span>What is a requirement?</h2>
+<div class="box exact"><span class="lbl">Exam text: IEEE Std 610.12</span><p>A requirement is a condition or capability a user needs to solve a problem or reach an objective, and that the system must meet to satisfy a contract, standard or specification.</p></div>
+<div class="cards">
+  <div class="c"><h4>Functional</h4><p>What the system must DO: services, inputs, outputs, behaviour.</p><span class="ex">The system shall allow a student to register for a course section.</span></div>
+  <div class="c"><h4>Non-functional</h4><p>HOW WELL it must do it: performance, security, usability, reliability.</p><span class="ex">Login shall complete within 2 s for 95% of requests.</span></div>
+  <div class="c"><h4>Domain / constraint</h4><p>Rules from the application domain, laws or standards.</p><span class="ex">CGPA shall be computed using the university grading policy.</span></div>
+</div>
+<div class="tscroll"><table>
+<tr><th>User requirements</th><th>System requirements</th></tr>
+<tr><td>High-level, natural-language statements written for customers.</td><td>Detailed, precise statements for developers and testers.</td></tr>
+</table></div>
+<div class="sorter" data-options="Functional|Non-functional|Domain / constraint">
+  <div class="head"><strong>Practice: classify the requirement</strong><span class="score"></span></div>
+  <div class="sort" data-a="Functional" data-why="It says what the system does: a service."><p class="item">The app shall let a rider rate the driver after each trip.</p></div>
+  <div class="sort" data-a="Non-functional" data-why="It says how well: performance with a number."><p class="item">The payment page shall load within 3 s on 4G for 95% of users.</p></div>
+  <div class="sort" data-a="Domain / constraint" data-why="It comes from a law or a standard in the domain."><p class="item">VAT on each invoice shall be calculated at the rate set by NBR.</p></div>
+  <div class="sort" data-a="Non-functional" data-why="Security is a quality: how well the system protects data."><p class="item">Passwords shall be stored only as salted hashes.</p></div>
+  <div class="sort" data-a="Functional" data-why="An output the system must produce."><p class="item">The system shall email a monthly statement to each account holder.</p></div>
+  <div class="sort" data-a="Domain / constraint" data-why="A rule from the university's domain policy."><p class="item">A student on probation shall not take more than 12 credits.</p></div>
+  <div class="rule">Rule of thumb: a verb the system performs = functional. "Within", "at least", "99.5%" = non-functional. A rule that exists outside the software (law, policy, standard) = domain.</div>
+</div>
+</section>
+
+<section id="re">
+<h2 data-short="What is RE"><span class="n">02</span>What is requirements engineering?</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Requirements Engineering is the systematic process of discovering, analysing, documenting, validating and managing the requirements of a system. It is the bridge between what the customer wants and the design and construction of the software.</p></div>
+<div class="cards">
+  <div class="c tint"><h4>60 to 70%</h4><p>of software faults are specification and design faults (Lecture 1).</p></div>
+  <div class="c tint"><h4>1.9 vs 0.3</h4><p>faults per page: specification vs code (Kelly et al., 1992).</p></div>
+  <div class="c tint"><h4>about 100&times;</h4><p>costlier to fix a requirements defect found in maintenance.</p></div>
+</div>
+<p>RE provides the mechanism to:</p>
+<ul><li>Understand what the customer really wants.</li><li>Analyse the need and assess feasibility.</li><li>Negotiate a reasonable solution.</li><li>Specify the solution unambiguously.</li><li>Validate the specification.</li><li>Manage requirements as they change into a working system.</li></ul>
+</section>
+
+<section id="process">
+<h2 data-short="The 7 RE tasks"><span class="n">03</span>The requirements engineering process</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 200" role="img" aria-label="Six RE tasks in order, with requirements management underneath all of them">
+  <defs><marker id="r1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g font-size="9" text-anchor="middle">
+    <rect x="6" y="20" width="104" height="48" rx="6" class="f-box"/><text x="58" y="38" font-weight="650">1 Inception</text><text x="58" y="52" font-size="7.5" class="t-muted">understand problem,</text><text x="58" y="61" font-size="7.5" class="t-muted">stakeholders</text>
+    <rect x="128" y="20" width="104" height="48" rx="6" class="f-box"/><text x="180" y="38" font-weight="650">2 Elicitation</text><text x="180" y="52" font-size="7.5" class="t-muted">draw out requirements</text><text x="180" y="61" font-size="7.5" class="t-muted">from all stakeholders</text>
+    <rect x="250" y="20" width="104" height="48" rx="6" class="f-box"/><text x="302" y="38" font-weight="650">3 Elaboration</text><text x="302" y="52" font-size="7.5" class="t-muted">refine into analysis</text><text x="302" y="61" font-size="7.5" class="t-muted">models</text>
+    <rect x="250" y="92" width="104" height="48" rx="6" class="f-box"/><text x="302" y="110" font-weight="650">4 Negotiation</text><text x="302" y="124" font-size="7.5" class="t-muted">resolve conflicts,</text><text x="302" y="133" font-size="7.5" class="t-muted">prioritise, win-win</text>
+    <rect x="128" y="92" width="104" height="48" rx="6" class="f-box"/><text x="180" y="110" font-weight="650">5 Specification</text><text x="180" y="124" font-size="7.5" class="t-muted">SRS, stories,</text><text x="180" y="133" font-size="7.5" class="t-muted">models</text>
+    <rect x="6" y="92" width="104" height="48" rx="6" class="f-key"/><text x="58" y="110" font-weight="650">6 Validation</text><text x="58" y="124" font-size="7.5" class="t-muted">consistent, complete,</text><text x="58" y="133" font-size="7.5" class="t-muted">testable</text>
+    <rect x="6" y="158" width="348" height="30" rx="6" class="f-acc-t"/><text x="180" y="177" font-weight="650" class="t-acc">7 Requirements management: changes, versions, traceability across ALL tasks</text>
+  </g>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#r1)"><path d="M110,44 H126"/><path d="M232,44 H248"/><path d="M302,68 V90"/><path d="M250,116 H234"/><path d="M128,116 H112"/></g>
+</svg>
+<figcaption>Tasks overlap and repeat. In agile (XP, Scrum, DSDM, FDD) they run every iteration on a small set of stories. Output: a validated, baselined specification (SRS or product backlog). <span class="src">Slide 4</span></figcaption>
+</figure>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>I-E-E-N-S-V-M</strong>: "In Every Exam, Never Skip Vital Marks". Inception, Elicitation, Elaboration, Negotiation, Specification, Validation, Management.</p></div>
+</section>
+
+<section id="inception">
+<h2 data-short="Inception"><span class="n">04</span>Task 1: Inception</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Inception establishes a basic understanding of the problem, the people who want a solution, the nature of the desired solution, and how well customer and developer communicate.</p></div>
+<div class="cards two">
+  <div class="c"><h4>Context-free questions to ask first</h4><p>Who is behind the request? Who will use the solution? What is the economic benefit of success? What problems will it address? In what business environment will it be used? Is there another source for the solution (buy vs build)?</p></div>
+  <div class="c"><h4>Outputs of inception</h4><p>Problem / need statement. Stakeholder list. Feasibility and business case. Initial scope (vision / charter).</p></div>
+</div>
+<p class="small muted">Tools: stakeholder analysis, context-free questions, feasibility study, Business Model / Lean Canvas, vision document. Industry: project charter and kick-off meetings (PMI), discovery phase or "Sprint 0" in agile teams.</p>
+</section>
+
+<section id="stakeholders">
+<h2 data-short="Stakeholders"><span class="n">05</span>Identifying stakeholders: the power-interest grid</h2>
+<p><strong>Stakeholder</strong>: anyone who benefits directly or indirectly from the system, or who can influence it. Typical classes: end users; customers and sponsors; managers; developers and testers; regulators and external systems.</p>
+<figure class="fig">
+<svg viewBox="0 0 360 250" role="img" aria-label="Power interest grid with four quadrants for the university course registration system">
+  <rect x="40" y="10" width="155" height="105" class="f-sunk"/><rect x="200" y="10" width="155" height="105" class="f-acc-t"/>
+  <rect x="40" y="120" width="155" height="105" class="f-box"/><rect x="200" y="120" width="155" height="105" class="f-key"/>
+  <g font-size="10" font-weight="700"><text x="50" y="28">Keep satisfied</text><text x="210" y="28" class="t-acc">Manage closely</text><text x="50" y="138">Monitor</text><text x="210" y="138">Keep informed</text></g>
+  <g font-size="8.5"><text x="50" y="50">University management,</text><text x="50" y="62">UGC (regulator)</text>
+  <text x="210" y="50">Registrar office (sponsor),</text><text x="210" y="62">IT Director</text>
+  <text x="50" y="160">Parents, bank handling</text><text x="50" y="172">fee payments</text>
+  <text x="210" y="160">Students, faculty</text><text x="210" y="172">advisors</text></g>
+  <text x="197" y="243" font-size="9" class="t-muted" text-anchor="middle">INTEREST &rarr;</text>
+  <text x="16" y="118" font-size="9" class="t-muted" text-anchor="middle" transform="rotate(-90 16 118)">POWER / INFLUENCE &rarr;</text>
+</svg>
+<figcaption>Example: University Course Registration System. Place each stakeholder by power and interest to decide how closely to engage them. <span class="src">Slide 6</span></figcaption>
+</figure>
+<div class="sorter" data-options="Manage closely|Keep satisfied|Keep informed|Monitor">
+  <div class="head"><strong>Practice: place the stakeholder (Pathao Food)</strong><span class="score"></span></div>
+  <div class="sort" data-a="Manage closely" data-why="High power (pays, decides) and high interest."><p class="item">Pathao's head of product, who funds the project and checks it every week.</p></div>
+  <div class="sort" data-a="Keep satisfied" data-why="High power (can block launch) but low day-to-day interest."><p class="item">Bangladesh Telecommunication Regulatory Commission.</p></div>
+  <div class="sort" data-a="Keep informed" data-why="Very interested, but little power over the project."><p class="item">Delivery riders who will use the rider app daily.</p></div>
+  <div class="sort" data-a="Monitor" data-why="Low power and low interest."><p class="item">A packaging supplier for restaurant partners.</p></div>
+</div>
+</section>
+
+<section id="elicitation">
+<h2 data-short="Elicitation"><span class="n">06</span>Task 2: Elicitation techniques</h2>
+<p>Elicitation draws requirements out of all stakeholders. Teams combine several techniques because each one reveals different needs. Goal: identify the problem, propose elements of the solution, specify preliminary requirements.</p>
+<div class="cards">
+  <div class="c"><h4>Interviews</h4><p>Structured or open Q&amp;A with one stakeholder.</p><span class="ex">Best for: deep individual insight</span></div>
+  <div class="c"><h4>Questionnaires</h4><p>Surveys sent to many users.</p><span class="ex">Best for: large, distributed user groups</span></div>
+  <div class="c"><h4>Workshops / JAD</h4><p>Facilitated group sessions.</p><span class="ex">Best for: fast consensus across departments</span></div>
+  <div class="c"><h4>Observation</h4><p>Ethnography: watch users at work.</p><span class="ex">Best for: tacit knowledge users cannot explain</span></div>
+  <div class="c"><h4>Brainstorming</h4><p>Generate ideas freely, judge later.</p><span class="ex">Best for: new products and innovation</span></div>
+  <div class="c"><h4>Prototyping</h4><p>Mock-ups or wireframes users can try.</p><span class="ex">Best for: unclear UI or requirements</span></div>
+  <div class="c"><h4>Document analysis</h4><p>Study forms, reports, laws, the legacy system.</p><span class="ex">Best for: rules and data already recorded</span></div>
+  <div class="c"><h4>Scenarios / stories</h4><p>Concrete stories of system use.</p><span class="ex">Best for: agile teams, validating flows</span></div>
+</div>
+<div class="sorter" data-options="Interviews|Questionnaires|Workshops / JAD|Observation|Prototyping|Document analysis">
+  <div class="head"><strong>Practice: pick the best technique</strong><span class="score"></span></div>
+  <div class="sort" data-a="Questionnaires" data-why="Many distributed users: a survey reaches them all."><p class="item">You need the views of 40,000 bKash merchants across 64 districts.</p></div>
+  <div class="sort" data-a="Observation" data-why="Tacit knowledge: people cannot explain what they do by habit."><p class="item">Pharmacy staff use shortcuts they cannot describe; you need to see how they really dispense medicine.</p></div>
+  <div class="sort" data-a="Document analysis" data-why="The rules already exist in documents."><p class="item">You need the exact income-tax slab rules for a payroll system.</p></div>
+  <div class="sort" data-a="Workshops / JAD" data-why="Several departments must agree quickly."><p class="item">Accounts, HR and the factory floor disagree about overtime rules and must agree this week.</p></div>
+  <div class="sort" data-a="Prototyping" data-why="Users cannot describe the UI until they see it."><p class="item">Users say "we'll know a good dashboard when we see one".</p></div>
+  <div class="sort" data-a="Interviews" data-why="Deep insight from one key person."><p class="item">You need to understand how the hospital's chief pathologist approves lab reports.</p></div>
+</div>
+</section>
+
+<section id="stories">
+<h2 data-short="User stories"><span class="n">07</span>Collaborative gathering and user stories</h2>
+<h3>Collaborative requirements-gathering workflow</h3>
+<div class="flow"><span>1 Prepare: facilitator, agenda, invite</span><i>&rarr;</i><span>2 Pre-work: list objects, services, constraints, performance criteria</span><i>&rarr;</i><span>3 Merge lists on a "definition mechanism" (sticky wall, Miro)</span><i>&rarr;</i><span>4 Discuss: remove duplicates, add missing</span><i>&rarr;</i><span class="hl">5 Mini-specs &rarr; agreed preliminary requirements</span></div>
+<div class="box exact"><span class="lbl">Exam text: formats</span><p class="mono small">As a &lt;role&gt;, I want &lt;goal&gt;, so that &lt;benefit&gt;.<br>Given &lt;context&gt;, When &lt;action&gt;, Then &lt;result&gt;.</p><p>INVEST: Independent, Negotiable, Valuable, Estimable, Small, Testable.</p></div>
+<div class="box real"><span class="lbl">Example from the slide</span><p>"As a student, I want to see seat availability before registering, so that I can plan my schedule."<br>Given a section has 0 free seats, When I try to register for it, Then the system shows "Section full" and offers the waitlist.</p></div>
+<div class="calc" id="story">
+  <div class="head"><strong>Builder: write a user story with acceptance criteria</strong><span class="tag">Practice</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">As a (role)<input type="text" id="us-r" value="bKash user"></label>
+      <label class="field">I want (goal)<input type="text" id="us-g" value="to split a bill with friends"></label>
+      <label class="field">so that (benefit)<input type="text" id="us-b" value="each friend pays their share in the app"></label>
+      <label class="field">Given<input type="text" id="us-gi" value="a bill of Tk 900 and 3 friends selected"></label>
+      <label class="field">When<input type="text" id="us-w" value="I tap Split equally"></label>
+      <label class="field">Then<input type="text" id="us-t" value="each friend gets a Tk 300 payment request"></label>
+    </div>
+    <div class="box key" style="max-width:none" id="us-out"></div>
+    <ul class="checklist" data-key="invest"><li><b>I</b>ndependent: it can be built without another story.</li><li><b>N</b>egotiable: details can still be discussed.</li><li><b>V</b>aluable: the benefit matters to a user.</li><li><b>E</b>stimable: the team can size it.</li><li><b>S</b>mall: it fits one iteration.</li><li><b>T</b>estable: the Given-When-Then can be checked.</li></ul>
+  </div>
+</div>
+<p class="small muted">Tools: Miro / MURAL, Google Forms, Teams or Zoom + Otter.ai transcripts, Confluence, Jira. Industry: story-writing workshops in Scrum teams; QFD (normal, expected, exciting needs) in automotive and manufacturing.</p>
+</section>
+
+<section id="elaboration">
+<h2 data-short="Elaboration"><span class="n">08</span>Task 3: Elaboration, building the analysis model</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Elaboration expands and refines the information from inception and elicitation into a requirements (analysis) model made of four complementary element types.</p></div>
+<div class="cards">
+  <div class="c"><h4>Scenario-based</h4><p>How do actors use the system?</p><span class="ex">Use cases, user stories, activity and swimlane diagrams</span></div>
+  <div class="c"><h4>Class-based</h4><p>Which objects and data exist?</p><span class="ex">Class diagrams, CRC cards, analysis packages</span></div>
+  <div class="c"><h4>Behavioral</h4><p>How does the system react to events?</p><span class="ex">State diagrams, sequence diagrams</span></div>
+  <div class="c"><h4>Flow-oriented</h4><p>How is data transformed?</p><span class="ex">Data flow diagrams (DFD), data models / ERD</span></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>S-C-B-F</strong>: "Students Can Be Funny". Scenario, Class, Behavioral, Flow.</p></div>
+<div class="sorter" data-options="Scenario-based|Class-based|Behavioral|Flow-oriented">
+  <div class="head"><strong>Practice: which model element?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Behavioral" data-why="A state diagram shows how an object reacts to events."><p class="item">A state diagram for an order: Created, Paid, Shipped, Delivered.</p></div>
+  <div class="sort" data-a="Flow-oriented" data-why="A DFD shows how data is transformed."><p class="item">A DFD showing order details flowing from Customer to the system to Restaurant.</p></div>
+  <div class="sort" data-a="Scenario-based" data-why="Use cases show how actors use the system."><p class="item">A use-case diagram with Customer and Bank System actors.</p></div>
+  <div class="sort" data-a="Class-based" data-why="CRC cards find classes and responsibilities."><p class="item">A CRC card for Account.</p></div>
+  <div class="sort" data-a="Behavioral" data-why="Sequence diagrams show message order in reaction to an event."><p class="item">A sequence diagram of the login messages.</p></div>
+  <div class="sort" data-a="Scenario-based" data-why="Swimlane activity diagrams are scenario-based."><p class="item">A swimlane diagram of how a loan request moves between teller and manager.</p></div>
+</div>
+<p class="small muted">Tools: StarUML, Visual Paradigm, Enterprise Architect, draw.io, Lucidchart, PlantUML. Industry: UML / SysML models in banking, telecom and automotive (model-based systems engineering).</p>
+</section>
+
+<section id="usecase">
+<h2 data-short="Use cases"><span class="n">09</span>Use-case modeling</h2>
+<div class="cards two">
+  <div class="c"><h4>Actor</h4><p>A role (person or external system) outside the system that interacts with it.</p></div>
+  <div class="c"><h4>Use case</h4><p>A sequence of actions that gives a result of value to an actor.</p></div>
+  <div class="c"><h4>System boundary</h4><p>Separates what is in scope from what is outside.</p></div>
+  <div class="c"><h4>&laquo;include&raquo; and &laquo;extend&raquo;</h4><p><b>include</b>: the base use case always uses another (shared behaviour). <b>extend</b>: optional behaviour added to a base use case under a condition.</p></div>
+</div>
+<figure class="fig">
+<svg viewBox="0 0 360 250" role="img" aria-label="ATM use case diagram">
+  <defs><marker id="u1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10" class="s-ink" stroke-width="1.5"/></marker></defs>
+  <rect x="80" y="12" width="200" height="228" rx="8" class="f-sunk"/><text x="180" y="28" text-anchor="middle" font-size="10" font-weight="700">ATM System</text>
+  <g font-size="9" text-anchor="middle">
+    <ellipse cx="180" cy="55" rx="58" ry="15" class="f-box"/><text x="180" y="58">Check Balance</text>
+    <ellipse cx="180" cy="100" rx="58" ry="15" class="f-box"/><text x="180" y="103">Withdraw Cash</text>
+    <ellipse cx="180" cy="148" rx="62" ry="15" class="f-key"/><text x="180" y="151">Authenticate User</text>
+    <ellipse cx="180" cy="190" rx="58" ry="15" class="f-box"/><text x="180" y="193">Transfer Funds</text>
+    <ellipse cx="236" cy="224" rx="40" ry="12" class="f-real"/><text x="236" y="227" font-size="8">Print Receipt</text>
+  </g>
+  <g class="s-ink" stroke-width="1.4"><circle cx="34" cy="96" r="8" class="f-box"/><path d="M34,104 v24 M20,112 h28 M34,128 l-10,16 M34,128 l10,16"/></g>
+  <text x="34" y="158" font-size="9" text-anchor="middle">Customer</text>
+  <g class="s-ink" stroke-width="1.4"><circle cx="326" cy="96" r="8" class="f-box"/><path d="M326,104 v24 M312,112 h28 M326,128 l-10,16 M326,128 l10,16"/></g>
+  <text x="326" y="158" font-size="9" text-anchor="middle">Bank System</text>
+  <g class="s-line" stroke-width="1.2"><path d="M46,104 L122,58"/><path d="M48,110 L122,100"/><path d="M48,118 L124,186"/><path d="M314,110 L238,100"/></g>
+  <path d="M180,115 L180,131" class="s-ink" stroke-dasharray="4 3" marker-end="url(#u1)"/><text x="186" y="126" font-size="7.5" class="t-muted">&laquo;include&raquo;</text>
+  <path d="M232,212 L210,112" class="s-ink" stroke-dasharray="4 3" marker-end="url(#u1)"/><text x="230" y="170" font-size="7.5" class="t-muted">&laquo;extend&raquo;</text>
+</svg>
+<figcaption>Withdraw Cash always includes Authenticate User. Print Receipt optionally extends Withdraw Cash. Name use cases verb + noun; one diagram per subsystem.</figcaption>
+</figure>
+<div class="box trap"><span class="lbl">Exam trap: arrow direction</span><p>&laquo;include&raquo; points from the base to the included case (Withdraw Cash &rarr; Authenticate User). &laquo;extend&raquo; points from the optional case to the base (Print Receipt &rarr; Withdraw Cash). Include = always. Extend = sometimes, under a condition.</p></div>
+<div class="sorter" data-options="include|extend">
+  <div class="head"><strong>Practice: include or extend?</strong><span class="score"></span></div>
+  <div class="sort" data-a="include" data-why="Every checkout must take payment: always used."><p class="item">Place Order and Make Payment (food pre-order app).</p></div>
+  <div class="sort" data-a="extend" data-why="Only when the user has a voucher: optional, conditional."><p class="item">Apply Voucher and Make Payment.</p></div>
+  <div class="sort" data-a="include" data-why="Every transfer requires login: shared, always."><p class="item">Transfer Funds and Log In.</p></div>
+  <div class="sort" data-a="extend" data-why="Only if the user asks for it."><p class="item">Withdraw Cash and Print Receipt.</p></div>
+</div>
+<h3>Use-case narrative: Withdraw Cash</h3>
+<div class="tscroll"><table>
+<tr><th>Field</th><th>Description</th></tr>
+<tr><td>Use case</td><td>UC-01 Withdraw Cash</td></tr>
+<tr><td>Actors</td><td>Primary: Customer. Secondary: Bank System</td></tr>
+<tr><td>Precondition</td><td>ATM is online; customer holds a valid card and account</td></tr>
+<tr><td>Trigger</td><td>Customer inserts card</td></tr>
+<tr><td>Main success scenario</td><td>1. System reads card and requests PIN. 2. Customer enters PIN; system authenticates &laquo;include Authenticate User&raquo;. 3. Customer selects amount. 4. System checks balance with Bank System. 5. System dispenses cash and debits account. 6. System returns card (receipt optional &laquo;extend&raquo;).</td></tr>
+<tr><td>Alternate flows</td><td>2a. Wrong PIN three times &rarr; card retained, bank notified. 4a. Insufficient funds &rarr; show message, return to step 3.</td></tr>
+<tr><td>Postcondition</td><td>Account debited and transaction logged</td></tr>
+<tr><td>Non-functional</td><td>Cash dispensed within 10 s of confirmation; PIN never stored or displayed</td></tr>
+</table></div>
+<div class="box key"><span class="lbl">Tip from the slide</span><p>Alternate flows are where most hidden requirements are found. Always ask "what can go wrong at this step?"</p></div>
+</section>
+
+<section id="analysis">
+<h2 data-short="Analysis"><span class="n">10</span>Requirements analysis and domain analysis</h2>
+<div class="flow"><span><b>System description</b><br><small class="muted">what the customer wants</small></span><i>&rarr;</i><span class="hl"><b>Analysis model</b><br><small>WHAT the software must do</small></span><i>&rarr;</i><span><b>Design model</b><br><small class="muted">HOW it will be built</small></span></div>
+<p>The analysis model bridges the customer's system description and the software design.</p>
+<div class="cards">
+  <div class="c"><h4>Analysis specifies</h4><p>The software's operational characteristics; its interfaces with other system elements; the constraints it must meet.</p></div>
+  <div class="c"><h4>Objectives</h4><p>1. Describe what the customer requires. 2. Establish a basis for software design. 3. Define requirements that can be validated.</p></div>
+  <div class="c"><h4>Rules of thumb</h4><p>Focus on WHAT, not HOW. Keep a high level of abstraction. Every element adds understanding of information, function or behaviour. Delay infrastructure and non-functional models until design. Minimise coupling. Give value to all stakeholders. Keep the model simple.</p></div>
+</div>
+<h3>Domain analysis: finding reusable requirements</h3>
+<div class="box exact"><span class="lbl">Exam text</span><p>Domain analysis identifies, analyses and specifies requirements that are common to a whole application domain, so they can be reused across many projects.</p></div>
+<div class="flow"><span>1 Define the domain</span><i>&rarr;</i><span>2 Collect a representative sample of applications</span><i>&rarr;</i><span>3 Analyse each application</span><i>&rarr;</i><span class="hl">4 Develop an analysis model of the common objects</span></div>
+<div class="box real"><span class="lbl">Example: the e-commerce domain</span><p>Sample apps: Daraz, Chaldal, Amazon, Foodpanda. Knowledge sources: technical literature, existing applications, customer surveys, domain experts. Common objects: Customer, Product, Cart, Order, Payment, Delivery, Review. Reusable result: a domain class model + patterns (checkout, payment, order tracking) reused in any new shop app. Industry: software product lines (automotive ECUs), ERP modules (SAP, Odoo), core-banking frameworks, Shopify templates.</p></div>
+</section>
+
+<section id="data">
+<h2 data-short="Data modeling"><span class="n">11</span>Data modeling: objects, attributes, relationships</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Data object: a representation of composite information (several attributes) that the software must understand. Dimension (length, width, height) is a data object; length alone is only an attribute.</p></div>
+<div class="tscroll"><table>
+<tr><th>Category</th><th>Examples</th></tr>
+<tr><td>External entities</td><td>printer, user, sensor</td></tr><tr><td>Things</td><td>reports, displays, signals</td></tr>
+<tr><td>Occurrences / events</td><td>interrupt, alarm</td></tr><tr><td>Roles</td><td>manager, engineer, salesperson</td></tr>
+<tr><td>Organisational units</td><td>division, team</td></tr><tr><td>Places</td><td>manufacturing floor</td></tr><tr><td>Structures</td><td>employee record</td></tr>
+</table></div>
+<h3>Tabular view of the data object "Car"</h3>
+<div class="tscroll"><table>
+<tr><th>ID no. <span class="tag blue">identifier</span></th><th>Make</th><th>Model</th><th>Color</th><th>Owner <span class="tag yellow">referential</span></th></tr>
+<tr><td>DHA-GA-1234</td><td>Toyota</td><td>Axio</td><td>White</td><td>C-017</td></tr>
+<tr><td>CTG-KA-5521</td><td>Honda</td><td>Civic</td><td>Black</td><td>C-042</td></tr>
+</table></div>
+<div class="cards">
+  <div class="c"><h4>Identifier</h4><p>Uniquely identifies an instance (key).</p></div>
+  <div class="c"><h4>Descriptive</h4><p>Describes an instance (make, colour).</p></div>
+  <div class="c"><h4>Referential</h4><p>Links to another object (owner &rarr; Customer).</p></div>
+</div>
+<p>Data objects contain data only: no operations.</p>
+<h3>Relationships, cardinality and modality (ERD)</h3>
+<div class="cards two">
+  <div class="c"><h4>Cardinality</h4><p>The maximum number of occurrences in a relationship: 1:1, 1:N or M:N.</p></div>
+  <div class="c"><h4>Modality</h4><p>0 if the relationship is optional, 1 if it is mandatory (minimum occurrences).</p></div>
+</div>
+<figure class="fig">
+<svg viewBox="0 0 360 120" role="img" aria-label="Department offers Course 1 to N; Student enrolls Course M to N">
+  <g font-size="10" font-weight="650" text-anchor="middle">
+    <rect x="6" y="45" width="86" height="30" class="f-box"/><text x="49" y="64">Department</text>
+    <rect x="137" y="45" width="86" height="30" class="f-box"/><text x="180" y="64">Course</text>
+    <rect x="268" y="45" width="86" height="30" class="f-box"/><text x="311" y="64">Student</text>
+  </g>
+  <path d="M92,60 H137 M223,60 H268" class="s-ink" stroke-width="1.3"/>
+  <g class="s-ink" stroke-width="1.3"><path d="M100,54 v12 M104,54 v12"/><path d="M127,60 l10,-6 M127,60 l10,6 M123,54 v12" /><path d="M231,60 l-8,-6 M231,60 l-8,6 M236,54 v12"/><path d="M258,60 l10,-6 M258,60 l10,6 M254,54 v12"/></g>
+  <g font-size="9" text-anchor="middle" class="t-muted"><text x="114" y="40">offers</text><text x="245" y="40">enrolls</text>
+  <text x="98" y="88">1</text><text x="130" y="88">N</text><text x="229" y="88">M</text><text x="262" y="88">N</text></g>
+  <text x="180" y="112" font-size="8.5" text-anchor="middle" class="t-muted">crow's foot = many; bar = one; circle = zero (optional)</text>
+</svg>
+<figcaption>A Department offers zero-or-many Courses; each Course is offered by exactly one Department (1:N). A Student enrolls in one-or-many Courses; a Course has zero-or-many Students (M:N). <span class="src">Slide 15</span></figcaption>
+</figure>
+<div class="sorter" data-options="Identifier|Descriptive|Referential">
+  <div class="head"><strong>Practice: attribute type in a "Student" data object</strong><span class="score"></span></div>
+  <div class="sort" data-a="Identifier" data-why="Uniquely identifies each student."><p class="item">Student ID 2131234</p></div>
+  <div class="sort" data-a="Descriptive" data-why="Describes the student."><p class="item">Date of birth</p></div>
+  <div class="sort" data-a="Referential" data-why="Points to another data object."><p class="item">Advisor ID (links to a Faculty record)</p></div>
+  <div class="sort" data-a="Descriptive" data-why="Describes the student."><p class="item">Blood group</p></div>
+</div>
+</section>
+
+<section id="bce">
+<h2 data-short="BCE and CRC"><span class="n">12</span>Analysis classes and CRC cards</h2>
+<div class="cards">
+  <div class="c"><h4>Boundary</h4><p>Interaction between the system's surroundings and its inner workings. UI classes: WHAT information is shown, not widget details. Device and system interfaces: WHAT protocol, not how.</p><span class="ex">ATMScreen, CardReader</span></div>
+  <div class="c"><h4>Control</h4><p>Coordinates the behaviour of a use case. Only tells other classes what to do (delegates); separates boundary from entity classes.</p><span class="ex">WithdrawalController</span></div>
+  <div class="c"><h4>Entity</h4><p>Key concepts of the system: usually persistent information and business logic. Reused by many use cases.</p><span class="ex">Account, Transaction</span></div>
+</div>
+<div class="flow"><span>Customer (actor)</span><i>&rarr;</i><span>ATMScreen (boundary)</span><i>&rarr;</i><span class="hl">WithdrawalController (control)</span><i>&rarr;</i><span>Account, Transaction (entity)</span></div>
+<div class="box exact"><span class="lbl">Exam text: the rule</span><p>Actors talk only to boundary objects; boundary &rarr; control &rarr; entity.</p></div>
+<div class="sorter" data-options="Boundary|Control|Entity">
+  <div class="head"><strong>Practice: boundary, control or entity?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Entity" data-why="Persistent business data reused by many use cases."><p class="item">Order</p></div>
+  <div class="sort" data-a="Boundary" data-why="A screen the actor talks to."><p class="item">CheckoutScreen</p></div>
+  <div class="sort" data-a="Control" data-why="Coordinates one use case and delegates."><p class="item">PaymentController</p></div>
+  <div class="sort" data-a="Boundary" data-why="An interface to an external system."><p class="item">PaymentGatewayInterface</p></div>
+  <div class="sort" data-a="Entity" data-why="Persistent information."><p class="item">MenuItem</p></div>
+</div>
+<h3>CRC cards: Class, Responsibility, Collaborator</h3>
+<div class="tscroll"><table>
+<tr><th colspan="2">Class: Account</th></tr><tr><th>Responsibilities</th><th>Collaborators</th></tr>
+<tr><td>Know its owner</td><td>Customer</td></tr><tr><td>Know its balance</td><td>-</td></tr>
+<tr><td>Deposit / withdraw money</td><td>Transaction</td></tr><tr><td>Check sufficient funds</td><td>-</td></tr><tr><td>Produce a statement</td><td>Transaction</td></tr>
+</table></div>
+<p>A 3&times;5" or 4&times;6" index card: its small size keeps each class small and focused. CRC modelling is the simplest introduction to OO analysis: it discovers classes, what each knows or does (responsibilities), and which classes help it (collaborators). Results are later drawn as a UML class diagram.</p>
+<div class="flow"><span>1 Pick candidate classes (nouns in use cases)</span><i>&rarr;</i><span>2 One card per class</span><i>&rarr;</i><span>3 Role-play a scenario</span><i>&rarr;</i><span>4 Add responsibilities and collaborators</span><i>&rarr;</i><span>5 Refine, then draw a class diagram</span></div>
+</section>
+
+<section id="state-dfd">
+<h2 data-short="State and DFD"><span class="n">13</span>State diagrams and data flow diagrams</h2>
+<div class="cards two">
+<figure class="fig" style="margin:0">
+<svg viewBox="0 0 220 210" role="img" aria-label="Order state diagram">
+  <defs><marker id="sd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <circle cx="20" cy="22" r="6" class="f-ink"/>
+  <g font-size="9" text-anchor="middle" font-weight="600">
+  <rect x="45" y="10" width="70" height="24" rx="12" class="f-box"/><text x="80" y="26">Created</text>
+  <rect x="45" y="62" width="70" height="24" rx="12" class="f-box"/><text x="80" y="78">Paid</text>
+  <rect x="45" y="114" width="70" height="24" rx="12" class="f-box"/><text x="80" y="130">Shipped</text>
+  <rect x="45" y="166" width="70" height="24" rx="12" class="f-key"/><text x="80" y="182">Delivered</text>
+  <rect x="145" y="62" width="70" height="24" rx="12" class="f-trap"/><text x="180" y="78">Cancelled</text></g>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#sd)"><path d="M26,22 H43"/><path d="M80,34 V60"/><path d="M80,86 V112"/><path d="M80,138 V164"/><path d="M115,22 Q180,22 180,60"/><path d="M115,74 H143"/></g>
+  <g font-size="7.5" class="t-muted"><text x="85" y="50">pay</text><text x="85" y="102">dispatch</text><text x="85" y="154">receive</text><text x="150" y="18">cancel</text><text x="117" y="70">cancel / refund</text></g>
+</svg>
+<figcaption>State diagram: states of an object and the events that cause transitions.</figcaption>
+</figure>
+<figure class="fig" style="margin:0">
+<svg viewBox="0 0 220 210" role="img" aria-label="Level 0 DFD for food ordering">
+  <defs><marker id="df" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <circle cx="110" cy="105" r="38" class="f-acc-t"/><text x="110" y="100" font-size="9" text-anchor="middle" font-weight="700">0</text><text x="110" y="112" font-size="8" text-anchor="middle">Food Ordering</text><text x="110" y="122" font-size="8" text-anchor="middle">System</text>
+  <g font-size="8.5" text-anchor="middle" font-weight="600"><rect x="4" y="10" width="62" height="24" class="f-box"/><text x="35" y="26">Customer</text>
+  <rect x="154" y="10" width="62" height="24" class="f-box"/><text x="185" y="26">Restaurant</text>
+  <rect x="70" y="176" width="80" height="24" class="f-box"/><text x="110" y="192">Payment Gateway</text></g>
+  <g class="s-ink" stroke-width="1.1" marker-end="url(#df)"><path d="M40,34 L82,78"/><path d="M90,72 L52,34"/><path d="M138,78 L180,36"/><path d="M98,142 L98,174"/><path d="M122,174 L122,144"/></g>
+  <g font-size="7" class="t-muted"><text x="2" y="60">order details</text><text x="58" y="48">status</text><text x="160" y="62">order ticket</text><text x="40" y="162">payment request</text><text x="126" y="162">confirmation</text></g>
+</svg>
+<figcaption>DFD: how data enters, is transformed by processes and leaves. Refine Level 0 &rarr; 1 &rarr; 2.</figcaption>
+</figure>
+</div>
+</section>
+
+<section id="negotiation">
+<h2 data-short="Negotiation"><span class="n">14</span>Task 4: Negotiation, reaching win-win</h2>
+<p>Stakeholders often ask for more than time and budget allow, or for conflicting things. Negotiation reconciles these conflicts so every party gets a satisfying outcome.</p>
+<div class="flow"><span>1 Identify key stakeholders</span><i>&rarr;</i><span>2 Find each "win condition" (often not obvious)</span><i>&rarr;</i><span class="hl">3 Negotiate and prioritise towards win-win</span></div>
+<div class="box real"><span class="lbl">Example conflict</span><p>The Registrar wants 15 features in Release 1 by January. The team's capacity allows about 9. Resolution with MoSCoW: all Musts (login, register, drop, fee view) in R1; Shoulds in R2; Coulds wait. Win-win: the deadline is met and the core value is delivered.</p></div>
+<div class="cards">
+  <div class="c"><h4>MoSCoW</h4><p>Must / Should / Could / Won't (DSDM, Lecture 2).</p></div>
+  <div class="c"><h4>Kano model</h4><p>Basic, performance and delighter needs.</p></div>
+  <div class="c"><h4>100-dollar test</h4><p>Stakeholders split 100 points.</p></div>
+  <div class="c"><h4>AHP</h4><p>Pairwise comparison of requirements.</p></div>
+  <div class="c"><h4>Value vs effort matrix</h4><p>Quick wins first.</p></div>
+</div>
+<p class="small muted">Tools: Jira backlog ranking, Productboard, Aha!, Miro dot-voting.</p>
+</section>
+
+<section id="srs">
+<h2 data-short="Specification (SRS)"><span class="n">15</span>Task 5: Specification, writing the SRS</h2>
+<p>A specification may be a written document, graphical models, a formal (mathematical) model, use cases, a prototype, or a mix. The <strong>Software Requirements Specification (SRS)</strong> is the formal written form.</p>
+<h3>SRS outline (ISO/IEC/IEEE 29148, successor of IEEE 830)</h3>
+<ol><li><strong>Introduction</strong>: purpose, scope, definitions, references.</li><li><strong>Overall description</strong>: product perspective, user classes, environment, constraints, assumptions.</li><li><strong>Specific requirements</strong>: functional, external interfaces, performance, security, quality attributes.</li><li><strong>Appendices</strong>: models, glossary, TBD list.</li></ol>
+<div class="cards two">
+  <div class="c" style="border-color:var(--trap-line)"><h4>Bad</h4><p>"The system should be fast and user-friendly."</p><span class="ex">Vague and untestable: how fast? for whom?</span></div>
+  <div class="c" style="border-color:var(--key-line)"><h4>Good</h4><p>"The system shall display search results within 2 s for 95% of queries with 500 concurrent users."</p></div>
+</div>
+<div class="box exact"><span class="lbl">Exam text: EARS pattern and SRS qualities</span><p class="mono small">When &lt;trigger&gt;, the &lt;system&gt; shall &lt;response&gt;.</p><p>A good SRS is: correct, unambiguous, complete, consistent, ranked, verifiable, modifiable, traceable.</p></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>C-U-C-C-R-V-M-T</strong>: "Clever Undergrads Can Clearly Read Very Messy Texts".</p></div>
+<div class="calc" id="lint">
+  <div class="head"><strong>Checker: is this requirement testable?</strong><span class="tag">SRS practice</span></div>
+  <div class="body">
+    <label class="field">Type a requirement<textarea id="ln-in">The app should be fast and easy to use.</textarea></label>
+    <div class="out" id="ln-out"></div>
+    <div class="verdict" id="ln-v"></div>
+    <p class="small muted" style="margin-top:.6rem">It checks for vague words, a number with a unit, and "shall". It is a guide, not a grader.</p>
+  </div>
+</div>
+<p class="small muted">Tools: Word / Confluence SRS templates, ReqView, Jama Connect, IBM DOORS, Markdown in Git (docs-as-code).</p>
+</section>
+
+<section id="validation">
+<h2 data-short="Validation"><span class="n">16</span>Task 6: Validation, are we building the right product?</h2>
+<div class="tscroll"><table>
+<tr><th>Validation</th><th>Verification</th></tr>
+<tr><td>Right product? (meets real needs)</td><td>Product right? (conforms to spec)</td></tr>
+</table></div>
+<div class="cards two">
+  <div class="c"><h4>Checklist: ask of every requirement</h4><p>Consistent with the overall system objective? Stated at the proper level of abstraction? Really necessary, or a gold-plated add-on? Unambiguous? In conflict with another requirement? Achievable in the target technical environment? Testable once implemented? Does the model reflect information, function and behaviour?</p></div>
+  <div class="c"><h4>Techniques</h4><p><b>Reviews / inspections</b>: the team walks through the SRS with a checklist. <b>Prototyping</b>: users try it and confirm the details. <b>Acceptance-test design</b>: if you cannot write a test, rewrite the requirement. <b>Model consistency checks</b>: tool-based checks of UML and traceability.</p></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>Validation = right product. Verification = product right.</strong> "V-a-lidation asks the customer (a for audience); Ve-r-ification checks the rules."</p></div>
+<p class="small muted">Tools: Jira + Xray/Zephyr, ReqView, Jama Review Center. Industry: formal reviews are mandatory in avionics (DO-178C) and medical software (IEC 62304).</p>
+</section>
+
+<section id="management">
+<h2 data-short="Management and baseline"><span class="n">17</span>Task 7: Requirements management, change control and the baseline</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Requirements management is the set of activities that identify, control and track requirements and their changes at any time as the project proceeds.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="Change control flow">
+  <defs><marker id="cc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g font-size="8.5" text-anchor="middle" font-weight="600">
+  <rect x="4" y="20" width="70" height="34" rx="5" class="f-box"/><text x="39" y="35">Change</text><text x="39" y="46">request</text>
+  <rect x="88" y="20" width="80" height="34" rx="5" class="f-box"/><text x="128" y="35">Impact analysis</text><text x="128" y="46" font-weight="400" class="t-muted">(traceability)</text>
+  <rect x="182" y="20" width="80" height="34" rx="5" class="f-box"/><text x="222" y="35">Change Control</text><text x="222" y="46">Board review</text>
+  <polygon points="310,14 350,37 310,60 270,37" class="f-acc-t"/><text x="310" y="40">Approved?</text>
+  <rect x="270" y="96" width="84" height="34" rx="5" class="f-trap"/><text x="312" y="111">Reject / defer</text><text x="312" y="122" font-weight="400">to backlog</text>
+  <rect x="150" y="96" width="100" height="34" rx="5" class="f-key"/><text x="200" y="111">Implement, test,</text><text x="200" y="122" font-weight="400">notify stakeholders</text>
+  <rect x="20" y="96" width="112" height="34" rx="5" class="f-box"/><text x="76" y="111">Update SRS and baseline</text><text x="76" y="122" font-weight="400">v1.0 &rarr; v1.1</text></g>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#cc)"><path d="M74,37 H86"/><path d="M168,37 H180"/><path d="M262,37 H268"/><path d="M330,49 L330,94"/><path d="M290,52 Q240,70 220,94"/><path d="M150,113 H134"/></g>
+  <text x="338" y="76" font-size="8" class="t-muted">No</text><text x="244" y="70" font-size="8" class="t-muted">Yes</text>
+</svg>
+</figure>
+<p><strong>Traceability tables</strong> link each requirement to its <b>features</b> (product features it supports), <b>source</b> (who or which document asked for it), <b>dependency</b> (related requirements), and <b>subsystem / interface</b> (components and interfaces it touches).</p>
+<p class="small muted">Tools: IBM DOORS Next, Jama Connect, Siemens Polarion, Jira + Confluence, Azure DevOps (ReqIF). Industry: end-to-end traceability is required by ISO 26262, DO-178C and IEC 62304.</p>
+<h3>The requirements baseline</h3>
+<div class="box exact"><span class="lbl">Exam text</span><p>A requirements baseline is a set of requirements that has been reviewed and agreed upon and serves as the basis for further development. After baselining, every change goes through formal change control.</p></div>
+<div class="flow"><span>Draft</span><i>&rarr;</i><span>Reviewed</span><i>&rarr;</i><span class="hl">Baseline v1.0</span><i>&rarr;</i><span>Change approved</span><i>&rarr;</i><span class="hl">Baseline v1.1</span></div>
+<p>Why a meaningful baseline gives every stakeholder confidence:</p>
+<div class="cards">
+  <div class="c"><h4>Customer management / marketing</h4><p>Scope will not explode; customers control scope-change decisions.</p></div>
+  <div class="c"><h4>Business analysts and PMs</h4><p>Changes can be managed with minimal chaos.</p></div>
+  <div class="c"><h4>QA and test teams</h4><p>Test scripts can be written confidently and early.</p></div>
+  <div class="c"><h4>User representatives</h4><p>The team will deliver the right solution even if not every need was foreseen.</p></div>
+  <div class="c"><h4>Development management</h4><p>A business partner keeps focus and balances schedule, cost, functionality, quality.</p></div>
+</div>
+</section>
+
+<section id="agile-re">
+<h2 data-short="RE: plan vs agile"><span class="n">18</span>RE in plan-driven vs agile projects</h2>
+<div class="tscroll"><table>
+<tr><th>Aspect</th><th>Plan-driven (Waterfall, V-model)</th><th>Agile (XP, Scrum, DSDM, FDD)</th></tr>
+<tr><td>When</td><td>Mostly up-front, before design</td><td>Continuously, every iteration / sprint</td></tr>
+<tr><td>Main artifact</td><td>Signed-off SRS document</td><td>Product backlog: user stories + acceptance criteria</td></tr>
+<tr><td>Elicitation</td><td>Interviews and workshops at the start</td><td>On-site customer / Product Owner, daily collaboration</td></tr>
+<tr><td>Level of detail</td><td>Complete and detailed early</td><td>Just-in-time: detail added before a story is built</td></tr>
+<tr><td>Prioritisation</td><td>Fixed scope in a contract</td><td>MoSCoW / value ranking every sprint</td></tr>
+<tr><td>Validation</td><td>Formal reviews and inspections</td><td>Sprint reviews, demos, automated acceptance tests</td></tr>
+<tr><td>Change</td><td>Change Control Board</td><td>Backlog re-prioritisation; change is welcome</td></tr>
+<tr><td>Best suited to</td><td>Safety-critical, regulated, fixed-price work</td><td>Dynamic markets with evolving needs</td></tr>
+</table></div>
+<p>Industry reality: most organisations use a hybrid: a light, baselined vision + non-functional spec, plus an agile backlog for features.</p>
+</section>
+
+<section id="exercises">
+<h2 data-short="Worked exercise"><span class="n">19</span>Worked exercise: IUB campus food pre-order app</h2>
+<div class="ex-card">
+  <header><h3>Case study</h3><p>Students and staff pre-order meals from campus cafeterias with a mobile app and pay by bKash or card. They choose a pickup time slot and get a notification when food is ready. Cafeteria staff manage menus, stock and incoming orders. The admin office views daily sales reports. At peak lunch time (12 to 2 pm) about 2,000 users are online.</p></header>
+  <div class="inner"><p class="small">T1 stakeholders on a power-interest grid. T2 three functional and three measurable non-functional requirements. T3 one user story with Given-When-Then. T4 use-case diagram with one &laquo;include&raquo; and one &laquo;extend&raquo;. T5 boundary, control and entity classes and a CRC card for Order. T6 MoSCoW. T7 traceability matrix for three requirements. T8 rewrite "The app should be fast and easy to use."</p></div>
+  <details><summary>T1 and T2: stakeholders and requirements</summary><div class="sol">
+    <div class="tscroll"><table><tr><th></th><th>Low interest</th><th>High interest</th></tr>
+    <tr><td>High power</td><td><b>Keep satisfied</b>: IUB IT department, bKash / card gateway</td><td><b>Manage closely</b>: cafeteria owners, IUB admin (sponsor)</td></tr>
+    <tr><td>Low power</td><td><b>Monitor</b>: food-safety authority (BFSA)</td><td><b>Keep informed</b>: students, faculty and staff, cafeteria staff</td></tr></table></div>
+    <div class="tscroll"><table><tr><th>ID</th><th>Requirement</th></tr>
+    <tr><td>FR-1</td><td>The app shall let a user browse each cafeteria's menu with prices and availability.</td></tr>
+    <tr><td>FR-2</td><td>The app shall let a user place an order, choose a pickup slot and pay via bKash or card.</td></tr>
+    <tr><td>FR-3</td><td>The app shall notify the user when the order status changes to "Ready".</td></tr>
+    <tr><td>NFR-1</td><td>Performance: place-order response &le; 2 s for 95% of requests with 2,000 concurrent users.</td></tr>
+    <tr><td>NFR-2</td><td>Security: card data handled only by a PCI-DSS gateway; the app stores no card numbers.</td></tr>
+    <tr><td>NFR-3</td><td>Availability: &ge; 99.5% uptime from 10 am to 4 pm on working days.</td></tr></table></div>
+  </div></details>
+  <details><summary>T3 and T4: user story and use-case diagram</summary><div class="sol">
+    <p>"As a student, I want to pre-order lunch and pick a time slot, so that I don't wait in the queue."</p>
+    <p><b>AC1</b> Given items are in my cart and a slot is free, When bKash payment succeeds, Then the order is confirmed and I get an order number.<br><b>AC2</b> Given my chosen slot is full, When I confirm, Then the app asks me to pick another slot.</p>
+    <figure class="fig"><svg viewBox="0 0 360 210" role="img" aria-label="Food pre-order use case diagram">
+      <defs><marker id="u2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10" class="s-ink" stroke-width="1.5"/></marker></defs>
+      <rect x="80" y="8" width="200" height="196" rx="8" class="f-sunk"/><text x="180" y="24" font-size="10" font-weight="700" text-anchor="middle">Food Pre-Order App</text>
+      <g font-size="8.5" text-anchor="middle"><ellipse cx="150" cy="46" rx="48" ry="13" class="f-box"/><text x="150" y="49">Browse Menu</text>
+      <ellipse cx="150" cy="88" rx="48" ry="13" class="f-box"/><text x="150" y="91">Place Order</text>
+      <ellipse cx="150" cy="132" rx="50" ry="13" class="f-key"/><text x="150" y="135">Make Payment</text>
+      <ellipse cx="240" cy="160" rx="36" ry="12" class="f-real"/><text x="240" y="163" font-size="8">Apply Voucher</text>
+      <ellipse cx="160" cy="184" rx="48" ry="12" class="f-box"/><text x="160" y="187">Manage Orders</text>
+      <ellipse cx="240" cy="60" rx="36" ry="12" class="f-box"/><text x="240" y="63" font-size="8">Update Menu</text></g>
+      <g class="s-ink" stroke-width="1.3"><circle cx="34" cy="70" r="7" class="f-box"/><path d="M34,77 v20 M22,84 h24 M34,97 l-9,13 M34,97 l9,13"/>
+      <circle cx="326" cy="110" r="7" class="f-box"/><path d="M326,117 v20 M314,124 h24 M326,137 l-9,13 M326,137 l9,13"/></g>
+      <text x="34" y="122" font-size="8.5" text-anchor="middle">Student</text><text x="326" y="162" font-size="8.5" text-anchor="middle">Staff</text>
+      <text x="318" y="22" font-size="8" text-anchor="middle">Payment</text><text x="318" y="32" font-size="8" text-anchor="middle">Gateway</text>
+      <g class="s-line" stroke-width="1.1"><path d="M44,76 L102,48"/><path d="M44,84 L102,88"/><path d="M316,116 L276,64"/><path d="M316,128 L208,184"/><path d="M300,36 L196,126"/></g>
+      <path d="M150,101 V117" class="s-ink" stroke-dasharray="4 3" marker-end="url(#u2)"/><text x="156" y="113" font-size="7" class="t-muted">&laquo;include&raquo;</text>
+      <path d="M226,150 L196,140" class="s-ink" stroke-dasharray="4 3" marker-end="url(#u2)"/><text x="216" y="140" font-size="7" class="t-muted">&laquo;extend&raquo;</text>
+    </svg></figure>
+  </div></details>
+  <details><summary>T5: analysis classes and CRC card for Order</summary><div class="sol">
+    <div class="tscroll"><table><tr><th>Boundary</th><th>Control</th><th>Entity</th></tr>
+    <tr><td>MenuScreen, CheckoutScreen, PaymentGatewayInterface, NotificationService</td><td>OrderController, PaymentController, MenuController</td><td>User, MenuItem, Order, Payment, TimeSlot, Cafeteria</td></tr></table></div>
+    <div class="tscroll"><table><tr><th colspan="2">Class: Order (entity)</th></tr><tr><th>Responsibilities</th><th>Collaborators</th></tr>
+    <tr><td>Know its items and total price</td><td>MenuItem</td></tr><tr><td>Know its pickup time slot</td><td>TimeSlot</td></tr>
+    <tr><td>Track status: Placed &rarr; Paid &rarr; Ready &rarr; Collected</td><td>-</td></tr><tr><td>Request payment</td><td>Payment</td></tr><tr><td>Notify user when ready</td><td>NotificationService, User</td></tr></table></div>
+    <p>Flow: Student &rarr; CheckoutScreen &rarr; OrderController &rarr; Order / Payment &rarr; PaymentGatewayInterface.</p>
+  </div></details>
+  <details><summary>T6 to T8: MoSCoW, traceability and the rewrite</summary><div class="sol">
+    <div class="tscroll"><table><tr><th>Class</th><th>Features</th></tr>
+    <tr><td>Must</td><td>Browse menu, place order, online payment, ready notification, staff order queue</td></tr>
+    <tr><td>Should</td><td>Slot capacity limits, daily sales report, order history</td></tr>
+    <tr><td>Could</td><td>Vouchers / loyalty points, ratings and reviews</td></tr>
+    <tr><td>Won't (now)</td><td>Hall delivery, AI meal recommendations</td></tr></table></div>
+    <div class="tscroll"><table><tr><th>Req.</th><th>Source</th><th>Use case</th><th>Design class</th><th>Test</th></tr>
+    <tr><td>FR-1</td><td>Student survey</td><td>Browse Menu</td><td>MenuScreen, MenuItem</td><td>TC-01</td></tr>
+    <tr><td>FR-2</td><td>Cafeteria workshop</td><td>Place Order</td><td>OrderController, Order</td><td>TC-02, 03</td></tr>
+    <tr><td>NFR-1</td><td>IT department</td><td>Place Order</td><td>Load-balanced API</td><td>TC-P1 load test</td></tr></table></div>
+    <p>&#10007; "The app should be fast and easy to use." Each vague word is replaced by a measurable, testable condition:</p>
+    <p>&#10003; Performance: the menu screen shall load within 2 s on 4G for 95% of requests.<br>&#10003; Usability: a first-time user shall place an order in &le; 5 taps and &lt; 60 s without help (tested with 10 students).</p>
+  </div></details>
+</div>
+</section>
+
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">20</span>Exam questions with model answers</h2>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Short answer: Requirements engineering: elicitation, elaboration, validation and baseline</h3><p>Asked in the Summer 2026 midterm, Part A, question 1.</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p>Requirements engineering is the systematic process of discovering, analysing, documenting, validating and managing the requirements of a system. It bridges what the customer wants and the design and construction of the software.</p>
+    <div class="tscroll"><table><tr><th>Term</th><th>Meaning</th><th>How / example</th></tr>
+    <tr><td>Elicitation</td><td>Draws requirements out of all stakeholders</td><td>Interviews, questionnaires, JAD workshops, observation, prototyping, document analysis. Example: survey 2,000 students and interview cafeteria owners for the food app</td></tr>
+    <tr><td>Elaboration</td><td>Expands and refines the information from inception and elicitation into an analysis model</td><td>Four element types: scenario-based (use cases), class-based (class diagrams, CRC), behavioral (state, sequence), flow-oriented (DFD, ERD)</td></tr>
+    <tr><td>Validation</td><td>Checks we are building the right product: requirements are consistent, complete, unambiguous and testable</td><td>Reviews and inspections with a checklist, prototyping, acceptance-test design ("if you cannot write a test, rewrite the requirement")</td></tr>
+    <tr><td>Baseline</td><td>A set of requirements that has been reviewed and agreed upon and serves as the basis for further development</td><td>Draft &rarr; reviewed &rarr; baseline v1.0. After baselining every change goes through formal change control (CCB) &rarr; v1.1</td></tr></table></div>
+    <p>One line on why it matters: 60 to 70% of faults are specification and design faults, and a requirement defect found in maintenance costs about 100&times; more.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Practice case: Pathao Parcel</h3><p>Pathao wants a parcel-booking feature. Merchants book a pickup, riders collect and deliver, customers track parcels and pay cash on delivery, and Pathao finance settles money with merchants weekly. (a) Write two functional and two measurable non-functional requirements. [4] (b) Draw a use-case diagram with one include and one extend. [3] (c) Rewrite "Tracking should be real-time and reliable" so it is testable. [3]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><b>(a)</b> FR-1: The system shall let a merchant book a pickup with parcel weight, address and COD amount. FR-2: The system shall show the customer the parcel's current status and the rider's location. NFR-1: The tracking page shall update the rider's location at least every 30 s. NFR-2: The booking API shall respond within 2 s for 95% of requests with 5,000 concurrent merchants.</p>
+    <p><b>(b)</b> Actors: Merchant, Rider, Customer, Finance. Use cases: Book Pickup, Collect Parcel, Deliver Parcel, Track Parcel, Settle Payment. Deliver Parcel &laquo;include&raquo; Collect COD (always for COD parcels). Report Failed Delivery &laquo;extend&raquo; Deliver Parcel (only when the customer is absent). Draw the system boundary box with actors outside.</p>
+    <p><b>(c)</b> "When a rider's location changes, the tracking page shall show the new position within 30 s for 95% of updates" and "The tracking service shall be available 99.5% of the time between 8 am and 10 pm." Vague words (real-time, reliable) are replaced by numbers that a test can check.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: validation vs verification</h3><p>A hospital system passes every test in its SRS, but doctors refuse to use it because it needs 9 screens to order a blood test. Was this a validation or a verification failure? Explain and say how it could have been caught.</p></header>
+  <details><summary>Model answer</summary><div class="sol"><p>A <b>validation</b> failure. Verification asks "are we building the product right?" (it conforms to the spec), and it passed. Validation asks "are we building the right product?" (it meets real needs), and it failed. It could have been caught with prototyping (doctors try the order flow early), observation of doctors at work, and an SRS review with a usability requirement such as "a doctor shall order a blood test in at most 3 screens and 30 s".</p></div></details>
+</div>
+</section>
+
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">21</span>Quiz</h2>
+<div class="quiz" id="q3">
+  <div class="mcq"><p class="q">"Login shall complete within 2 s for 95% of requests" is a:</p><div class="opts"><button>Functional requirement</button><button data-ok>Non-functional requirement</button><button>Domain requirement</button><button>User story</button></div><p class="why">It states how well (performance), with a number.</p></div>
+  <div class="mcq"><p class="q">Which RE task resolves conflicts and prioritises to reach win-win?</p><div class="opts"><button>Elicitation</button><button>Elaboration</button><button data-ok>Negotiation</button><button>Validation</button></div><p class="why">Negotiation: identify stakeholders, find win conditions, negotiate.</p></div>
+  <div class="mcq"><p class="q">Which RE task runs continuously across all the others?</p><div class="opts"><button>Inception</button><button>Specification</button><button data-ok>Requirements management</button><button>Negotiation</button></div><p class="why">Task 7 controls changes, versions and traceability across all tasks.</p></div>
+  <div class="mcq"><p class="q">On a power-interest grid, a regulator with high power but low interest should be:</p><div class="opts"><button>Managed closely</button><button data-ok>Kept satisfied</button><button>Kept informed</button><button>Monitored</button></div><p class="why">High power, low interest = keep satisfied.</p></div>
+  <div class="mcq"><p class="q">The best elicitation technique for tacit knowledge users cannot explain is:</p><div class="opts"><button>Questionnaires</button><button data-ok>Observation</button><button>Document analysis</button><button>Brainstorming</button></div><p class="why">Ethnography: watch users at work.</p></div>
+  <div class="mcq"><p class="q">In INVEST, the E stands for:</p><div class="opts"><button>Efficient</button><button data-ok>Estimable</button><button>Essential</button><button>Executable</button></div><p class="why">Independent, Negotiable, Valuable, Estimable, Small, Testable.</p></div>
+  <div class="mcq"><p class="q">A sequence diagram belongs to which analysis model element?</p><div class="opts"><button>Scenario-based</button><button>Class-based</button><button data-ok>Behavioral</button><button>Flow-oriented</button></div><p class="why">Behavioral: state and sequence diagrams.</p></div>
+  <div class="mcq"><p class="q">"Print Receipt" is optional behaviour added to "Withdraw Cash". The relationship is:</p><div class="opts"><button>&laquo;include&raquo;</button><button data-ok>&laquo;extend&raquo;</button><button>generalization</button><button>association</button></div><p class="why">Optional, conditional behaviour = extend.</p></div>
+  <div class="mcq"><p class="q">WithdrawalController is which type of analysis class?</p><div class="opts"><button>Boundary</button><button data-ok>Control</button><button>Entity</button><button>Actor</button></div><p class="why">It coordinates one use case and delegates.</p></div>
+  <div class="mcq"><p class="q">"Owner" in the Car data object (pointing to a Customer) is which attribute type?</p><div class="opts"><button>Identifier</button><button>Descriptive</button><button data-ok>Referential</button><button>Derived</button></div><p class="why">Referential attributes link to another object.</p></div>
+  <div class="mcq"><p class="q">Validation asks:</p><div class="opts"><button>Are we building the product right?</button><button data-ok>Are we building the right product?</button><button>Is the code fast?</button><button>Is the SRS signed?</button></div><p class="why">Validation = right product. Verification = product right.</p></div>
+  <div class="mcq"><p class="q">After a requirements baseline is set, changes must go through:</p><div class="opts"><button>The developer's choice</button><button data-ok>Formal change control</button><button>A new SRS from scratch</button><button>Nothing; the baseline is frozen forever</button></div><p class="why">Change request &rarr; impact analysis &rarr; CCB &rarr; update baseline v1.0 &rarr; v1.1.</p></div>
+</div>
+</section>
+
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">22</span>Exam checklist</h2>
+<p><span class="check-progress" data-for="ck3"></span></p>
+<ul class="checklist" id="ck3" data-key="main">
+  <li>Write the IEEE definition of a requirement; classify functional, non-functional and domain.</li>
+  <li>Define RE and give the three statistics (60 to 70%, 1.9 vs 0.3, about 100&times;).</li>
+  <li>List the seven RE tasks in order with one line each.</li>
+  <li>Explain inception: context-free questions and outputs.</li>
+  <li>Draw a power-interest grid and place stakeholders.</li>
+  <li>Name 8 elicitation techniques with "best for".</li>
+  <li>Write a user story, Given-When-Then criteria, and explain INVEST.</li>
+  <li>Name the four analysis model elements and their diagrams.</li>
+  <li>Draw a use-case diagram with include and extend and write a narrative with alternate flows.</li>
+  <li>Explain analysis rules of thumb and the four steps of domain analysis.</li>
+  <li>Explain data objects, attribute types, cardinality and modality; read an ERD.</li>
+  <li>Classify boundary, control and entity classes; write a CRC card.</li>
+  <li>Give the SRS outline, EARS pattern, and the 8 qualities of a good SRS; rewrite vague requirements.</li>
+  <li>Separate validation from verification; list the validation checklist and techniques.</li>
+  <li>Draw the change-control flow; define a baseline and who benefits.</li>
+  <li>Compare RE in plan-driven and agile projects.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE,$=S.$,e=S.esc;
+  S.live($("#story"),function(){
+    $("#us-out").innerHTML='<span class="lbl">Your story</span><p>As a <b>'+e($("#us-r").value)+'</b>, I want <b>'+e($("#us-g").value)+'</b>, so that <b>'+e($("#us-b").value)+'</b>.</p><p class="small">Given '+e($("#us-gi").value)+', When '+e($("#us-w").value)+', Then '+e($("#us-t").value)+'.</p>';
+  });
+  var vague=["fast","quick","quickly","easy","easily","user-friendly","user friendly","simple","efficient","flexible","robust","reliable","real-time","real time","modern","intuitive","good","nice","adequate","as soon as possible","asap","etc","some","several","many","appropriate","normally","usually","high","low","secure","scalable","seamless"];
+  function lint(){
+    var t=$("#ln-in").value, l=t.toLowerCase();
+    var found=vague.filter(function(w){return new RegExp("\\b"+w.replace(/[-\s]/g,"[-\\s]")+"\\b").test(l);});
+    var num=/\d/.test(t), unit=/\d+(\.\d+)?\s*(s|ms|sec|second|seconds|min|minute|minutes|%|taps?|clicks?|users?|requests?|mb|gb|hours?|days?)\b/i.test(t);
+    var shall=/\bshall\b/i.test(t), should=/\bshould\b/i.test(t);
+    $("#ln-out").innerHTML='<div><span>Vague words</span><b>'+(found.length?e(found.join(", ")):"none")+'</b></div><div><span>Number with a unit</span><b>'+(unit?"yes":num?"number only":"no")+'</b></div><div><span>Uses "shall"</span><b>'+(shall?"yes":should?"no, uses should":"no")+'</b></div>';
+    var ok=!found.length&&unit&&shall, v=$("#ln-v"); v.className="verdict "+(ok?"ok":"no");
+    v.textContent=ok?"Looks testable: a tester can write a pass or fail check for it.":"Not testable yet. Replace each vague word with a measurable condition, add a number and unit, and use \"shall\". Example: \"The menu screen shall load within 2 s on 4G for 95% of requests.\"";
+  }
+  $("#ln-in").addEventListener("input",lint); lint();
+})();
+</script>
+</body>
+</html>

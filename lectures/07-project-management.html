@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Software Project Management</title>
+<meta name="description" content="CSE451 Lecture 7: estimation (LOC, FP, software equation, COCOMO, story points, Monte Carlo, make-buy), scheduling (WBS, CPM, PERT, Gantt), tracking (EVA) and the CampusEats case.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="07-project-management">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 07 &nbsp;/&nbsp; Final exam</p>
+  <h1>Software project management</h1>
+  <p class="summary">Estimation, scheduling, tracking and control, with a complete case study. You will estimate size, effort, cost and duration with two or more methods, build a schedule and find its critical path, measure progress with earned value, and manage risk with numbers.</p>
+  <p class="meta"><span><b>Source</b> Lecture 7, 60 slides</span><span><b>Reading</b> about 90 min</span><span><b>Exercises</b> 12 + CampusEats case</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<section id="foundations">
+<h2 data-short="Foundations"><span class="n">01</span>What is software project management?</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Software project management is the discipline of planning, estimating, scheduling, monitoring and controlling software work so the product is delivered on time, within budget and at the agreed quality.</p><p>Goal of planning: a pragmatic strategy for controlling, tracking and monitoring a complex technical project.</p></div>
+<h3>The 4 P's of management</h3>
+<div class="cards">
+  <div class="c"><h4>People</h4><p>Stakeholders, team leaders and the team: the most important success factor.</p></div>
+  <div class="c"><h4>Product</h4><p>Scope, objectives, functions and constraints must be defined before estimating.</p></div>
+  <div class="c"><h4>Process</h4><p>The framework chosen to build it: waterfall, incremental, Scrum, XP, hybrid.</p></div>
+  <div class="c"><h4>Project</h4><p>Plan, estimate, schedule, track and control the work and its risks.</p></div>
+</div>
+<div class="cards two">
+<figure class="fig" style="margin:0"><svg viewBox="0 0 220 170" role="img" aria-label="Iron triangle: scope, time, cost with quality in the centre">
+  <polygon points="110,14 206,156 14,156" class="f-sunk"/>
+  <g font-size="10" font-weight="700" text-anchor="middle"><text x="110" y="10">Scope</text><text x="196" y="168">Cost</text><text x="24" y="168">Time</text><text x="110" y="112" class="t-acc">Quality</text></g>
+</svg><figcaption>Iron triangle: change one side and the others move.</figcaption></figure>
+<div class="c"><h4>Why are software projects late?</h4><p><b>Unrealistic expectations</b>: deadline set by someone outside the development group; changing requirements not reflected in the schedule. <b>Unforeseen difficulties</b>: technical, and human (turnover, illness, conflict). <b>Estimation errors</b>: honest underestimates; risks not considered at the start. <b>Management failures</b>: miscommunication; failure to recognise slippage and act.</p>
+<span class="ex">"How does a project get to be a year late? One day at a time." (Fred Brooks). Small daily slips compound.</span></div>
+</div>
+<h3>Project planning workflow</h3>
+<div class="flow"><span>1 Establish scope</span><i>&rarr;</i><span>2 Determine feasibility</span><i>&rarr;</i><span>3 Analyze risks</span><i>&rarr;</i><span>4 Define resources</span><i>&rarr;</i><span>5 Estimate cost and effort</span><i>&rarr;</i><span>6 Develop schedule</span><i>&rarr;</i><span class="hl">7 Track and control</span><i>&#8635; variance &rarr; re-plan</i></div>
+<p class="small">Scope: functions, performance, constraints, interfaces, bounded and unambiguous. Feasibility: technical, financial, time and resource. Estimation: decompose and use &ge; 2 techniques. Schedule: task set &rarr; task network &rarr; timeline (Gantt) with milestones. Tracking: status meetings, milestone checks, EVA. Planning is iterative.</p>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>S-F-R-R-E-S-T</strong>: "Some Friends Really Rarely Eat Spicy Tehari".</p></div>
+</section>
+
+<section id="principles">
+<h2 data-short="Estimation principles"><span class="n">02</span>Estimation principles and the cone of uncertainty</h2>
+<div class="cards">
+  <div class="c"><h4><span class="idx">1</span> Understand the scope</h4><p>You cannot estimate what you have not defined.</p></div>
+  <div class="c"><h4><span class="idx">2</span> Decompose</h4><p>Estimate small pieces; errors partly cancel out.</p></div>
+  <div class="c"><h4><span class="idx">3</span> Use historical metrics</h4><p>Past productivity (LOC/pm, FP/pm, velocity) anchors estimates.</p></div>
+  <div class="c"><h4><span class="idx">4</span> Use &ge; 2 techniques</h4><p>Compare results; investigate and reconcile large gaps.</p></div>
+  <div class="c"><h4><span class="idx">5</span> Accept uncertainty</h4><p>Give a range with confidence, not a single number.</p></div>
+</div>
+<figure class="fig">
+<svg viewBox="0 0 360 200" role="img" aria-label="Cone of uncertainty narrowing from 4x and 0.25x at concept to 1x when software is complete">
+  <line x1="40" y1="170" x2="350" y2="170" class="s-line"/>
+  <path d="M50,30 L110,80 L170,110 L230,122 L290,128 L340,130 L340,130 L290,132 L230,138 L170,148 L110,158 L50,165 Z" class="f-acc-t"/>
+  <line x1="50" y1="130" x2="340" y2="130" class="s-ink" stroke-dasharray="4 3"/>
+  <g font-size="8" class="t-muted" text-anchor="middle"><text x="50" y="183">Concept</text><text x="110" y="183">Approved</text><text x="170" y="183">Reqs done</text><text x="230" y="183">UI design</text><text x="290" y="183">Detailed design</text><text x="340" y="195">Complete</text></g>
+  <g font-size="9" font-weight="700"><text x="54" y="26">4&times;</text><text x="54" y="160" class="t-muted">0.25&times;</text><text x="312" y="124">1&times;</text></g>
+  <text x="200" y="60" font-size="9" class="t-muted">actual / estimate range</text>
+</svg>
+<figcaption>At concept stage an estimate may be 4&times; too high or too low (Boehm 1981; McConnell 2006). Re-estimate at every milestone.</figcaption>
+</figure>
+<h3>Resources to define before estimating</h3>
+<div class="cards">
+  <div class="c"><h4>People</h4><p>Skills required (Android, DevOps), organisational position, location (on-site / remote), number of people (derived after effort is estimated).</p></div>
+  <div class="c"><h4>Reusable software</h4><p><b>Off-the-shelf</b>: reuse as is (payment SDK). <b>Full-experience</b>: similar to past work, low modification risk. <b>Partial-experience</b>: related past work, needs substantial change, higher risk. <b>New components</b>: built from scratch.</p></div>
+  <div class="c"><h4>Environment</h4><p>Workstations, cloud (AWS/Azure/GCP), CI/CD, test devices, IDEs, licences. Book early: lead times cause delays.</p></div>
+</div>
+<p class="small">Each resource is described by: description, availability, time needed, duration of use.</p>
+<h3>The landscape of estimation techniques</h3>
+<div class="tscroll"><table><tr><th>Family</th><th>Techniques</th><th>Idea</th></tr>
+<tr><td>Decomposition</td><td>LOC-based (three-point), FP-based, process / task-based</td><td>Size &rarr; effort via historical productivity</td></tr>
+<tr><td>Empirical models</td><td>Software equation (Putnam/SLIM), COCOMO 81, COCOMO II</td><td>Equations calibrated on many past projects</td></tr>
+<tr><td>Expert and agile</td><td>Wideband Delphi, Planning Poker, T-shirt sizing, analogy</td><td>Team judgement, relative sizing, velocity</td></tr>
+<tr><td>Data-driven</td><td>Monte Carlo forecasting, machine-learning models, LLM copilots</td><td>Probabilistic and learned from project data</td></tr></table></div>
+<div class="box key"><span class="lbl">Golden rule</span><p>Never trust one technique. Combine a top-down model (COCOMO) with a bottom-up one (task or FP decomposition) and reconcile.</p></div>
+</section>
+
+<section id="loc">
+<h2 data-short="LOC estimation"><span class="n">03</span>Decomposition: LOC-based estimation</h2>
+<div class="box exact"><span class="lbl">Exam text: formulas</span><p class="mono">S = (S<sub>opt</sub> + 4&middot;S<sub>m</sub> + S<sub>pess</sub>) / 6<br>Effort (pm) = &Sigma; S &divide; (LOC / pm)<br>Cost = Effort &times; rate</p></div>
+<p>Break the scope into functions, estimate optimistic, most-likely and pessimistic LOC for each, and combine with the beta (PERT) weighting: the most likely counts 4&times;. Use for early bids and legacy re-engineering. Limits: language dependent; penalises concise, well-designed code.</p>
+<div class="calc" id="loc-c">
+  <div class="head"><strong>Calculator: three-point LOC, effort and cost</strong><span class="tag">Exercise 1</span></div>
+  <div class="body">
+    <div class="tscroll"><table id="lc-t"><tr><th>Module</th><th>Opt</th><th>Most likely</th><th>Pess</th><th class="num">E(LOC)</th></tr>
+      <tr><td>User interface</td><td><input type="number" value="1800"></td><td><input type="number" value="2400"></td><td><input type="number" value="2650"></td><td class="num" data-e></td></tr>
+      <tr><td>Database management</td><td><input type="number" value="4600"></td><td><input type="number" value="6900"></td><td><input type="number" value="8600"></td><td class="num" data-e></td></tr>
+      <tr><td>Search and catalogue</td><td><input type="number" value="2000"></td><td><input type="number" value="3000"></td><td><input type="number" value="4600"></td><td class="num" data-e></td></tr>
+      <tr><td>Reports / analytics</td><td><input type="number" value="1200"></td><td><input type="number" value="2000"></td><td><input type="number" value="2500"></td><td class="num" data-e></td></tr></table></div>
+    <div class="fields"><label class="field">Productivity (LOC per pm)<input type="number" id="lc-p" value="620"></label><label class="field">Rate per pm ($)<input type="number" id="lc-r" value="8000"></label></div>
+    <div class="out" id="lc-out"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 1 solution: library management system</h3></header><div class="inner">
+<div class="tscroll"><table><tr><th>Module</th><th>Computation</th><th class="num">E(LOC)</th></tr>
+<tr><td>User interface</td><td class="mono">(1,800+4&times;2,400+2,650)/6</td><td class="num">2,342</td></tr>
+<tr><td>Database management</td><td class="mono">(4,600+4&times;6,900+8,600)/6</td><td class="num">6,800</td></tr>
+<tr><td>Search and catalogue</td><td class="mono">(2,000+4&times;3,000+4,600)/6</td><td class="num">3,100</td></tr>
+<tr><td>Reports / analytics</td><td class="mono">(1,200+4&times;2,000+2,500)/6</td><td class="num">1,950</td></tr>
+<tr class="total"><td colspan="2">Total</td><td class="num">14,192</td></tr></table></div>
+<p>Effort = 14,192 &divide; 620 = <b>22.9 person-months</b>. Cost = 22.9 &times; $8,000 &asymp; <b>$183,100</b>. Cost per LOC &asymp; <b>$12.90</b>.</p></div></div>
+</section>
+
+<section id="fp">
+<h2 data-short="FP estimation"><span class="n">04</span>Function-point based estimation</h2>
+<p>FP (Albrecht, 1979) measures delivered functionality from the user's view, independent of programming language. The counting rules and weights are the same as in <a href="04-design-and-metrics.html#fp">Lecture 4</a>.</p>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">UFP = &Sigma; count &times; weight<br>FP = UFP &times; [0.65 + 0.01 &times; &Sigma;Fi]<br>Effort = FP &divide; (FP / pm); Cost = Effort &times; rate</p></div>
+<p class="small">The 14 value-adjustment factors on this slide: data communications, distributed processing, performance, heavily used configuration, online data entry, end-user efficiency, online update, complex processing, reusability, installation ease, operational ease, multiple sites, facilitate change, backup/recovery. Industry: outsourcing contracts priced per FP, ISBSG benchmarking, public-sector tenders; IFPUG and COSMIC (ISO 19761); CAST, ScopeMaster.</p>
+<div class="calc" id="fp7">
+  <div class="head"><strong>Calculator: FP, effort and cost (average weights)</strong><span class="tag">Exercise 2</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">EI count (&times;4)<input type="number" data-fw="4" value="24"></label>
+      <label class="field">EO count (&times;5)<input type="number" data-fw="5" value="16"></label>
+      <label class="field">EQ count (&times;4)<input type="number" data-fw="4" value="22"></label>
+      <label class="field">ILF count (&times;10)<input type="number" data-fw="10" value="4"></label>
+      <label class="field">EIF count (&times;7)<input type="number" data-fw="7" value="2"></label>
+      <label class="field">&Sigma;Fi<input type="number" id="f7-f" value="46"></label>
+      <label class="field">FP per pm<input type="number" id="f7-p" value="6.5" step="0.1"></label>
+      <label class="field">Rate per pm ($)<input type="number" id="f7-r" value="8000"></label>
+    </div>
+    <div class="out" id="f7-out"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 2 solution: online banking portal</h3></header><div class="inner">
+<p class="mono small">EI 24 &times; 4 = 96; EO 16 &times; 5 = 80; EQ 22 &times; 4 = 88; ILF 4 &times; 10 = 40; EIF 2 &times; 7 = 14 &rarr; UFP = 318<br>VAF = 0.65 + 0.01 &times; 46 = 1.11; FP = 318 &times; 1.11 = 353.0<br>Effort = 353.0 &divide; 6.5 = 54.3 pm; Cost = 54.3 &times; $8,000 &asymp; $434,400</p></div></div>
+</section>
+
+<section id="equation">
+<h2 data-short="Software equation"><span class="n">05</span>The software equation (Putnam and Myers)</h2>
+<p>A dynamic multivariable model derived from 4,000+ projects. Effort depends on size, a skills factor, productivity and, strongly, the chosen duration.</p>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">E = [ LOC &times; B<sup>0.333</sup> / P ]<sup>3</sup> &times; (1 / t<sup>4</sup>)</p><p>Simplified form (for t<sub>min</sub> &gt; 6 months):</p><p class="mono">t<sub>min</sub> = 8.14 &times; (LOC / P)<sup>0.43</sup> [months]<br>E = 180 &times; B &times; t<sup>3</sup> [person-months, t in years]</p></div>
+<div class="tscroll"><table><tr><th>Symbol</th><th>Meaning</th></tr><tr><td>E</td><td>Effort in person-months or person-years</td></tr><tr><td>t</td><td>Project duration (months or years)</td></tr><tr><td>B</td><td>Special skills factor: 0.16 (5 to 15 KLOC) up to 0.39 (&gt; 70 KLOC)</td></tr><tr><td>P</td><td>Productivity parameter (process maturity, tools, skills)</td></tr></table></div>
+<div class="tscroll"><table><tr><th>Application type</th><th class="num">Typical P</th></tr><tr><td>Real-time embedded</td><td class="num">2,000</td></tr><tr><td>Telecom and systems software</td><td class="num">10,000</td></tr><tr><td>Scientific software</td><td class="num">12,000</td></tr><tr><td>Business systems</td><td class="num">28,000</td></tr></table></div>
+<div class="box key"><span class="lbl">Key insight</span><p>E &prop; 1/t<sup>4</sup>. Shortening the schedule a little increases effort a lot; relaxing it saves effort. So E<sub>2</sub> = E<sub>1</sub> &times; (t<sub>1</sub> / t<sub>2</sub>)<sup>4</sup>.</p></div>
+<div class="calc" id="seq">
+  <div class="head"><strong>Calculator: minimum time, effort and relaxed schedule</strong><span class="tag">Exercise 3</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Size (LOC)<input type="number" id="sq-l" value="40000"></label><label class="field">P<input type="number" id="sq-p" value="12000"></label><label class="field">B<input type="number" id="sq-b" value="0.28" step="0.01"></label><label class="field">Allowed duration (months)<input type="number" id="sq-t" value="16"></label></div>
+    <div class="out" id="sq-out"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 3 solution: scientific data-analysis package</h3></header><div class="inner">
+<p class="mono small">LOC / P = 40,000 / 12,000 = 3.33<br>t<sub>min</sub> = 8.14 &times; 3.33<sup>0.43</sup> = 8.14 &times; 1.68 = 13.7 months<br>t = 13.7 / 12 = 1.14 years<br>E = 180 &times; 0.28 &times; 1.14<sup>3</sup> = 50.4 &times; 1.48 = 74.3 pm<br>E<sub>16</sub> = 74.3 &times; (13.7 / 16)<sup>4</sup> = 74.3 &times; 0.53 = 39.5 pm</p>
+<p>A 17% longer schedule cuts effort by about 47%.</p></div></div>
+</section>
+
+<section id="cocomo">
+<h2 data-short="COCOMO 81 and II"><span class="n">06</span>COCOMO 81 and COCOMO II</h2>
+<p>Barry Boehm (1981) fitted equations to 63 projects. Input: size in KLOC and project type. Output: effort, duration and average staffing.</p>
+<div class="box exact"><span class="lbl">Exam text: basic COCOMO 81</span><p class="mono">Effort PM = a &times; (KLOC)<sup>b</sup> [person-months]<br>Duration DM = 2.5 &times; (PM)<sup>c</sup> [months]<br>Staff ST = PM / DM [people]</p></div>
+<div class="tscroll"><table><tr><th>Project type</th><th class="num">a</th><th class="num">b</th><th class="num">c</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>Organic</td><td class="num">2.4</td><td class="num">1.05</td><td class="num">0.38</td><td>Small, simple; small experienced team; familiar environment</td><td>Publishing university results on a web page</td></tr>
+<tr><td>Semi-detached</td><td class="num">3.0</td><td class="num">1.12</td><td class="num">0.35</td><td>Medium size and complexity; mixed-experience team; mix of HW/SW</td><td>Biometric log-in times saved to a campus database</td></tr>
+<tr><td>Embedded</td><td class="num">3.6</td><td class="num">1.20</td><td class="num">0.32</td><td>Tightly coupled to hardware, strict constraints and regulations</td><td>Biometric device firmware, elevator controller</td></tr></table></div>
+<div class="box mem"><span class="lbl">Memory aid for a</span><p><strong>2.4, 3.0, 3.6</strong>: each step adds 0.6. For b: <strong>1.05, 1.12, 1.20</strong>. For c it goes down: <strong>0.38, 0.35, 0.32</strong>.</p></div>
+<div class="calc" id="cc81">
+  <div class="head"><strong>Calculator: basic COCOMO 81, all three types</strong><span class="tag">Exercise 4</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Size (KLOC)<input type="number" id="c8-k" value="32" step="0.1"></label><label class="field">Rate per pm (optional)<input type="number" id="c8-r" value="0"></label></div>
+    <div class="tscroll"><table id="c8-t"></table></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 4 solution: hospital appointment system, 32 KLOC, semi-detached</h3></header><div class="inner">
+<p class="mono small">PM = 3.0 &times; 32<sup>1.12</sup> = 3.0 &times; 48.50 = 145.5 pm<br>DM = 2.5 &times; 145.5<sup>0.35</sup> = 14.3 months<br>ST = 145.5 / 14.3 = 10.2 &asymp; 10 people<br>Organic: 91.3 pm, 13.9 months, 6.6 people</p>
+<p>Semi-detached needs 59% more effort than organic for the same size: complexity and team experience matter as much as size.</p></div></div>
+<h3>COCOMO II: the modern successor</h3>
+<p>Boehm et al. (2000) recalibrated COCOMO for reuse, COTS, iterative development, and size in KSLOC, FP or object points.</p>
+<div class="box exact"><span class="lbl">Exam text: COCOMO II post-architecture</span><p class="mono">PM = A &times; Size<sup>E</sup> &times; &Pi; EM<sub>i</sub>, A = 2.94<br>E = B + 0.01 &times; &Sigma; SF<sub>j</sub>, B = 0.91<br>TDEV = C &times; PM<sup>F</sup>, C = 3.67<br>F = D + 0.2 &times; (E &minus; B), D = 0.28</p></div>
+<p><b>Five scale factors</b> (economies or diseconomies of scale): PREC precedentedness, FLEX development flexibility, RESL architecture / risk resolution, TEAM cohesion, PMAT process maturity (CMMI level). Rated Very Low to Extra High.</p>
+<p><b>Three sub-models</b>: application composition (prototyping, GUI builders, object points); early design (architecture not fixed, 7 effort multipliers); post-architecture (detailed design known, 17 effort multipliers).</p>
+<div class="calc" id="cc2">
+  <div class="head"><strong>Calculator: COCOMO II post-architecture</strong><span class="tag">Exercise 5</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Size (KSLOC)<input type="number" id="c2-s" value="20"></label><label class="field">&Sigma; scale factors<input type="number" id="c2-sf" value="18" step="0.1"></label>
+    <label class="field">RELY<select id="c2-rely"><option value="0.92">Low 0.92</option><option value="1">Nominal 1.00</option><option value="1.10" selected>High 1.10</option></select></label>
+    <label class="field">CPLX<select id="c2-cplx"><option value="0.87">Low 0.87</option><option value="1">Nominal 1.00</option><option value="1.17" selected>High 1.17</option></select></label>
+    <label class="field">PCAP<select id="c2-pcap"><option value="1.15">Low 1.15</option><option value="1">Nominal 1.00</option><option value="0.88" selected>High 0.88</option></select></label>
+    <label class="field">TOOL<select id="c2-tool"><option value="1.09">Low 1.09</option><option value="1">Nominal 1.00</option><option value="0.90" selected>High 0.90</option></select></label></div>
+    <div class="out" id="c2-out"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 5 solution: fleet-tracking platform</h3></header><div class="inner">
+<p class="mono small">E = 0.91 + 0.01 &times; 18.0 = 1.09<br>&Pi; EM = 1.10 &times; 1.17 &times; 0.88 &times; 0.90 = 1.019<br>PM = 2.94 &times; 20<sup>1.09</sup> &times; 1.019 = 2.94 &times; 26.19 &times; 1.019 = 78.5 pm<br>F = 0.28 + 0.2 &times; (1.09 &minus; 0.91) = 0.316<br>TDEV = 3.67 &times; 78.5<sup>0.316</sup> = 14.6 months; Staff = 78.5 / 14.6 = 5.4 people</p>
+<p>A capable team (PCAP, TOOL) offsets high reliability and complexity.</p></div></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>In COCOMO 81 the size is in <b>KLOC</b> (thousands): 32,000 LOC means 32, not 32,000. A multiplier below 1 (PCAP High 0.88) <em>reduces</em> effort: a strong team makes the job cheaper.</p></div>
+</section>
+
+<section id="agile-est">
+<h2 data-short="Story points and Monte Carlo"><span class="n">07</span>Agile estimation, Monte Carlo and AI</h2>
+<ul>
+<li><b>Story point (SP)</b>: a relative measure of size combining effort, complexity and uncertainty. Not hours.</li>
+<li><b>Scale</b>: modified Fibonacci 1, 2, 3, 5, 8, 13, 21, ? keeps big items coarse, reflecting uncertainty.</li>
+<li><b>T-shirt sizing</b>: XS to XL for epics during roadmap planning.</li>
+<li><b>Velocity</b>: SP completed per sprint, averaged over recent sprints.</li>
+</ul>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">Sprints needed = Backlog SP &divide; Velocity (round up)<br>Release date = start + sprints &times; sprint length</p></div>
+<p><b>Planning Poker</b>: (1) the PO reads the story, the team asks questions; (2) each member picks a card privately; (3) all reveal at once (avoids anchoring); (4) highest and lowest explain; (5) re-vote until consensus and record the SP.</p>
+<h3>Probabilistic forecasting with Monte Carlo simulation</h3>
+<p>Replace one "best guess" with thousands of simulated futures drawn from real historical data. Steps: sample a past sprint velocity at random, subtract it from the backlog, repeat until done; record sprints needed; run 10,000 times. Output: a probability distribution. Commit to a confidence level (for example 85%).</p>
+<div class="calc" id="mc">
+  <div class="head"><strong>Live simulation: Monte Carlo release forecast</strong><span class="tag">Slide 21</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Backlog (SP)<input type="number" id="mc-b" value="300"></label><label class="field">Runs<input type="number" id="mc-n" value="10000" min="100" max="50000"></label></div>
+    <label class="field">Past sprint velocities<input type="text" id="mc-v" value="22, 28, 31, 25, 34, 27, 30, 19, 33, 26"></label>
+    <div style="margin-top:.7rem"><button class="btn primary" type="button" id="mc-go">Run simulation</button></div>
+    <div class="bars" id="mc-bars" style="height:150px"></div><div class="bar-labels" id="mc-lbl"></div>
+    <div class="out" id="mc-out"></div>
+  </div>
+</div>
+<p class="small">Slide result: backlog 300 SP, mean velocity 27.5: 11 sprints at P50, 12 sprints at P85 and P95. Your run will be close but not identical, because it is random.</p>
+<h3>AI-assisted estimation and planning</h3>
+<div class="flow"><span>Historical data (Jira issues, commits, actuals)</span><i>&rarr;</i><span>Feature extraction</span><i>&rarr;</i><span>Model (regression, boosting, deep learning, LLM)</span><i>&rarr;</i><span>Estimate + confidence interval</span><i>&rarr;</i><span class="hl">Human review in Planning Poker</span><i>&#8635; actuals retrain</i></div>
+<div class="cards two">
+  <div class="c"><h4>Techniques and tools</h4><p>Analogy / case-based reasoning; deep learning predicting story points from issue text (Deep-SE, IEEE TSE 2019); LLMs drafting WBS and first-cut estimates; risk and delay prediction from sprint telemetry. Atlassian Rovo, Microsoft Copilot, ClickUp Brain, LinearB, DX.</p></div>
+  <div class="c"><h4>Cautions</h4><p>Garbage in, garbage out. Models inherit past bias and optimism. Explain the estimate; never accept a black box. Protect confidential data; keep human accountability.</p></div>
+</div>
+<div class="ex-card"><header><h3>Exercise 6: release forecast for a food-delivery app</h3><p>Backlog 230 SP; 2-week sprints; last 5 velocities 28, 32, 30, 34, 26. (1) Average velocity and sprints needed? (2) Optimistic and pessimistic range? (3) Management demands release in 14 weeks: what scope fits, and what should the PO do?</p></header>
+<details><summary>Full solution</summary><div class="sol">
+<div class="tscroll"><table><tr><th>Scenario</th><th class="num">Velocity</th><th class="num">Sprints = 230 &divide; v</th><th class="num">Weeks</th></tr>
+<tr><td>Optimistic</td><td class="num">34</td><td class="num">6.76 &rarr; 7</td><td class="num">14</td></tr><tr><td>Most likely</td><td class="num">30</td><td class="num">7.67 &rarr; 8</td><td class="num">16</td></tr><tr><td>Pessimistic</td><td class="num">26</td><td class="num">8.85 &rarr; 9</td><td class="num">18</td></tr></table></div>
+<p>Always round sprints up: partial sprints still take the full timebox. 14 weeks = 7 sprints &times; 30 SP = 210 SP. Gap = 230 &minus; 210 = 20 SP. The PO applies MoSCoW: move 20 SP of "Could have" stories to the next release, or accept the 16-week date. Do not add people mid-release (Brooks' law). Forecast: 14 to 18 weeks, most likely 16.</p></div></details></div>
+</section>
+
+<section id="makebuy">
+<h2 data-short="Make-buy"><span class="n">08</span>The make-buy decision</h2>
+<ul>
+<li><b>Options</b>: build from scratch, reuse / adapt existing components, buy off-the-shelf, or contract (outsource).</li>
+<li><b>Decision tree</b>: each option branches into outcomes with probabilities and estimated costs.</li>
+<li><b>Other factors</b>: delivery date, support and maintenance, strategic value (core IP?), vendor lock-in, security and licensing. Modern form: build vs buy vs subscribe (SaaS, cloud APIs, open source).</li>
+</ul>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">Expected cost = &Sigma; (path probability<sub>i</sub> &times; path cost<sub>i</sub>)</p><p>Choose the lowest expected cost, then sanity-check the other factors.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 260" role="img" aria-label="Decision tree for System X: build, reuse, buy, contract with outcomes">
+  <rect x="4" y="116" width="54" height="26" rx="4" class="f-ink"/><text x="31" y="133" font-size="9" text-anchor="middle" class="t-inv" font-weight="700">System X</text>
+  <g class="s-line" stroke-width="1.2"><path d="M58,129 L100,34"/><path d="M58,129 L100,98"/><path d="M58,129 L100,170"/><path d="M58,129 L100,226"/>
+  <path d="M150,34 L196,18"/><path d="M150,34 L196,48"/><path d="M150,98 L196,80"/><path d="M150,98 L196,112"/><path d="M262,112 L290,100"/><path d="M262,112 L290,126"/><path d="M150,170 L196,156"/><path d="M150,170 L196,184"/><path d="M150,226 L196,212"/><path d="M150,226 L196,242"/></g>
+  <g font-size="8.5" font-weight="700"><text x="102" y="30">Build</text><text x="102" y="94">Reuse</text><text x="102" y="166">Buy</text><text x="102" y="222">Contract</text></g>
+  <g font-size="8" class="t-muted"><text x="102" y="42">E = $429K</text><text x="102" y="106">E = $382K</text><text x="102" y="178" class="t-acc">E = $267K</text><text x="102" y="234">E = $410K</text></g>
+  <g font-size="7.5"><text x="198" y="21">Simple (0.30) &rarr; $380K</text><text x="198" y="51">Difficult (0.70) &rarr; $450K</text>
+  <text x="198" y="83">Minor changes (0.40) &rarr; $275K</text><text x="198" y="115">Major (0.60)</text><text x="292" y="103">Simple (0.20) $310K</text><text x="292" y="129">Complex (0.80) $490K</text>
+  <text x="198" y="159">Minor changes (0.70) &rarr; $210K</text><text x="198" y="187">Major changes (0.30) &rarr; $400K</text>
+  <text x="198" y="215">Without changes (0.60) &rarr; $350K</text><text x="198" y="245">With changes (0.40) &rarr; $500K</text></g>
+</svg>
+<figcaption>Buy: 0.70 &times; 210 + 0.30 &times; 400 = $267K, the lowest expected cost. <span class="src">Slide 24</span></figcaption>
+</figure>
+<div class="calc" id="mb">
+  <div class="head"><strong>Calculator: decision tree expected costs</strong><span class="tag">Exercise 7</span></div>
+  <div class="body">
+    <p class="small muted">One line per leaf: "path probability, cost". For a nested branch multiply the probabilities, like 0.5*0.3.</p>
+    <div class="fields" style="grid-template-columns:repeat(auto-fill,minmax(13rem,1fr))">
+      <label class="field">Build<textarea data-mb="Build" rows="3">0.4, 120
+0.6, 180</textarea></label>
+      <label class="field">Reuse<textarea data-mb="Reuse" rows="3">0.5, 90
+0.5*0.3, 110
+0.5*0.7, 160</textarea></label>
+      <label class="field">Buy<textarea data-mb="Buy" rows="3">0.7, 80
+0.3, 140</textarea></label>
+      <label class="field">Contract<textarea data-mb="Contract" rows="3">0.6, 110
+0.4, 150</textarea></label>
+    </div>
+    <div class="out" id="mb-out"></div><div class="verdict" id="mb-v"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 7 solution: inventory reporting module ($K)</h3></header><div class="inner">
+<p class="mono small">Build = 0.4&times;120 + 0.6&times;180 = $156K<br>Reuse = 0.5&times;90 + 0.5&times;(0.3&times;110 + 0.7&times;160) = 45 + 0.5&times;145 = $117.5K<br>Buy = 0.7&times;80 + 0.3&times;140 = $98K<br>Contract = 0.6&times;110 + 0.4&times;150 = $126K</p>
+<p><b>Buy ($98K)</b>: saves $19.5K vs reuse; confirm vendor support and licence terms.</p></div></div>
+<div class="tscroll"><table><tr><th>Technique</th><th>Typical tools</th><th>Where it is used</th></tr>
+<tr><td>LOC / three-point</td><td>Excel, Google Sheets, cloc, SLOCCount</td><td>Early bids, legacy migration</td></tr>
+<tr><td>Function points</td><td>IFPUG / COSMIC, CAST, ScopeMaster</td><td>Outsourcing contracts, benchmarking, tenders</td></tr>
+<tr><td>Software equation</td><td>QSM SLIM-Estimate</td><td>Large defence, telecom and banking programmes</td></tr>
+<tr><td>COCOMO 81 / II</td><td>USC COCOMO II tool, SEER-SEM, Cost Xpert</td><td>Aerospace, government, fixed-price proposals</td></tr>
+<tr><td>Story points and velocity</td><td>Jira, Azure Boards, Linear, Planning Poker apps</td><td>Product companies and start-ups running Scrum</td></tr>
+<tr><td>Monte Carlo</td><td>ActionableAgile, Nave, @RISK, Python</td><td>Delivery-date commitments, portfolio risk</td></tr>
+<tr><td>AI / ML estimation</td><td>Atlassian Rovo, Microsoft Copilot, ClickUp Brain</td><td>Backlog refinement, status reports, risk alerts</td></tr>
+<tr><td>Make-buy analysis</td><td>Decision trees in Excel, PrecisionTree</td><td>Vendor, SaaS and open-source selection</td></tr></table></div>
+</section>
+
+<section id="scheduling">
+<h2 data-short="Scheduling principles"><span class="n">09</span>Scheduling principles and the effort-time trade-off</h2>
+<p>Scheduling allocates the estimated effort to specific tasks over the planned duration, so that every task has a start, an end, an owner and an output.</p>
+<div class="cards">
+  <div class="c"><h4>Compartmentalization</h4><p>Define distinct, manageable tasks (activities and actions).</p><span class="ex">WBS in MS Project, Jira epics &rarr; stories</span></div>
+  <div class="c"><h4>Interdependency</h4><p>Identify which tasks depend on others and which can run in parallel.</p><span class="ex">Task network, dependency links</span></div>
+  <div class="c"><h4>Effort validation</h4><p>Never allocate more people than are available at any time.</p><span class="ex">Resource histograms, leveling</span></div>
+  <div class="c"><h4>Defined responsibilities</h4><p>Every task is assigned to a specific team member.</p><span class="ex">RACI matrix, assignee field</span></div>
+  <div class="c"><h4>Defined outcomes</h4><p>Every task produces a work product (document, code, test).</p><span class="ex">Definition of Done</span></div>
+  <div class="c"><h4>Defined milestones</h4><p>Tasks are grouped into milestones reviewed for quality.</p><span class="ex">Quality gates, sprint reviews</span></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>C-I-E-R-O-M</strong>: "Clever Interns Estimate, Report, Output, Milestone".</p></div>
+<h3>Effort vs delivery time: why compression hurts</h3>
+<figure class="fig">
+<svg viewBox="0 0 360 200" role="img" aria-label="PNR curve: effort rises steeply as delivery time is compressed; impossible region below 0.75">
+  <line x1="40" y1="170" x2="345" y2="170" class="s-line"/><line x1="40" y1="15" x2="40" y2="170" class="s-line"/>
+  <rect x="41" y="15" width="44" height="154" class="f-trap" stroke="none" opacity=".6"/>
+  <text x="63" y="30" font-size="8" text-anchor="middle" fill="var(--bad)" font-weight="700">impossible</text><text x="63" y="40" font-size="8" text-anchor="middle" fill="var(--bad)">region</text>
+  <path d="M86,22 C110,80 140,118 170,130 C210,142 260,146 340,140" class="s-ink" stroke-width="2.4"/>
+  <line x1="170" y1="15" x2="170" y2="170" class="s-line" stroke-dasharray="3 3"/><text x="172" y="26" font-size="8" class="t-muted">nominal</text>
+  <circle cx="275" cy="146" r="4" class="f-acc"/><text x="275" y="160" font-size="8" text-anchor="middle" class="t-acc">least cost</text>
+  <g font-size="8" class="t-muted" text-anchor="middle"><text x="86" y="183">0.75</text><text x="128" y="183">0.90</text><text x="170" y="183">1.00</text><text x="230" y="183">1.25</text><text x="300" y="183">1.50</text><text x="340" y="183">2.00</text></g>
+  <text x="200" y="197" font-size="8" text-anchor="middle" class="t-muted">delivery time &divide; nominal delivery time</text>
+  <text x="14" y="95" font-size="8" class="t-muted" transform="rotate(-90 14 95)" text-anchor="middle">effort / nominal</text>
+</svg>
+<figcaption>Putnam-Norden-Rayleigh (PNR) curve. <span class="src">Slide 29</span></figcaption>
+</figure>
+<ul>
+<li>Effort rises sharply as delivery time is compressed below the nominal time.</li>
+<li>From the software equation, E &prop; 1/t<sup>4</sup>: a 10% shorter schedule needs about 52% more effort (1 / 0.9<sup>4</sup> = 1.52).</li>
+<li>The least-cost point lies beyond the nominal time: extending the schedule reduces effort.</li>
+<li>Below about 75% of the nominal time lies the "impossible region": no amount of added staff delivers the software.</li>
+<li><b>Brooks' law</b>: adding people to a late project makes it later. Paths = n(n &minus; 1)/2: 4 people &rarr; 6, 8 &rarr; 28, 12 &rarr; 66.</li>
+</ul>
+<h3>Effort allocation: the 40-20-40 rule</h3>
+<div class="cards two">
+  <div class="c"><div class="donut-wrap" style="margin:0"><div class="donut" style="width:120px;background:conic-gradient(var(--text-primary) 0 40%, var(--accent) 40% 60%, var(--border-strong) 60% 100%)"><b>effort</b></div>
+  <ul class="legend"><li><i style="background:var(--text-primary)"></i>Front-end: communication, analysis, design, reviews <span class="v">40%</span></li><li><i style="background:var(--accent)"></i>Construction: coding <span class="v">20%</span></li><li><i style="background:var(--border-strong)"></i>Testing and installation <span class="v">40%</span></li></ul></div></div>
+  <div class="c"><div class="tscroll" style="margin:0"><table><tr><th>Activity (Pressman)</th><th class="num">Share</th></tr><tr><td>Planning</td><td class="num">2-3%</td></tr><tr><td>Requirements analysis</td><td class="num">10-25%</td></tr><tr><td>Design</td><td class="num">20-25%</td></tr><tr><td>Coding</td><td class="num">15-20%</td></tr><tr><td>Testing and debugging</td><td class="num">30-40%</td></tr></table></div></div>
+</div>
+<p class="small">Modern practice: in agile and DevOps the split happens inside every sprint. Testing shifts left (TDD, CI). Use the ratio as a sanity check: a plan with 70% coding is unrealistic. Coding is the smallest share: the work is in getting it right and proving it right.</p>
+</section>
+
+<section id="wbs">
+<h2 data-short="WBS"><span class="n">10</span>Work breakdown structure (WBS)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>A WBS is a hierarchical decomposition of the total scope into deliverables and work packages: the backbone for estimates, schedules and assignments.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 170" role="img" aria-label="WBS tree for an online shop app">
+  <rect x="130" y="6" width="100" height="24" rx="4" class="f-ink"/><text x="180" y="22" font-size="9" text-anchor="middle" class="t-inv" font-weight="700">1.0 Online Shop App</text>
+  <g class="s-line"><path d="M180,30 V40 H36 V52 M180,40 H108 V52 M180,40 V52 M180,40 H252 V52 M180,40 H324 V52"/></g>
+  <g font-size="7.8" text-anchor="middle" font-weight="650">
+  <rect x="2" y="52" width="68" height="22" rx="4" class="f-acc-t"/><text x="36" y="66">1.1 Requirements</text>
+  <rect x="74" y="52" width="68" height="22" rx="4" class="f-acc-t"/><text x="108" y="66">1.2 Design</text>
+  <rect x="146" y="52" width="68" height="22" rx="4" class="f-acc-t"/><text x="180" y="66">1.3 Construction</text>
+  <rect x="218" y="52" width="68" height="22" rx="4" class="f-acc-t"/><text x="252" y="66">1.4 Testing</text>
+  <rect x="290" y="52" width="68" height="22" rx="4" class="f-acc-t"/><text x="324" y="66">1.5 Deployment</text></g>
+  <g font-size="7" text-anchor="middle">
+  <rect x="2" y="88" width="68" height="20" rx="3" class="f-box"/><text x="36" y="101">1.1.1 Elicitation</text><rect x="2" y="114" width="68" height="20" rx="3" class="f-box"/><text x="36" y="127">1.1.2 SRS, baseline</text>
+  <rect x="74" y="88" width="68" height="20" rx="3" class="f-box"/><text x="108" y="101">1.2.1 UI/UX</text><rect x="74" y="114" width="68" height="20" rx="3" class="f-box"/><text x="108" y="127">1.2.2 Arch and DB</text>
+  <rect x="146" y="88" width="68" height="20" rx="3" class="f-box"/><text x="180" y="101">1.3.1 Front-end</text><rect x="146" y="114" width="68" height="20" rx="3" class="f-box"/><text x="180" y="127">1.3.2 Back-end API</text>
+  <rect x="218" y="88" width="68" height="20" rx="3" class="f-box"/><text x="252" y="101">1.4.1 Unit, integ.</text><rect x="218" y="114" width="68" height="20" rx="3" class="f-box"/><text x="252" y="127">1.4.2 System, UAT</text>
+  <rect x="290" y="88" width="68" height="20" rx="3" class="f-box"/><text x="324" y="101">1.5.1 CI/CD, release</text><rect x="290" y="114" width="68" height="20" rx="3" class="f-box"/><text x="324" y="127">1.5.2 User training</text></g>
+  <g class="s-line"><path d="M36,74 V88 M108,74 V88 M180,74 V88 M252,74 V88 M324,74 V88"/></g>
+</svg>
+</figure>
+<div class="cards">
+  <div class="c"><h4>100% rule</h4><p>Children must add up to exactly 100% of the parent's scope: no more, no less.</p></div>
+  <div class="c"><h4>8/80 rule</h4><p>A work package should take 8 to 80 hours: estimable, assignable, trackable.</p></div>
+  <div class="c"><h4>Tools and use</h4><p>MS Project, WBS Schedule Pro, Miro, Jira (epic &rarr; story &rarr; sub-task). Used in every contract scope.</p></div>
+</div>
+</section>
+
+<section id="cpm">
+<h2 data-short="CPM and Gantt"><span class="n">11</span>Task network and the critical path method (CPM)</h2>
+<ul>
+<li><b>Task (activity) network</b>: nodes are tasks, arrows are dependencies (activity-on-node).</li>
+<li><b>Critical path</b>: the longest path through the network; it fixes the minimum project duration.</li>
+<li><b>Slack (float)</b>: how long a task can slip without delaying the project. Critical tasks have zero slack.</li>
+</ul>
+<div class="flow"><span>1 List tasks, durations, dependencies</span><i>&rarr;</i><span>2 Draw the network</span><i>&rarr;</i><span>3 Forward pass: ES, EF</span><i>&rarr;</i><span>4 Backward pass: LS, LF</span><i>&rarr;</i><span>5 Slack</span><i>&rarr;</i><span class="hl">6 Critical path = zero slack</span></div>
+<div class="box exact"><span class="lbl">Exam text: formulas</span><p class="mono">Forward: ES = max(EF of predecessors), EF = ES + d<br>Backward: LF = min(LS of successors), LS = LF &minus; d<br>Slack = LS &minus; ES = LF &minus; EF</p></div>
+<div class="calc" id="cpm-c">
+  <div class="head"><strong>Calculator: CPM table, critical path and Gantt chart</strong><span class="tag">Exercise 8 and CampusEats</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Preset<select id="cp-p"><option value="ex8">Exercise 8: student portal (days)</option><option value="ce">CampusEats (weeks)</option></select></label></div>
+    <label class="field">Tasks, one per line: "ID, duration, predecessors" (predecessors separated by spaces)<textarea id="cp-in" rows="9"></textarea></label>
+    <div class="tscroll"><table id="cp-t"></table></div>
+    <div class="verdict" id="cp-v"></div>
+    <svg id="cp-g" viewBox="0 0 360 200" role="img" aria-label="Gantt chart of the tasks; critical tasks dark, slack shown as dashed"></svg>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 8: student portal</h3><p>A Requirements 5 (-); B UI design 4 (A); C Database design 6 (A); D Back-end 10 (C); E Front-end 8 (B); F Integration 4 (D, E); G System testing 5 (F); H User manual 3 (E). Draw the network, compute ES, EF, LS, LF and slack, and find the critical path.</p></header>
+<details><summary>Full solution</summary><div class="sol">
+<div class="tscroll"><table><tr><th>Task</th><th class="num">ES</th><th class="num">EF</th><th class="num">LS</th><th class="num">LF</th><th class="num">Slack</th></tr>
+<tr><td>A</td><td class="num">0</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td class="num">0</td></tr><tr><td>B</td><td class="num">5</td><td class="num">9</td><td class="num">9</td><td class="num">13</td><td class="num">4</td></tr>
+<tr><td>C</td><td class="num">5</td><td class="num">11</td><td class="num">5</td><td class="num">11</td><td class="num">0</td></tr><tr><td>D</td><td class="num">11</td><td class="num">21</td><td class="num">11</td><td class="num">21</td><td class="num">0</td></tr>
+<tr><td>E</td><td class="num">9</td><td class="num">17</td><td class="num">13</td><td class="num">21</td><td class="num">4</td></tr><tr><td>F</td><td class="num">21</td><td class="num">25</td><td class="num">21</td><td class="num">25</td><td class="num">0</td></tr>
+<tr><td>G</td><td class="num">25</td><td class="num">30</td><td class="num">25</td><td class="num">30</td><td class="num">0</td></tr><tr><td>H</td><td class="num">17</td><td class="num">20</td><td class="num">27</td><td class="num">30</td><td class="num">10</td></tr></table></div>
+<p>Critical path: <b>A &rarr; C &rarr; D &rarr; F &rarr; G = 30 days</b>.</p></div></details></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>In the backward pass a task with several successors takes the <b>minimum</b> LS of them. A task with no successor (like H) gets LF = project end (30), so its slack can be large. The critical path is the <b>longest</b> path, not the shortest.</p></div>
+</section>
+
+<section id="pert">
+<h2 data-short="PERT"><span class="n">12</span>PERT: scheduling under uncertainty</h2>
+<p>Program Evaluation and Review Technique (US Navy, 1958) replaces single durations with three estimates and gives the probability of meeting a deadline.</p>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">t<sub>e</sub> = (a + 4m + b) / 6<br>&sigma;<sup>2</sup> = ((b &minus; a) / 6)<sup>2</sup><br>&mu;<sub>project</sub> = &Sigma; t<sub>e</sub> (critical path); &sigma;<sub>project</sub> = &radic;(&Sigma; &sigma;<sup>2</sup>)<br>Z = (D &minus; &mu;) / &sigma; &rarr; P(T &le; D)</p><p class="small">a = optimistic, m = most likely, b = pessimistic, D = deadline.</p></div>
+<div class="tscroll"><table style="text-align:center"><tr><th>Z</th><td>0</td><td>0.5</td><td>1.0</td><td>1.645</td><td>2.0</td><td>3.0</td></tr><tr><th>P(T &le; D)</th><td>50%</td><td>69.1%</td><td>84.1%</td><td>95%</td><td>97.7%</td><td>99.9%</td></tr></table></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>Add <b>variances</b>, not standard deviations: &sigma;<sub>project</sub> = &radic;(&Sigma;&sigma;<sup>2</sup>). Committing to the CPM (most-likely) date usually gives less than a 50% chance of success.</p></div>
+<div class="calc" id="pert-c">
+  <div class="head"><strong>Calculator: PERT probability of meeting a deadline</strong><span class="tag">Exercise 9</span></div>
+  <div class="body">
+    <div class="tscroll"><table id="pt-t"><tr><th>Critical task</th><th>a</th><th>m</th><th>b</th><th class="num">t<sub>e</sub></th><th class="num">&sigma;<sup>2</sup></th></tr>
+      <tr><td>A Requirements</td><td><input type="number" value="3"></td><td><input type="number" value="5"></td><td><input type="number" value="7"></td><td class="num" data-te></td><td class="num" data-v></td></tr>
+      <tr><td>C Database design</td><td><input type="number" value="4"></td><td><input type="number" value="6"></td><td><input type="number" value="10"></td><td class="num" data-te></td><td class="num" data-v></td></tr>
+      <tr><td>D Back-end</td><td><input type="number" value="7"></td><td><input type="number" value="10"></td><td><input type="number" value="16"></td><td class="num" data-te></td><td class="num" data-v></td></tr>
+      <tr><td>F Integration</td><td><input type="number" value="3"></td><td><input type="number" value="4"></td><td><input type="number" value="5"></td><td class="num" data-te></td><td class="num" data-v></td></tr>
+      <tr><td>G System testing</td><td><input type="number" value="3"></td><td><input type="number" value="5"></td><td><input type="number" value="7"></td><td class="num" data-te></td><td class="num" data-v></td></tr></table></div>
+    <div class="fields"><label class="field">Deadline D<input type="number" id="pt-d" value="32" step="0.5"></label><label class="field">Confidence wanted (%)<input type="number" id="pt-c" value="95"></label></div>
+    <svg id="pt-svg" viewBox="0 0 360 120" role="img" aria-label="Normal curve with the area up to the deadline shaded"></svg>
+    <div class="out" id="pt-out"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 9 solution</h3></header><div class="inner">
+<p class="mono small">&mu; = 5.00 + 6.33 + 10.50 + 4.00 + 5.00 = 30.83 days<br>&Sigma;&sigma;<sup>2</sup> = 0.444 + 1.000 + 2.250 + 0.111 + 0.444 = 4.25; &sigma; = &radic;4.25 = 2.06 days<br>Z<sub>32</sub> = (32 &minus; 30.83) / 2.06 = 0.57 &rarr; 71%<br>Z<sub>34</sub> = (34 &minus; 30.83) / 2.06 = 1.54 &rarr; 94%<br>D<sub>95</sub> = &mu; + 1.645&sigma; = 34.2 days</p>
+<p>The deterministic CPM date (30 days) has only 34% probability. Commit to 35 days for &ge; 95% confidence.</p></div></div>
+</section>
+
+<section id="leveling">
+<h2 data-short="Leveling, CCPM, agile"><span class="n">13</span>Resource leveling, critical chain and agile scheduling</h2>
+<div class="cards two">
+  <div class="c"><h4>Resource leveling</h4><p>Shift non-critical tasks within their slack so no one is over-allocated, smoothing the resource histogram. Before: peak 5 people. After leveling: max 3 (the number of available developers).</p><span class="ex">MS Project "Level Resources", Primavera P6, Float</span></div>
+  <div class="c"><h4>Critical Chain (Goldratt, 1997)</h4><p>People pad every task, then waste the padding (Student syndrome, Parkinson's law). CCPM strips padding (50% estimates) and pools it into shared buffers: about 20% shorter overall. Feeding buffers protect the critical chain where other paths join. Track buffer consumption vs chain completion (fever chart: green / amber / red).</p><span class="ex">ProChain, LYNX, Exepron</span></div>
+</div>
+<h3>Agile scheduling: sprints, Kanban flow and burndown</h3>
+<div class="flow"><span>Release plan: 3 to 6 months, roadmap of epics</span><i>&rarr;</i><span>Sprint: 1 to 4 week timebox, sprint backlog</span><i>&rarr;</i><span class="hl">Daily: 15-min stand-up, re-plan the day</span></div>
+<ul>
+<li><b>WIP limit</b>: max items in progress per column.</li>
+<li><b>Cycle time</b>: start &rarr; done for one item.</li>
+<li><b>Throughput</b>: items finished per day or week.</li>
+</ul>
+<div class="box exact"><span class="lbl">Exam text: Little's law</span><p class="mono">Avg cycle time = Avg WIP &divide; Avg throughput</p></div>
+<p class="small">On a burndown, above the ideal line = behind; flat segments = blocked work or scope added. Burnup and cumulative-flow diagrams complement it.</p>
+<div class="calc" id="ag">
+  <div class="head"><strong>Calculator: mid-sprint check and Little's law</strong><span class="tag">Exercise 10</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Sprint commitment (SP)<input type="number" id="ag-c" value="40"></label><label class="field">Sprint days<input type="number" id="ag-d" value="10"></label>
+      <label class="field">Day reached<input type="number" id="ag-k" value="5"></label><label class="field">Remaining SP<input type="number" id="ag-r" value="26"></label>
+      <label class="field">Avg WIP (items)<input type="number" id="ag-w" value="12"></label><label class="field">Throughput (items/day)<input type="number" id="ag-t" value="3" step="0.1"></label>
+      <label class="field">Target cycle time (days)<input type="number" id="ag-ct" value="2.5" step="0.1"></label>
+    </div>
+    <div class="out" id="ag-out"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 10 solution</h3></header><div class="inner">
+<p>(a) Ideal at day 5 = 40 &minus; 4 &times; 5 = 20 SP &rarr; <b>behind by 6 SP</b>. (b) Burned 14 SP in 5 days = 2.8 SP/day; 26 &divide; 2.8 = 9.3 more days &rarr; finishes about day 14.3 (about 4 days late). (c) Needed: 26 &divide; 5 = 5.2 SP/day (1.9&times; current). Unrealistic: with the PO, move about 12 SP (26 &minus; 2.8 &times; 5) back to the product backlog; remove blockers. (d) Cycle time = 12 &divide; 3 = <b>4 days</b>. (e) WIP = 2.5 &times; 3 = 7.5 &rarr; set the WIP limit to about <b>7 items</b>.</p></div></div>
+<div class="tscroll"><table><tr><th>Technique</th><th>Typical tools</th><th>Where used</th></tr>
+<tr><td>WBS</td><td>MS Project, WBS Schedule Pro, Miro, Jira epics</td><td>Contract scoping, ERP and government IT</td></tr>
+<tr><td>CPM / PERT network</td><td>MS Project, Primavera P6, ProjectLibre</td><td>Telecom rollouts, infrastructure-linked IT, defence</td></tr>
+<tr><td>Gantt / timeline</td><td>GanttProject, TeamGantt, Smartsheet, Jira Timeline</td><td>Client and management reporting</td></tr>
+<tr><td>Resource leveling</td><td>MS Project leveling, Primavera P6, Float</td><td>Shared resource pools in consulting</td></tr>
+<tr><td>Critical chain</td><td>ProChain, LYNX, Exepron</td><td>Engineering, multi-project portfolios</td></tr>
+<tr><td>Sprints and burndown</td><td>Jira, Azure Boards, Linear, GitHub Projects</td><td>SaaS and product teams using Scrum</td></tr>
+<tr><td>Kanban and flow metrics</td><td>Jira, Trello, ActionableAgile, Kanbanize</td><td>Support, DevOps and maintenance teams</td></tr></table></div>
+</section>
+
+<section id="tracking">
+<h2 data-short="Tracking and EVA"><span class="n">14</span>Tracking and earned value analysis (EVA)</h2>
+<div class="cards two">
+  <div class="c"><h4>Classic tracking mechanisms</h4><p>1. Periodic status meetings. 2. Evaluate results of all reviews. 3. Check whether formal milestones were met on schedule. 4. Compare actual vs planned start date of each task. 5. Earned value analysis to quantify progress.</p><span class="ex">Control actions: re-plan, re-allocate, descope (MoSCoW), escalate.</span></div>
+  <div class="c"><h4>DORA's four key metrics</h4><p><b>Deployment frequency</b>: how often code reaches production. <b>Lead time for changes</b>: commit &rarr; running in production. <b>Change failure rate</b>: % of deployments causing failure. <b>Time to restore</b>: how fast service recovers.</p><span class="ex">Forsgren, Humble and Kim, Accelerate (2018)</span></div>
+</div>
+<p>EVA measures progress in budget units instead of gut feeling. It gives reliable readings from as early as 15% into the project.</p>
+<div class="cards">
+  <div class="c"><h4>PV (BCWS)</h4><p>Budgeted cost of work scheduled up to now: sum of planned effort of tasks that should be done.</p></div>
+  <div class="c"><h4>EV (BCWP)</h4><p>Budgeted cost of work performed: planned effort of tasks actually completed.</p></div>
+  <div class="c"><h4>AC (ACWP)</h4><p>Actual effort or cost spent on the completed tasks.</p></div>
+  <div class="c"><h4>BAC</h4><p>Budget at completion: &Sigma; BCWS of all tasks, the total budget.</p></div>
+</div>
+<figure class="fig">
+<svg viewBox="0 0 360 200" role="img" aria-label="S-curves for PV, EV and AC over 12 weeks; at week 12 PV 72, EV 55, AC 67">
+  <line x1="40" y1="170" x2="345" y2="170" class="s-line"/><line x1="40" y1="15" x2="40" y2="170" class="s-line"/>
+  <path d="M40,170 C120,165 200,120 300,58" class="s-line" stroke-width="2.4" stroke-dasharray="5 3"/>
+  <path d="M40,170 C120,167 200,140 300,85" class="s-acc" stroke-width="2.4"/>
+  <path d="M40,170 C120,166 200,128 300,66" class="s-bad" stroke-width="2.2"/>
+  <line x1="300" y1="15" x2="300" y2="170" class="s-line" stroke-dasharray="2 3"/>
+  <g font-size="8.5" font-weight="700"><text x="305" y="58">PV 72</text><text x="305" y="70" fill="var(--bad)">AC 67</text><text x="305" y="88" class="t-acc">EV 55</text></g>
+  <text x="300" y="183" font-size="8" text-anchor="middle" class="t-muted">week 12</text>
+  <text x="50" y="30" font-size="8.5">SV = 55 &minus; 72 = &minus;17 (behind)</text><text x="50" y="42" font-size="8.5">CV = 55 &minus; 67 = &minus;12 (over budget)</text>
+</svg>
+<figcaption>Cumulative S-curves, BAC = 100 person-days. Grey dashed = PV, red = AC, blue = EV. <span class="src">Slide 43</span></figcaption>
+</figure>
+<div class="tscroll"><table><tr><th>Indicator</th><th>Formula</th><th>Read it as</th></tr>
+<tr><td>Schedule variance</td><td class="mono">SV = BCWP &minus; BCWS</td><td>&lt; 0 &rarr; behind schedule</td></tr>
+<tr><td>Schedule performance index</td><td class="mono">SPI = BCWP / BCWS</td><td>&lt; 1 &rarr; behind schedule</td></tr>
+<tr><td>Cost variance</td><td class="mono">CV = BCWP &minus; ACWP</td><td>&lt; 0 &rarr; over budget</td></tr>
+<tr><td>Cost performance index</td><td class="mono">CPI = BCWP / ACWP</td><td>&lt; 1 &rarr; over budget</td></tr>
+<tr><td>% scheduled for completion</td><td class="mono">BCWS / BAC</td><td>Plan</td></tr>
+<tr><td>% complete</td><td class="mono">BCWP / BAC</td><td>Reality</td></tr>
+<tr><td>Estimate at completion</td><td class="mono">EAC = BAC / CPI</td><td>&gt; BAC &rarr; overrun</td></tr>
+<tr><td>Estimate to complete</td><td class="mono">ETC = EAC &minus; ACWP</td><td>Budget request</td></tr>
+<tr><td>Variance at completion</td><td class="mono">VAC = BAC &minus; EAC</td><td>&lt; 0 &rarr; overrun</td></tr>
+<tr><td>To-complete performance index</td><td class="mono">TCPI = (BAC &minus; BCWP) / (BAC &minus; ACWP)</td><td>&gt; 1.1 &rarr; unlikely</td></tr></table></div>
+<p class="small">EAC, ETC, VAC and TCPI extend the lecture notes with PMI PMBOK forecasting.</p>
+<div class="box mem"><span class="lbl">Memory aid</span><p>Everything starts with <strong>EV</strong> (earned). <b>S</b>chedule compares it with <b>P</b>lan (PV); <b>C</b>ost compares it with <b>A</b>ctual (AC). "Variance = minus, Index = divide."</p></div>
+<div class="calc" id="eva">
+  <div class="head"><strong>Calculator: EVA status report</strong><span class="tag">Exercise 11 and CampusEats</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Preset<select id="ev-p"><option value="ex">Exercise 11 (person-days)</option><option value="ce">CampusEats week 16 (person-weeks)</option></select></label>
+    <label class="field">BAC<input type="number" id="ev-bac" value="582" step="0.5"></label><label class="field">BCWS (PV)<input type="number" id="ev-pv" value="156.5" step="0.5"></label><label class="field">BCWP (EV)<input type="number" id="ev-ev" value="126.5" step="0.5"></label><label class="field">ACWP (AC)<input type="number" id="ev-ac" value="127.5" step="0.5"></label></div>
+    <div class="out" id="ev-out"></div><div class="verdict" id="ev-v"></div>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 11 solution</h3><p>56 tasks, BAC = 582 person-days. 15 tasks should be complete, only 12 are. BCWS = 156.5, BCWP = 126.5, ACWP = 127.5.</p></header><div class="inner">
+<div class="tscroll"><table><tr><th>Indicator</th><th>Computation</th><th class="num">Result</th></tr>
+<tr><td>SPI</td><td class="mono">126.5 / 156.5</td><td class="num">0.81</td></tr><tr><td>SV</td><td class="mono">126.5 &minus; 156.5</td><td class="num">&minus;30 pd</td></tr>
+<tr><td>CPI</td><td class="mono">126.5 / 127.5</td><td class="num">0.99</td></tr><tr><td>CV</td><td class="mono">126.5 &minus; 127.5</td><td class="num">&minus;1 pd</td></tr>
+<tr><td>% scheduled</td><td class="mono">156.5 / 582</td><td class="num">26.9%</td></tr><tr><td>% complete</td><td class="mono">126.5 / 582</td><td class="num">21.7%</td></tr>
+<tr><td>EAC</td><td class="mono">582 / 0.992</td><td class="num">586.6 pd</td></tr><tr><td>VAC</td><td class="mono">582 &minus; 586.6</td><td class="num">&minus;4.6 pd</td></tr><tr><td>TCPI</td><td class="mono">455.5 / 454.5</td><td class="num">1.002</td></tr></table></div>
+<p>Cost is on track (CPI &asymp; 0.99) but the schedule is about 19% behind (SPI 0.81): too little effort applied. Add capacity to critical tasks or re-sequence work.</p></div></div>
+</section>
+
+<section id="risk">
+<h2 data-short="Risk exposure"><span class="n">15</span>Risk management with numbers</h2>
+<div class="flow"><span>Identify: checklists, brainstorming, past projects</span><i>&rarr;</i><span>Analyze: probability P and impact C</span><i>&rarr;</i><span>Prioritize: RE = P &times; C; risk table</span><i>&rarr;</i><span>Plan response: avoid, mitigate, transfer, accept</span><i>&rarr;</i><span class="hl">Monitor: track triggers; update register</span></div>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">Risk exposure RE = P &times; C<br>Risk leverage = (RE<sub>before</sub> &minus; RE<sub>after</sub>) / cost of reduction</p><p>Leverage &gt; 1: mitigation is worth its cost; otherwise accept and keep a contingency plan.</p></div>
+<p>Risk types: project (schedule, staff), technical (design, technology), business (market, budget). RMMM: the Risk Mitigation, Monitoring and Management plan, one sheet per high risk. Lecture 8 covers this in depth.</p>
+<div class="calc" id="re">
+  <div class="head"><strong>Calculator: risk exposure, leverage and contingency</strong><span class="tag">Exercise 12</span></div>
+  <div class="body">
+    <div class="tscroll"><table id="re-t"><tr><th>Risk</th><th>P</th><th>Impact</th><th>Mitigation cost</th><th class="num">RE</th><th class="num">Leverage</th><th>Decision</th></tr>
+      <tr><td>R1 Key developer leaves</td><td><input type="number" step="0.05" value="0.30"></td><td><input type="number" value="40"></td><td><input type="number" value="5"></td><td class="num" data-re></td><td class="num" data-lv></td><td data-dc></td></tr>
+      <tr><td>R2 Payment API changes</td><td><input type="number" step="0.05" value="0.20"></td><td><input type="number" value="25"></td><td><input type="number" value="3"></td><td class="num" data-re></td><td class="num" data-lv></td><td data-dc></td></tr>
+      <tr><td>R3 Requirement creep</td><td><input type="number" step="0.05" value="0.60"></td><td><input type="number" value="30"></td><td><input type="number" value="8"></td><td class="num" data-re></td><td class="num" data-lv></td><td data-dc></td></tr>
+      <tr><td>R4 Server outage at launch</td><td><input type="number" step="0.05" value="0.10"></td><td><input type="number" value="50"></td><td><input type="number" value="6"></td><td class="num" data-re></td><td class="num" data-lv></td><td data-dc></td></tr></table></div>
+    <div class="out" id="re-out"></div>
+    <p class="small muted" style="margin-top:.6rem">Assumes mitigation removes the risk completely (RE after = 0), as in the exercise. Impact and cost in $K.</p>
+  </div>
+</div>
+<div class="ex-card"><header><h3>Exercise 12 solution: e-commerce launch</h3></header><div class="inner">
+<div class="tscroll"><table><tr><th>Risk</th><th class="num">RE = P&times;C ($K)</th><th class="num">Leverage</th><th>Decision</th></tr>
+<tr><td>R1</td><td class="num">12.0</td><td class="num">2.40</td><td>Mitigate</td></tr><tr><td>R2</td><td class="num">5.0</td><td class="num">1.67</td><td>Mitigate</td></tr><tr><td>R3</td><td class="num">18.0</td><td class="num">2.25</td><td>Mitigate</td></tr><tr><td>R4</td><td class="num">5.0</td><td class="num">0.83</td><td>Accept + plan</td></tr><tr class="total"><td>Total</td><td class="num">40.0</td><td></td><td></td></tr></table></div>
+<p>Ranking by RE: R3 (18) &gt; R1 (12) &gt; R2 = R4 (5). R4 leverage 0.83 &lt; 1: mitigation costs more than it saves; accept, monitor and prepare a rollback plan. Mitigate R3, R1, R2 (cost $16K). Contingency reserve &asymp; total RE = <b>$40K</b> (or $5K residual if the mitigations work).</p></div></div>
+<h3>The modern project-management tool stack</h3>
+<div class="cards">
+  <div class="c"><h4>Planning and scheduling</h4><p>MS Project / Planner, Primavera P6, Smartsheet, GanttProject.</p></div>
+  <div class="c"><h4>Agile work management</h4><p>Jira, Azure DevOps Boards, Linear, GitHub Projects, Trello.</p></div>
+  <div class="c"><h4>Delivery and DORA metrics</h4><p>GitHub Actions, GitLab CI, Jenkins, LinearB, DX.</p></div>
+  <div class="c"><h4>Forecasting and risk</h4><p>ActionableAgile, Nave, @RISK, Primavera Risk Analysis.</p></div>
+  <div class="c"><h4>Collaboration and docs</h4><p>Confluence, Notion, Slack, Microsoft Teams, Miro.</p></div>
+  <div class="c"><h4>AI copilots</h4><p>Atlassian Rovo, Microsoft Copilot, ClickUp Brain, Asana AI.</p></div>
+</div>
+<p class="small">Trends: AI-generated plans and status summaries; probabilistic (not single-date) commitments; value-stream management; hybrid life cycles (agile delivery inside stage-gate governance); OKR-driven roadmaps.</p>
+</section>
+
+<section id="campuseats">
+<h2 data-short="CampusEats case"><span class="n">16</span>Case study: CampusEats, every technique end to end</h2>
+<div class="box real"><span class="lbl">Brief</span><p>A smart cafeteria pre-ordering app for a university campus. Students browse menus, pre-order and pay by mobile wallet or card, then collect food with a QR code. Vendors manage menus and orders; admins see sales analytics. Constraints: pilot within about 9 months; team of 3 to 4; labour rate BDT 1.5 lakh per person-month.</p></div>
+<div class="flow"><span>1 Size: FP</span><i>&rarr;</i><span>2 Effort: FP + COCOMO</span><i>&rarr;</i><span>3 Make-buy: payment</span><i>&rarr;</i><span>4 Schedule: CPM, Gantt, sprints</span><i>&rarr;</i><span>5 Risk: register, RE</span><i>&rarr;</i><span class="hl">6 Track: EVA at week 16</span></div>
+<p class="small">WBS level 2: 1 Requirements and UX research; 2 Design (UI/UX, architecture and DB); 3 Construction (back-end, mobile app, payment); 4 Integration and system testing; 5 Deployment (training, docs, pilot).</p>
+<h3>Step 1: size with function points</h3>
+<div class="tscroll"><table><tr><th>Type</th><th>Examples</th><th class="num">Count</th><th class="num">Weight</th><th class="num">Total</th></tr>
+<tr><td>EI</td><td>register, place/cancel order, update menu, set stock</td><td class="num">12</td><td class="num">4</td><td class="num">48</td></tr>
+<tr><td>EO</td><td>receipts, order-ready notifications, sales reports</td><td class="num">8</td><td class="num">5</td><td class="num">40</td></tr>
+<tr><td>EQ</td><td>browse menu, order history, vendor queue</td><td class="num">10</td><td class="num">4</td><td class="num">40</td></tr>
+<tr><td>ILF</td><td>users, menus, orders, payments, vendors, feedback</td><td class="num">6</td><td class="num">10</td><td class="num">60</td></tr>
+<tr><td>EIF</td><td>payment gateway, university SSO, SMS gateway</td><td class="num">3</td><td class="num">7</td><td class="num">21</td></tr>
+<tr class="total"><td colspan="4">UFP</td><td class="num">209</td></tr></table></div>
+<p class="mono small">&Sigma;Fi = 42 &rarr; VAF = 1.07 &rarr; FP = 209 &times; 1.07 = 223.6 &asymp; 224 FP. Backfiring about 50 LOC/FP (Kotlin + Node.js) &rarr; 224 &times; 50 = 11,200 LOC &asymp; 11.2 KLOC.</p>
+<h3>Step 2: estimate effort two ways and reconcile</h3>
+<div class="cards two">
+  <div class="c"><h4>A. FP productivity (bottom-up)</h4><p class="mono small">Historical 8 FP per pm<br>E = 224 &divide; 8 = 28.0 pm</p></div>
+  <div class="c"><h4>B. Basic COCOMO, organic (top-down)</h4><p class="mono small">PM = 2.4 &times; 11.2<sup>1.05</sup> = 30.3 pm<br>DM = 2.5 &times; 30.3<sup>0.38</sup> = 9.1 months<br>Staff = 30.3 / 9.1 = 3.3</p></div>
+</div>
+<div class="box key"><span class="lbl">Reconcile</span><p>The two estimates differ by 8% (&lt; 20%), so use the average: <b>29.2 pm</b>. A gap &gt; 20% would mean re-checking scope and assumptions. Result: 29.2 pm, about 9.1 months, peak team of 4 (1 back-end, 1 mobile, 1 QA/UX, part-time PM/BA), labour cost BDT 43.7 lakh.</p></div>
+<h3>Step 3: make-buy for the payment module (BDT lakh)</h3>
+<div class="tscroll"><table><tr><th>Option</th><th>Branches</th><th class="num">Expected</th></tr>
+<tr><td>Build</td><td>simple (0.3) 14; difficult (0.7) 20</td><td class="num">18.2</td></tr>
+<tr><td>Reuse</td><td>minor (0.6) 8; major (0.4) &rarr; simple (0.5) 10 or complex (0.5) 15</td><td class="num">9.8</td></tr>
+<tr><td>Buy</td><td>minor changes (0.8) 6; major changes (0.2) 9</td><td class="num">6.6</td></tr></table></div>
+<p><b>Decision: BUY (6.6 lakh)</b>, 3.2 lakh cheaper than reuse and 11.6 lakh cheaper than build (a licensed local gateway such as SSLCOMMERZ or bKash PGW). Side benefits: PCI-DSS compliance and fraud handling transfer to the vendor (risk transfer). Task F becomes a 6-week integration task instead of a large build.</p>
+<h3>Step 4: task network and critical path (weeks)</h3>
+<p>Load the "CampusEats" preset in the CPM calculator above to see the full table and Gantt. Critical path: <b>A &rarr; B &rarr; E &rarr; G &rarr; I = 35 weeks</b>. Near-critical: C and D (slack 2): watch the back-end closely. F has 12 weeks of float thanks to the buy decision.</p>
+<h3>Step 5: buffer and sprint plan</h3>
+<p>Critical path 35 weeks + 4-week project buffer (CCPM) = <b>39 weeks &asymp; 9.0 months</b>, matching the COCOMO nominal 9.1 months. Construction (weeks 10 to 26) runs as 8 two-week sprints. Backlog = 176 SP &rarr; required velocity 22 SP/sprint. Validate after sprint 2 with measured velocity.</p>
+<h3>Step 6: risk register and contingency</h3>
+<div class="tscroll"><table><tr><th>ID</th><th>Risk</th><th class="num">P</th><th class="num">Impact</th><th class="num">RE</th><th>Response</th><th>Owner</th></tr>
+<tr><td>R1</td><td>Requirement creep from vendors</td><td class="num">0.50</td><td class="num">6</td><td class="num">3.00</td><td>Mitigate: MoSCoW + change-control board</td><td>PM</td></tr>
+<tr><td>R2</td><td>Gateway merchant approval delayed</td><td class="num">0.30</td><td class="num">4</td><td class="num">1.20</td><td>Avoid: start onboarding in week 2</td><td>PM</td></tr>
+<tr><td>R3</td><td>Key mobile developer leaves</td><td class="num">0.20</td><td class="num">8</td><td class="num">1.60</td><td>Mitigate: pair programming, docs</td><td>Tech lead</td></tr>
+<tr><td>R4</td><td>Lunch-hour load overwhelms server</td><td class="num">0.25</td><td class="num">5</td><td class="num">1.25</td><td>Mitigate: k6 load tests, autoscaling</td><td>Back-end</td></tr>
+<tr class="total"><td colspan="4">Total risk exposure</td><td class="num">7.05</td><td colspan="2"></td></tr></table></div>
+<p>Budget = BDT 43.7 lakh labour + 7.05 lakh contingency (&Sigma; RE) = <b>BDT 50.8 lakh</b>. Triggers: &gt; 10% new SP added in a sprint (R1); no sandbox keys by week 8 (R2); p95 latency &gt; 800 ms in load test (R4). Priority by RE: R1 (3.0) &rarr; R3 (1.6) &rarr; R4 (1.25) &rarr; R2 (1.2).</p>
+<h3>Step 7: earned value at week 16</h3>
+<div class="tscroll"><table><tr><th>Task</th><th class="num">Budget (pw)</th><th class="num">Planned %</th><th class="num">BCWS</th><th class="num">Actual %</th><th class="num">BCWP</th></tr>
+<tr><td>A Requirements</td><td class="num">8</td><td class="num">100%</td><td class="num">8.0</td><td class="num">100%</td><td class="num">8.0</td></tr>
+<tr><td>B UI/UX design</td><td class="num">12</td><td class="num">100%</td><td class="num">12.0</td><td class="num">100%</td><td class="num">12.0</td></tr>
+<tr><td>C Arch and DB</td><td class="num">8</td><td class="num">100%</td><td class="num">8.0</td><td class="num">100%</td><td class="num">8.0</td></tr>
+<tr><td>D Back-end API</td><td class="num">40</td><td class="num">50%</td><td class="num">20.0</td><td class="num">40%</td><td class="num">16.0</td></tr>
+<tr><td>E Mobile app</td><td class="num">36</td><td class="num">38%</td><td class="num">13.5</td><td class="num">25%</td><td class="num">9.0</td></tr>
+<tr><td>F Payment integ.</td><td class="num">6</td><td class="num">100%</td><td class="num">6.0</td><td class="num">100%</td><td class="num">6.0</td></tr>
+<tr><td>G, H, I</td><td class="num">16</td><td class="num">0%</td><td class="num">0.0</td><td class="num">0%</td><td class="num">0.0</td></tr>
+<tr class="total"><td>Total</td><td class="num">126</td><td></td><td class="num">67.5</td><td></td><td class="num">59.0</td></tr></table></div>
+<p class="mono small">ACWP = 70 pw (timesheets). SPI = 0.87; CPI = 0.84; EAC = 149.5 pw; VAC = &minus;23.5 pw; TCPI = 1.20.</p>
+<div class="box trap"><span class="lbl">Diagnosis and corrective action</span><p>Behind (SPI 0.87) and over budget (CPI 0.84). Forecast overrun about 23.5 pw &asymp; BDT 8.1 lakh, more than the 7.05 lakh contingency; TCPI 1.20 is unrealistic. Actions: descope the "Could have" vendor-analytics dashboard (18 SP); pair on back-end DB rework; consume at most 2 weeks of buffer; re-baseline with sponsor approval.</p></div>
+<h3>Step 8: the integrated plan</h3>
+<div class="cards">
+  <div class="c tint"><h4>224 FP</h4><p>about 11.2 KLOC</p></div>
+  <div class="c tint"><h4>29.2 pm</h4><p>reconciled effort</p></div>
+  <div class="c tint"><h4>39 weeks</h4><p>35 wk CP + 4 wk buffer</p></div>
+  <div class="c tint"><h4>BDT 50.8 lakh</h4><p>budget incl. contingency</p></div>
+</div>
+<p class="small">Every sprint: update velocity, burndown and Monte Carlo forecast; review risk triggers. Every month: EVA report and buffer fever chart to the sponsor. At each milestone: re-estimate (the cone narrows) and re-baseline only with approved change requests.</p>
+</section>
+
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">17</span>Exam questions with model answers</h2>
+<p>CLO3 marks solution design, correctness, implementation, completeness and explanation. Write the formula, substitute, compute, then say what the number means.</p>
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Case: Sheba.xyz service-booking app</h3><p>Size estimate 18 KLOC; the team is small and experienced, the domain is familiar. Tasks (weeks): A spec 3 (-); B design 4 (A); C API 8 (B); D app 7 (B); E payments 3 (B); F test 4 (C, D, E); G launch 1 (F). At week 10: BAC 60 pw, PV 30, EV 24, AC 28. (a) Basic COCOMO effort, duration and staff. [3] (b) Critical path and slack of D and E. [4] (c) EVA status and one corrective action. [3]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><b>(a)</b> Organic. PM = 2.4 &times; 18<sup>1.05</sup> = 2.4 &times; 20.82 = <b>50.0 pm</b>. DM = 2.5 &times; 50<sup>0.38</sup> = 2.5 &times; 4.42 = <b>11.0 months</b>. Staff = 50 / 11 &asymp; <b>4.5 people</b>.</p>
+    <p><b>(b)</b> Forward: A 0-3, B 3-7, C 7-15, D 7-14, E 7-10, F 15-19, G 19-20. Critical path <b>A &rarr; B &rarr; C &rarr; F &rarr; G = 20 weeks</b>. Slack D = 15 &minus; 14 = <b>1 week</b>; slack E = 15 &minus; 10 = <b>5 weeks</b>.</p>
+    <p><b>(c)</b> SV = 24 &minus; 30 = &minus;6, SPI = 0.80 (behind). CV = 24 &minus; 28 = &minus;4, CPI = 0.857 (over budget). EAC = 60 / 0.857 = 70 pw, VAC = &minus;10 pw. Action: move a "Could" feature out of the release (MoSCoW) and put the stronger developer on the critical API task C; do not add new people late (Brooks' law).</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: PERT on a three-task chain</h3><p>Tasks on the critical path (a, m, b in days): X (2, 4, 6), Y (5, 8, 17), Z (3, 6, 9). What is the probability of finishing within 20 days?</p></header>
+  <details><summary>Model answer</summary><div class="sol"><p class="mono small">te: X = 4, Y = (5+32+17)/6 = 9, Z = 6 &rarr; &mu; = 19<br>&sigma;&sup2;: X = (4/6)&sup2; = 0.444, Y = (12/6)&sup2; = 4, Z = 1 &rarr; &Sigma; = 5.444, &sigma; = 2.33<br>Z = (20 &minus; 19) / 2.33 = 0.43 &rarr; P &asymp; 66.6%</p></div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: schedule compression</h3><p>A project is estimated at 60 pm over 12 months. Management wants it in 10 months. Using the software equation, what effort is needed? What would you advise?</p></header>
+  <details><summary>Model answer</summary><div class="sol"><p>E<sub>2</sub> = 60 &times; (12/10)<sup>4</sup> = 60 &times; 2.07 = <b>124.4 pm</b>, more than double. 10/12 = 0.83 of nominal, close to the impossible region below 0.75. Advise: keep 12 months, or cut scope with MoSCoW to fit 10 months; adding people late makes it later (Brooks' law: paths grow as n(n&minus;1)/2).</p></div></details>
+</div>
+</section>
+
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">18</span>Quiz</h2>
+<div class="quiz" id="q7">
+  <div class="mcq"><p class="q">Which of the 4 P's is the most important success factor?</p><div class="opts"><button data-ok>People</button><button>Product</button><button>Process</button><button>Project</button></div><p class="why">People: stakeholders, leaders and the team.</p></div>
+  <div class="mcq"><p class="q">At the concept stage an estimate can be off by a factor of:</p><div class="opts"><button>1.25</button><button>2</button><button data-ok>4</button><button>10</button></div><p class="why">Cone of uncertainty: 4&times; high or low.</p></div>
+  <div class="mcq"><p class="q">Three-point LOC with opt 1000, m 1600, pess 3400. Expected LOC =</p><div class="opts"><button>1,600</button><button data-ok>1,800</button><button>2,000</button><button>2,133</button></div><p class="why">(1000 + 6400 + 3400) / 6 = 1,800.</p></div>
+  <div class="mcq"><p class="q">In the software equation, effort is proportional to:</p><div class="opts"><button>t</button><button>1/t</button><button data-ok>1/t<sup>4</sup></button><button>t<sup>3</sup></button></div><p class="why">Compressing the schedule multiplies effort.</p></div>
+  <div class="mcq"><p class="q">Basic COCOMO coefficients for semi-detached are:</p><div class="opts"><button>2.4, 1.05, 0.38</button><button data-ok>3.0, 1.12, 0.35</button><button>3.6, 1.20, 0.32</button><button>2.94, 0.91, 0.28</button></div><p class="why">Organic 2.4/1.05/0.38; embedded 3.6/1.20/0.32.</p></div>
+  <div class="mcq"><p class="q">In COCOMO II, E = 0.91 + 0.01 &times; &Sigma;SF. With &Sigma;SF = 15, E =</p><div class="opts"><button>0.91</button><button data-ok>1.06</button><button>1.15</button><button>1.24</button></div><p class="why">0.91 + 0.15 = 1.06.</p></div>
+  <div class="mcq"><p class="q">Backlog 150 SP, velocity 40. Sprints needed =</p><div class="opts"><button>3</button><button>3.75</button><button data-ok>4</button><button>5</button></div><p class="why">150 / 40 = 3.75, always round up.</p></div>
+  <div class="mcq"><p class="q">Build: 0.5 &times; 100 + 0.5 &times; 200. Buy: 0.8 &times; 120 + 0.2 &times; 220. Which is cheaper?</p><div class="opts"><button>Build (150)</button><button data-ok>Buy (140)</button><button>Equal</button><button>Cannot tell</button></div><p class="why">Buy = 96 + 44 = 140 &lt; 150.</p></div>
+  <div class="mcq"><p class="q">A task with ES 6, LS 10 has slack:</p><div class="opts"><button>0</button><button data-ok>4</button><button>6</button><button>16</button></div><p class="why">Slack = LS &minus; ES.</p></div>
+  <div class="mcq"><p class="q">The critical path is:</p><div class="opts"><button>The shortest path</button><button data-ok>The longest path through the network</button><button>The path with most tasks</button><button>The cheapest path</button></div><p class="why">It fixes the minimum project duration; slack is zero.</p></div>
+  <div class="mcq"><p class="q">EV 80, PV 100, AC 90. SPI and CPI are:</p><div class="opts"><button>1.25 and 1.13</button><button data-ok>0.80 and 0.89</button><button>0.89 and 0.80</button><button>0.80 and 1.13</button></div><p class="why">SPI = EV/PV; CPI = EV/AC.</p></div>
+  <div class="mcq"><p class="q">Risk P = 0.4, impact $50K, mitigation $8K (removes it). Leverage =</p><div class="opts"><button>0.4</button><button>6.25</button><button data-ok>2.5</button><button>20</button></div><p class="why">RE = 20; leverage = 20 / 8 = 2.5 &gt; 1, so mitigate.</p></div>
+</div>
+</section>
+
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">19</span>Exam checklist</h2>
+<p><span class="check-progress" data-for="ck7"></span></p>
+<ul class="checklist" id="ck7" data-key="main">
+  <li>Define SPM; the 4 P's; the iron triangle; why projects are late; the 7-step planning workflow.</li>
+  <li>State the 5 estimation principles and draw the cone of uncertainty.</li>
+  <li>Name the resource types (people, 4 reusable categories, environment) and the technique families.</li>
+  <li>Compute three-point LOC, effort, cost and cost per LOC.</li>
+  <li>Compute UFP, VAF, FP, effort and cost.</li>
+  <li>Use the software equation: t<sub>min</sub>, E and E<sub>2</sub> = E<sub>1</sub>(t<sub>1</sub>/t<sub>2</sub>)<sup>4</sup>.</li>
+  <li>Apply basic COCOMO 81 for all three types and COCOMO II with scale factors and multipliers.</li>
+  <li>Use story points, velocity and Monte Carlo; know AI estimation cautions.</li>
+  <li>Draw a make-buy decision tree and compute expected costs.</li>
+  <li>State the 6 scheduling principles, the PNR curve, the impossible region and 40-20-40.</li>
+  <li>Build a WBS with the 100% and 8/80 rules.</li>
+  <li>Do the forward and backward pass, compute slack, find the critical path, draw a Gantt.</li>
+  <li>Compute PERT te, &sigma;, Z and the probability of meeting a deadline.</li>
+  <li>Explain resource leveling, critical chain, sprints, Kanban and Little's law.</li>
+  <li>Compute SV, SPI, CV, CPI, EAC, ETC, VAC, TCPI and interpret them; name DORA metrics.</li>
+  <li>Compute RE, leverage and contingency; walk through the CampusEats case.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE,$=S.$,$$=S.$$,fmt=S.fmt;
+  /* LOC */
+  S.live($("#loc-c"),function(){
+    var tot=0;$$("#lc-t tr").slice(1).forEach(function(r){var i=$$("input",r).map(function(x){return S.num(x);}),e=(i[0]+4*i[1]+i[2])/6;tot+=e;$("[data-e]",r).textContent=fmt(e,0);});
+    var p=S.num("#lc-p")||1,rate=S.num("#lc-r"),ef=tot/p,c=ef*rate;
+    $("#lc-out").innerHTML='<div><span>Total E(LOC)</span><b>'+fmt(tot,0)+'</b></div><div class="hl"><span>Effort</span><b>'+fmt(ef,1)+' pm</b></div><div><span>Cost</span><b>$'+fmt(c,0)+'</b></div><div><span>Cost per LOC</span><b>$'+fmt(tot?c/tot:0,2)+'</b></div>';
+  });
+  /* FP */
+  S.live($("#fp7"),function(){
+    var u=0;$$("#fp7 [data-fw]").forEach(function(i){u+=S.num(i)*(+i.getAttribute("data-fw"));});
+    var vaf=0.65+0.01*S.num("#f7-f"),F=u*vaf,e=F/(S.num("#f7-p")||1);
+    $("#f7-out").innerHTML='<div><span>UFP</span><b>'+u+'</b></div><div><span>VAF</span><b>'+fmt(vaf,2)+'</b></div><div class="hl"><span>FP</span><b>'+fmt(F,1)+'</b></div><div><span>Effort</span><b>'+fmt(e,1)+' pm</b></div><div><span>Cost</span><b>$'+fmt(e*S.num("#f7-r"),0)+'</b></div>';
+  });
+  /* software equation */
+  S.live($("#seq"),function(){
+    var L=S.num("#sq-l"),P=S.num("#sq-p")||1,B=S.num("#sq-b"),t2=S.num("#sq-t"),tm=8.14*Math.pow(L/P,0.43),ty=tm/12,E=180*B*Math.pow(ty,3),E2=t2?E*Math.pow(tm/t2,4):0;
+    $("#sq-out").innerHTML='<div><span>LOC / P</span><b>'+fmt(L/P,2)+'</b></div><div class="hl"><span>t<sub>min</sub></span><b>'+fmt(tm,1)+' months</b></div><div><span>t in years</span><b>'+fmt(ty,2)+'</b></div><div><span>Effort at t<sub>min</sub></span><b>'+fmt(E,1)+' pm</b></div><div><span>Effort at '+t2+' months</span><b>'+fmt(E2,1)+' pm</b></div><div><span>Effort saved</span><b>'+fmt(E?(1-E2/E)*100:0,0)+'%</b></div>';
+  });
+  /* COCOMO 81 */
+  var C81={Organic:[2.4,1.05,0.38],"Semi-detached":[3.0,1.12,0.35],Embedded:[3.6,1.20,0.32]};
+  S.live($("#cc81"),function(){
+    var k=S.num("#c8-k"),r=S.num("#c8-r");
+    $("#c8-t").innerHTML='<tr><th>Type</th><th class="num">PM</th><th class="num">DM (months)</th><th class="num">Staff</th>'+(r?'<th class="num">Cost</th>':'')+'</tr>'+Object.keys(C81).map(function(t){var c=C81[t],pm=c[0]*Math.pow(k,c[1]),dm=2.5*Math.pow(pm,c[2]);return '<tr><td>'+t+'</td><td class="num">'+fmt(pm,1)+'</td><td class="num">'+fmt(dm,1)+'</td><td class="num">'+fmt(pm/dm,1)+'</td>'+(r?'<td class="num">'+fmt(pm*r,0)+'</td>':'')+'</tr>';}).join("");
+  });
+  /* COCOMO II */
+  S.live($("#cc2"),function(){
+    var s=S.num("#c2-s"),E=0.91+0.01*S.num("#c2-sf"),em=["rely","cplx","pcap","tool"].reduce(function(a,k){return a*parseFloat($("#c2-"+k).value);},1),pm=2.94*Math.pow(s,E)*em,F=0.28+0.2*(E-0.91),td=3.67*Math.pow(pm,F);
+    $("#c2-out").innerHTML='<div><span>Exponent E</span><b>'+fmt(E,3)+'</b></div><div><span>&Pi; EM</span><b>'+fmt(em,3)+'</b></div><div class="hl"><span>PM</span><b>'+fmt(pm,1)+'</b></div><div><span>F</span><b>'+fmt(F,3)+'</b></div><div><span>TDEV</span><b>'+fmt(td,1)+' months</b></div><div><span>Staff</span><b>'+fmt(pm/td,1)+'</b></div>';
+  });
+  /* Monte Carlo */
+  function mc(){
+    var b=S.num("#mc-b"),n=Math.min(50000,Math.max(100,S.num("#mc-n"))),v=$("#mc-v").value.split(/[,\s]+/).map(Number).filter(function(x){return x>0;});
+    if(!v.length||b<=0)return;
+    var cnt={};for(var i=0;i<n;i++){var r=b,s=0;while(r>0){r-=v[Math.floor(Math.random()*v.length)];s++;}cnt[s]=(cnt[s]||0)+1;}
+    var ks=Object.keys(cnt).map(Number).sort(function(x,y){return x-y;}),mx=Math.max.apply(null,ks.map(function(k){return cnt[k];})),cum=0,p={50:null,85:null,95:null};
+    ks.forEach(function(k){cum+=cnt[k];[50,85,95].forEach(function(q){if(p[q]===null&&cum/n*100>=q)p[q]=k;});});
+    $("#mc-bars").innerHTML=ks.map(function(k){return '<div class="bar"><span class="val">'+fmt(cnt[k]/n*100,0)+'%</span><div class="fill'+(k===p[85]?" acc":"")+'" style="height:'+(cnt[k]/mx*100)+'%"></div></div>';}).join("");
+    $("#mc-lbl").innerHTML=ks.map(function(k){return '<span>'+k+'</span>';}).join("");
+    var mean=v.reduce(function(a,c){return a+c;},0)/v.length;
+    $("#mc-out").innerHTML='<div><span>Mean velocity</span><b>'+fmt(mean,1)+'</b></div><div><span>Simple forecast</span><b>'+Math.ceil(b/mean)+' sprints</b></div><div><span>P50</span><b>'+p[50]+' sprints</b></div><div class="hl"><span>P85 (commit)</span><b>'+p[85]+' sprints</b></div><div><span>P95</span><b>'+p[95]+' sprints</b></div>';
+  }
+  $("#mc-go").addEventListener("click",mc); mc();
+  /* make-buy */
+  function mbCalc(){
+    var res=$$("#mb [data-mb]").map(function(t){var e=0,ps=0;t.value.split("\n").forEach(function(l){var m=l.split(",");if(m.length<2)return;var p=m[0].split("*").reduce(function(a,x){return a*parseFloat(x);},1),c=parseFloat(m[1]);if(isFinite(p)&&isFinite(c)){e+=p*c;ps+=p;}});return {n:t.getAttribute("data-mb"),e:e,ps:ps};});
+    var best=res.reduce(function(a,b){return b.e<a.e?b:a;});
+    $("#mb-out").innerHTML=res.map(function(r){return '<div'+(r===best?' class="hl"':'')+'><span>'+r.n+' (probabilities sum '+fmt(r.ps,2)+')</span><b>'+fmt(r.e,1)+'</b></div>';}).join("");
+    var bad=res.filter(function(r){return Math.abs(r.ps-1)>0.001;}),v=$("#mb-v");v.className="verdict "+(bad.length?"no":"ok");
+    v.textContent=bad.length?"Check probabilities: "+bad.map(function(r){return r.n;}).join(", ")+" do not sum to 1.":"Lowest expected cost: "+best.n+" ("+fmt(best.e,1)+"). Then check support, lock-in, licensing and strategic value.";
+  }
+  $$("#mb textarea").forEach(function(t){t.addEventListener("input",mbCalc);}); mbCalc();
+  /* CPM */
+  var CP={ex8:"A, 5, -\nB, 4, A\nC, 6, A\nD, 10, C\nE, 8, B\nF, 4, D E\nG, 5, F\nH, 3, E",ce:"A, 4, -\nB, 6, A\nC, 4, A\nD, 16, C\nE, 16, B\nF, 6, C\nG, 6, D E F\nH, 3, E\nI, 3, G H"};
+  $("#cp-in").value=CP.ex8;
+  $("#cp-p").addEventListener("change",function(){$("#cp-in").value=CP[this.value];cpm();});
+  function cpm(){
+    var T=[],by={};
+    $("#cp-in").value.split("\n").forEach(function(l){var m=l.split(",");if(m.length<2)return;var id=m[0].trim();if(!id)return;var t={id:id,d:parseFloat(m[1])||0,p:(m[2]||"").trim().split(/\s+/).filter(function(x){return x&&x!=="-";})};T.push(t);by[id]=t;});
+    var bad=false,order=[],seen={},vis={};
+    function visit(t){if(seen[t.id])return;if(vis[t.id]){bad=true;return;}vis[t.id]=1;t.p.forEach(function(q){if(by[q])visit(by[q]);else bad=true;});seen[t.id]=1;order.push(t);}
+    T.forEach(visit);
+    if(bad||!T.length){$("#cp-t").innerHTML="";$("#cp-v").className="verdict no";$("#cp-v").textContent="Check the input: an unknown predecessor or a loop.";$("#cp-g").innerHTML="";return;}
+    order.forEach(function(t){t.es=t.p.length?Math.max.apply(null,t.p.map(function(q){return by[q].ef;})):0;t.ef=t.es+t.d;});
+    var end=Math.max.apply(null,T.map(function(t){return t.ef;}));
+    order.slice().reverse().forEach(function(t){var su=T.filter(function(s){return s.p.indexOf(t.id)>-1;});t.lf=su.length?Math.min.apply(null,su.map(function(s){return s.ls;})):end;t.ls=t.lf-t.d;t.sl=t.ls-t.es;});
+    $("#cp-t").innerHTML='<tr><th>Task</th><th class="num">d</th><th class="num">ES</th><th class="num">EF</th><th class="num">LS</th><th class="num">LF</th><th class="num">Slack</th></tr>'+T.map(function(t){return '<tr'+(t.sl===0?' class="total"':'')+'><td>'+S.esc(t.id)+'</td><td class="num">'+t.d+'</td><td class="num">'+t.es+'</td><td class="num">'+t.ef+'</td><td class="num">'+t.ls+'</td><td class="num">'+t.lf+'</td><td class="num">'+t.sl+'</td></tr>';}).join("");
+    var path=[],cur=T.filter(function(t){return t.sl===0&&t.es===0;})[0];
+    while(cur){path.push(cur.id);var nx=T.filter(function(s){return s.sl===0&&s.p.indexOf(cur.id)>-1&&s.es===cur.ef;})[0];cur=nx;}
+    $("#cp-v").className="verdict ok";$("#cp-v").textContent="Critical path: "+path.join(" → ")+" = "+end+" (bold rows have zero slack).";
+    var H=24+T.length*20,x0=34,W=320,sc=W/end,g='';
+    $("#cp-g").setAttribute("viewBox","0 0 360 "+H);
+    var step=end>20?5:2;for(var k=0;k<=end;k+=step){g+='<line x1="'+(x0+k*sc)+'" y1="14" x2="'+(x0+k*sc)+'" y2="'+(H-4)+'" class="s-line" stroke-width=".5"/><text x="'+(x0+k*sc)+'" y="10" font-size="7" text-anchor="middle" class="t-muted">'+k+'</text>';}
+    T.forEach(function(t,i){var y=20+i*20;g+='<text x="4" y="'+(y+11)+'" font-size="8.5" font-weight="700">'+S.esc(t.id)+'</text><rect x="'+(x0+t.es*sc)+'" y="'+y+'" width="'+Math.max(t.d*sc,1)+'" height="14" rx="3" class="'+(t.sl===0?"f-ink":"f-acc-t")+'"/>';if(t.sl>0)g+='<rect x="'+(x0+t.ef*sc)+'" y="'+(y+4)+'" width="'+t.sl*sc+'" height="6" rx="2" fill="none" class="s-acc" stroke-dasharray="2 2"/>';});
+    $("#cp-g").innerHTML=g;
+  }
+  $("#cp-in").addEventListener("input",cpm); cpm();
+  /* PERT */
+  function ncdf(z){var t=1/(1+0.2316419*Math.abs(z)),d=0.3989423*Math.exp(-z*z/2),p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p;}
+  function ninv(p){var lo=-6,hi=6;for(var i=0;i<60;i++){var m=(lo+hi)/2;if(ncdf(m)<p)lo=m;else hi=m;}return (lo+hi)/2;}
+  S.live($("#pert-c"),function(){
+    var mu=0,vs=0;$$("#pt-t tr").slice(1).forEach(function(r){var i=$$("input",r).map(function(x){return S.num(x);}),te=(i[0]+4*i[1]+i[2])/6,v=Math.pow((i[2]-i[0])/6,2);mu+=te;vs+=v;$("[data-te]",r).textContent=fmt(te,2);$("[data-v]",r).textContent=fmt(v,3);});
+    var sd=Math.sqrt(vs),D=S.num("#pt-d"),z=sd?(D-mu)/sd:0,P=ncdf(z),c=Math.min(99.9,Math.max(0.1,S.num("#pt-c")))/100,Dc=mu+ninv(c)*sd;
+    var X=function(x){return 20+(x-(mu-3.5*sd))/(7*sd)*320;},Y=function(x){return 100-80*Math.exp(-Math.pow((x-mu)/sd,2)/2);},path="",area="";
+    for(var x=mu-3.5*sd;x<=mu+3.5*sd;x+=sd/20){path+=(path?"L":"M")+X(x).toFixed(1)+","+Y(x).toFixed(1);if(x<=D)area+=(area?"L":"M"+X(mu-3.5*sd).toFixed(1)+",100L")+X(x).toFixed(1)+","+Y(x).toFixed(1);}
+    if(area)area+="L"+X(Math.min(D,mu+3.5*sd)).toFixed(1)+",100Z";
+    $("#pt-svg").innerHTML=(sd?'<path d="'+area+'" class="f-acc-t"/><path d="'+path+'" class="s-ink" stroke-width="2"/><line x1="20" y1="100" x2="340" y2="100" class="s-line"/><line x1="'+X(mu)+'" y1="18" x2="'+X(mu)+'" y2="100" class="s-line" stroke-dasharray="3 3"/><text x="'+X(mu)+'" y="114" font-size="8.5" text-anchor="middle">&mu; = '+fmt(mu,2)+'</text>'+(D>mu-3.5*sd&&D<mu+3.5*sd?'<line x1="'+X(D)+'" y1="18" x2="'+X(D)+'" y2="100" class="s-acc" stroke-width="1.6"/><text x="'+X(D)+'" y="14" font-size="8.5" text-anchor="middle" class="t-acc">D = '+D+'</text>':''):'');
+    $("#pt-out").innerHTML='<div><span>&mu; (expected duration)</span><b>'+fmt(mu,2)+'</b></div><div><span>&Sigma;&sigma;<sup>2</sup></span><b>'+fmt(vs,3)+'</b></div><div><span>&sigma;</span><b>'+fmt(sd,2)+'</b></div><div><span>Z = (D &minus; &mu;) / &sigma;</span><b>'+fmt(z,2)+'</b></div><div class="hl"><span>P(T &le; '+D+')</span><b>'+fmt(P*100,1)+'%</b></div><div><span>Deadline for '+fmt(c*100,0)+'%</span><b>'+fmt(Dc,1)+'</b></div>';
+  });
+  /* agile */
+  S.live($("#ag"),function(){
+    var c=S.num("#ag-c"),d=S.num("#ag-d")||1,k=S.num("#ag-k"),r=S.num("#ag-r"),ideal=c-c/d*k,rate=k?(c-r)/k:0,left=d-k,need=left?r/left:0,fin=rate?k+r/rate:0,w=S.num("#ag-w"),th=S.num("#ag-t")||1,ct=S.num("#ag-ct");
+    $("#ag-out").innerHTML='<div><span>Ideal remaining at day '+k+'</span><b>'+fmt(ideal,1)+'</b></div><div class="hl"><span>'+(r>ideal?"Behind by":"Ahead by")+'</span><b>'+fmt(Math.abs(r-ideal),1)+' SP</b></div><div><span>Current burn rate</span><b>'+fmt(rate,2)+'/day</b></div><div><span>Forecast finish day</span><b>'+fmt(fin,1)+'</b></div><div><span>Rate needed</span><b>'+fmt(need,2)+'/day</b></div><div><span>SP to descope</span><b>'+fmt(Math.max(0,r-rate*left),1)+'</b></div><div><span>Cycle time = WIP / throughput</span><b>'+fmt(w/th,2)+' days</b></div><div><span>WIP limit for target</span><b>'+fmt(ct*th,1)+'</b></div>';
+  });
+  /* EVA */
+  var EVP={ex:[582,156.5,126.5,127.5],ce:[126,67.5,59,70]};
+  $("#ev-p").addEventListener("change",function(){var p=EVP[this.value];["bac","pv","ev","ac"].forEach(function(k,i){$("#ev-"+k).value=p[i];});$("#ev-bac").dispatchEvent(new Event("input"));});
+  S.live($("#eva"),function(){
+    var bac=S.num("#ev-bac"),pv=S.num("#ev-pv"),ev=S.num("#ev-ev"),ac=S.num("#ev-ac"),spi=pv?ev/pv:0,cpi=ac?ev/ac:0,eac=cpi?bac/cpi:0,tcpi=bac-ac?(bac-ev)/(bac-ac):0;
+    $("#ev-out").innerHTML='<div><span>SV = EV &minus; PV</span><b>'+fmt(ev-pv,1)+'</b></div><div class="hl"><span>SPI = EV / PV</span><b>'+fmt(spi,3)+'</b></div><div><span>CV = EV &minus; AC</span><b>'+fmt(ev-ac,1)+'</b></div><div class="hl"><span>CPI = EV / AC</span><b>'+fmt(cpi,3)+'</b></div><div><span>% scheduled</span><b>'+fmt(bac?pv/bac*100:0,1)+'%</b></div><div><span>% complete</span><b>'+fmt(bac?ev/bac*100:0,1)+'%</b></div><div><span>EAC = BAC / CPI</span><b>'+fmt(eac,1)+'</b></div><div><span>ETC = EAC &minus; AC</span><b>'+fmt(eac-ac,1)+'</b></div><div><span>VAC = BAC &minus; EAC</span><b>'+fmt(bac-eac,1)+'</b></div><div><span>TCPI</span><b>'+fmt(tcpi,3)+'</b></div>';
+    var s=spi<0.97?"behind schedule":spi>1.03?"ahead of schedule":"on schedule",c=cpi<0.97?"over budget":cpi>1.03?"under budget":"on budget",v=$("#ev-v");
+    v.className="verdict "+(spi<0.97||cpi<0.97?"no":"ok");
+    v.textContent="The project is "+s+" and "+c+"."+(tcpi>1.1?" TCPI "+fmt(tcpi,2)+" above 1.1 means finishing within BAC is unlikely: descope or re-baseline.":"");
+  });
+  /* risk exposure */
+  S.live($("#re"),function(){
+    var tot=0,mit=0,res=0;$$("#re-t tr").slice(1).forEach(function(r){var i=$$("input",r).map(function(x){return S.num(x);}),re=i[0]*i[1],lv=i[2]?re/i[2]:0,ok=lv>1;tot+=re;if(ok)mit+=i[2];else res+=re;$("[data-re]",r).textContent=fmt(re,1);$("[data-lv]",r).textContent=fmt(lv,2);$("[data-dc]",r).textContent=ok?"Mitigate":"Accept + plan";});
+    $("#re-out").innerHTML='<div class="hl"><span>Total RE (contingency)</span><b>'+fmt(tot,1)+'</b></div><div><span>Cost of worthwhile mitigations</span><b>'+fmt(mit,1)+'</b></div><div><span>Residual RE if they work</span><b>'+fmt(res,1)+'</b></div>';
+  });
+})();
+</script>
+</body>
+</html>

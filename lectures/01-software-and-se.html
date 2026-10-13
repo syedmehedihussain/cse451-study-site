@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Software and Software Engineering</title>
+<meta name="description" content="CSE451 Lecture 1: software, the software crisis, SDLC, cost of faults and change, failure curves and myths.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="01-software-and-se">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 01 &nbsp;/&nbsp; Mid exam</p>
+  <h1>Software and software engineering</h1>
+  <p class="summary">What software is, why big systems fail, the software crisis, the life cycle that structures the work, why late faults cost so much, how software ages, and the myths that waste money.</p>
+  <p class="meta"><span><b>Source</b> Lecture 1, 29 slides</span><span><b>Reading</b> about 40 min</span><span><b>Exercises</b> SmartCanteen 1 and 2</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording, learn it word for word</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<!-- 1 -->
+<section id="software">
+<h2 data-short="What is software"><span class="n">01</span>What is software?</h2>
+<p>Most people think software is only code. The lecture uses Pressman's wider definition. Software has three parts, and all three are part of the product.</p>
+<div class="box exact"><span class="lbl">Exam text: definition (Pressman)</span>
+<p>Software is the set of computer programs, the data structures they manipulate, and the documentation that describes their operation and use. It is a product, and also the vehicle that delivers information and controls other products.</p></div>
+<div class="cards">
+  <div class="c"><h4>Programs</h4><p>Executable instructions that deliver features, function and performance.</p><span class="ex">Mobile banking app: Android and iOS app code, server APIs, payment engine.</span></div>
+  <div class="c"><h4>Data</h4><p>Data structures and stored information that the programs work on.</p><span class="ex">Mobile banking app: accounts, transactions, configuration files.</span></div>
+  <div class="c"><h4>Documentation</h4><p>Descriptive material for users, developers and operators.</p><span class="ex">Mobile banking app: SRS, API specification, user guide, deployment manual.</span></div>
+</div>
+<h3>Two product types</h3>
+<div class="tscroll"><table>
+<tr><th>Type</th><th>Who it is for</th><th>Example from the slide</th><th>Local example</th></tr>
+<tr><td>Generic product</td><td>Sold on the open market to anyone</td><td>MS Office, Photoshop</td><td>Tally accounting software sold to many shops</td></tr>
+<tr><td>Customised product</td><td>Built for one client and its needs</td><td>A hospital's patient-management system</td><td>The NID system built only for the Election Commission</td></tr>
+</table></div>
+<div class="box real"><span class="lbl">Real life</span><p>When bKash ships a new app version, the "software" is not only the APK. It is also the customer database it reads and the API document that the merchant partners use. If the API document is wrong, the product is broken for the merchants even if the code is perfect.</p></div>
+</section>
+
+<!-- 2 -->
+<section id="failure">
+<h2 data-short="Why systems fail"><span class="n">02</span>Why do software systems fail?</h2>
+<p>The lecture gives five reasons. Learn each reason with its result, because exam case studies ask you to name the reason behind a failure.</p>
+<div class="cards">
+  <div class="c"><h4>Requirements mismatch</h4><p>The system does not meet the business need.</p><span class="ex">Result: it is abandoned, or it needs costly adaptive maintenance.</span></div>
+  <div class="c"><h4>Performance shortfall</h4><p>It is too slow or it cannot scale for real users.</p><span class="ex">Result: rework at extra cost.</span></div>
+  <div class="c"><h4>Latent errors</h4><p>Hidden defects surface only in operation.</p><span class="ex">Result: patches, outages, lost trust.</span></div>
+  <div class="c"><h4>User rejection</h4><p>Users were not involved, or not committed.</p><span class="ex">Result: the system is not used.</span></div>
+  <div class="c"><h4>Unmaintainability</h4><p>Accepted at first, then too costly to change.</p><span class="ex">Result: it falls into disuse.</span></div>
+</div>
+<h3>Lessons from industry</h3>
+<div class="tscroll"><table>
+<tr><th>Case</th><th>Year</th><th>Failure type</th><th>What happened</th></tr>
+<tr><td>Ariane 5</td><td class="num">1996</td><td>Latent error</td><td>Reused code overflowed a number conversion. The rocket self-destructed about 40 s after launch.</td></tr>
+<tr><td>Therac-25</td><td class="num">1985-87</td><td>Latent error</td><td>Race conditions in the control software caused radiation overdoses.</td></tr>
+<tr><td>Healthcare.gov</td><td class="num">2013</td><td>Performance</td><td>The site collapsed under launch-day load. Very few users could enrol.</td></tr>
+<tr><td>Knight Capital</td><td class="num">2012</td><td>Change / deployment</td><td>A faulty deployment lost about US$440 M in 45 minutes.</td></tr>
+</table></div>
+<div class="sorter" data-options="Requirements mismatch|Performance shortfall|Latent errors|User rejection|Unmaintainability">
+  <div class="head"><strong>Practice: name the failure reason</strong><span class="score"></span></div>
+  <div class="sort" data-a="Performance shortfall" data-why="It worked, but it could not handle the real load. Same pattern as Healthcare.gov."><p class="item">An admission-result website for a public university goes down every year on result day because 2 lakh students open it at the same time.</p></div>
+  <div class="sort" data-a="User rejection" data-why="The staff were never involved, so they do not use it."><p class="item">A ministry buys an e-file system. Office staff were never asked about their work, so they keep using paper files and the system stays unused.</p></div>
+  <div class="sort" data-a="Latent errors" data-why="The defect was always there, hidden, and appeared only in operation."><p class="item">A ride-sharing app charges double fare only when a trip crosses midnight. The bug was in the code from the first release.</p></div>
+  <div class="sort" data-a="Requirements mismatch" data-why="The system does not do what the business needs, so it must be changed at high cost."><p class="item">A garments factory's new payroll system cannot handle overtime rules, which are the main part of its payroll.</p></div>
+  <div class="sort" data-a="Unmaintainability" data-why="It was accepted at first, but it became too costly to change."><p class="item">A bank's 15-year-old system has no documentation. Every small change takes months, so the bank stops changing it and starts a replacement.</p></div>
+  <div class="rule">Rule of thumb: did it fail on day one with real users (performance or rejection), later because of a hidden bug (latent), because it does the wrong job (mismatch), or because nobody can change it (unmaintainable)?</div>
+</div>
+</section>
+
+<!-- 3 -->
+<section id="crisis">
+<h2 data-short="Software crisis"><span class="n">03</span>The software crisis</h2>
+<div class="box exact"><span class="lbl">Exam text: software crisis</span>
+<p>The persistent failure to deliver software on time, within budget and at the required quality, as system complexity outgrows development practice. The term became widely used at the 1968 NATO Software Engineering Conference.</p></div>
+<h3>Three symptoms</h3>
+<div class="cards">
+  <div class="c"><h4>Delays</h4><p>Deadlines slip. Features arrive late or never.</p></div>
+  <div class="c"><h4>Over budget</h4><p>Estimates are optimistic. Cost overruns are common.</p></div>
+  <div class="c"><h4>Low quality</h4><p>Delivered with many faults. Hard to maintain.</p></div>
+</div>
+<h3>Five root causes</h3>
+<div class="flow"><span>Growing complexity</span><span>Changing requirements</span><span>Poor estimation</span><span>Weak process and testing</span><span>Poor communication</span></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>C-R-E-P-C</strong>: "Complex Requests Every Project Collapses". Complexity, Requirements change, Estimation, Process and testing, Communication.</p></div>
+<div class="box key"><span class="lbl">Key point</span><p>The aim of SE is to solve the crisis: fault-free software, on time, within budget, that meets users' needs. The crisis is still with us more than 55 years later. Only the scale changed (cloud, mobile, AI).</p></div>
+<div class="box real"><span class="lbl">Real life: the midterm case</span><p>The Bangladesh NID system crashed often, mapped data wrongly, and went 40% over budget. That is all three symptoms at once: low quality (crashes, wrong mapping), over budget (40%), and in practice delays. The exam asked you to connect this to the crisis. See the model answer in section 19.</p></div>
+</section>
+
+<!-- 4 -->
+<section id="se-definition">
+<h2 data-short="What is SE"><span class="n">04</span>What is software engineering?</h2>
+<div class="box exact"><span class="lbl">Exam text: IEEE definition</span>
+<p>Software engineering is the application of a systematic, disciplined, quantifiable approach to the development, operation, and maintenance of software.</p></div>
+<p>Each word in the definition has a meaning. Examiners like you to explain the three key words.</p>
+<div class="cards">
+  <div class="c"><h4>Systematic</h4><p>Follows a defined process, not ad-hoc coding.</p></div>
+  <div class="c"><h4>Disciplined</h4><p>Uses standards, reviews and configuration control.</p></div>
+  <div class="c"><h4>Quantifiable</h4><p>Effort, cost, size and defects are measured.</p></div>
+  <div class="c"><h4>Goal</h4><p>Fault-free software, on time, within budget, that satisfies users.</p></div>
+</div>
+<p>It covers the whole life of the product: design, development, testing, deployment and maintenance.</p>
+<h3>SE as a layered technology (Pressman)</h3>
+<figure class="fig">
+<svg viewBox="0 0 360 230" role="img" aria-label="Four layers: quality focus at the base, then process, methods, tools on top">
+  <polygon points="20,190 340,190 325,225 35,225" class="f-acc-t"/>
+  <polygon points="45,145 315,145 340,190 20,190" class="f-sunk"/>
+  <polygon points="70,100 290,100 315,145 45,145" class="f-box"/>
+  <polygon points="95,55 265,55 290,100 70,100" class="f-box"/>
+  <text x="180" y="82" text-anchor="middle" font-size="13" font-weight="650">Tools</text>
+  <text x="180" y="95" text-anchor="middle" font-size="9" class="t-muted">Git, Jira, IDEs, CI/CD servers</text>
+  <text x="180" y="127" text-anchor="middle" font-size="13" font-weight="650">Methods</text>
+  <text x="180" y="140" text-anchor="middle" font-size="9" class="t-muted">requirements analysis, design modelling, testing</text>
+  <text x="180" y="172" text-anchor="middle" font-size="13" font-weight="650">Process</text>
+  <text x="180" y="185" text-anchor="middle" font-size="9" class="t-muted">Waterfall, Scrum, DevOps</text>
+  <text x="180" y="210" text-anchor="middle" font-size="13" font-weight="650" class="t-acc">A quality focus</text>
+  <text x="180" y="221" text-anchor="middle" font-size="9" class="t-muted">ISO 9001, CMMI, Six Sigma</text>
+  <text x="180" y="35" text-anchor="middle" font-size="10" class="t-muted">read from the bottom up: every layer rests on quality</text>
+</svg>
+<figcaption>Every layer rests on a commitment to quality. <span class="src">Slide 6</span></figcaption>
+</figure>
+<div class="box mem"><span class="lbl">Memory aid</span><p>Bottom to top: <strong>Q-P-M-T</strong>, "Quality People Make Things". Quality focus, Process, Methods, Tools.</p></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>The base layer is "a quality focus", not "process". Students often draw process at the bottom. Process is the second layer: it is the glue that holds the technology layers together.</p></div>
+</section>
+
+<!-- 5 -->
+<section id="comparisons">
+<h2 data-short="SE vs software vs CS"><span class="n">05</span>Software vs SE, and CS vs SE</h2>
+<div class="tscroll"><table>
+<tr><th>Aspect</th><th>Software</th><th>Software engineering</th></tr>
+<tr><td>What it is</td><td>Programs, data and instructions that perform tasks on a computer</td><td>The disciplined process of designing, developing, testing and maintaining software</td></tr>
+<tr><td>Focus</td><td>The product</td><td>The process and methodology</td></tr>
+<tr><td>Examples</td><td>Mobile apps, operating systems, games</td><td>Requirement analysis, coding standards, testing, maintenance</td></tr>
+<tr><td>Who builds it</td><td>Can be written by one individual</td><td>Teams using tools and engineering practice</td></tr>
+<tr><td>Main goal</td><td>Functionality: it works</td><td>Quality, reliability, scalability and maintainability</td></tr>
+</table></div>
+<div class="box key"><span class="lbl">Analogy from the slide</span><p>A bridge is the product. Civil engineering is the discipline that makes it safe, on budget and maintainable. Software is the bridge. Software engineering is the civil engineering.</p></div>
+<div class="tscroll"><table>
+<tr><th>Feature</th><th>Computer science</th><th>Software engineering</th></tr>
+<tr><td>Core question</td><td>What can be computed, and how efficiently?</td><td>How do we build it reliably, economically and at scale?</td></tr>
+<tr><td>Primary focus</td><td>Algorithms, data structures, theoretical limits</td><td>Architecture, design patterns, system life cycle</td></tr>
+<tr><td>Typical output</td><td>Proofs, novel algorithms, optimised models</td><td>Scalable applications, platforms, enterprise systems</td></tr>
+<tr><td>Key metrics</td><td>Time and space complexity</td><td>Reliability, maintainability, user satisfaction, cost</td></tr>
+<tr><td>Scope of work</td><td>Logic and underlying mathematics</td><td>Requirements, testing, deployment, team collaboration</td></tr>
+</table></div>
+<p>The CS view investigates many ways to produce software, good and bad (for example, a faster shortest-path algorithm). The SE view keeps only techniques that make sound economic sense (for example, building, testing, deploying and maintaining a ride-sharing app such as Pathao that uses that algorithm).</p>
+<div class="box trap"><span class="lbl">Exam trap: "SE vs just writing programs"</span><p>The midterm asked how SE differs from simply writing programs. Do not answer "SE is bigger". Give the table points: product vs process, one person vs team, "it works" vs quality and maintainability, and add that SE covers the whole life cycle including maintenance, which is 60 to 80% of the cost.</p></div>
+</section>
+
+<!-- 6 -->
+<section id="characteristics">
+<h2 data-short="Characteristics"><span class="n">06</span>What makes software different?</h2>
+<p>Software is not like a physical product. These eight characteristics explain why it needs its own engineering discipline.</p>
+<div class="cards">
+  <div class="c"><h4>Logical, not physical</h4><p>Intangible. You cannot see or touch it, so progress is hard to observe.</p></div>
+  <div class="c"><h4>Developed, not manufactured</h4><p>The cost is in the engineering. Copying is almost free.</p></div>
+  <div class="c"><h4>Deteriorates, does not wear out</h4><p>Changes add side-effect defects, and it ages against new platforms.</p></div>
+  <div class="c"><h4>Mostly custom-built</h4><p>Built to requirements, though reuse of libraries and APIs keeps growing.</p></div>
+  <div class="c"><h4>A differentiator</h4><p>Products compete on their software.</p><span class="ex">A supermarket cashier workstation.</span></div>
+  <div class="c"><h4>No spare parts</h4><p>A failure is a design or code error. There is no worn part to swap.</p></div>
+  <div class="c"><h4>Complex and changeable</h4><p>Many interacting parts, and it is always expected to change.</p></div>
+  <div class="c tint"><h4>Example</h4><p>A phone's battery wears out. Its OS "ages" as new apps and APIs expose incompatibilities.</p></div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>"Software wears out" is wrong. Hardware wears out (physical fatigue). Software <em>deteriorates</em> because of change. You will see this again in the failure curves (sections 15 and 16).</p></div>
+</section>
+
+<!-- 7 -->
+<section id="domains">
+<h2 data-short="Application domains"><span class="n">07</span>Software application domains</h2>
+<div class="cards">
+  <div class="c"><h4>System software</h4><p>Controls hardware and serves other programs.</p><span class="ex">Linux, Windows, compilers, device drivers</span></div>
+  <div class="c"><h4>Business software</h4><p>Commercial data processing and decisions.</p><span class="ex">SAP ERP, Salesforce CRM, core banking</span></div>
+  <div class="c"><h4>Engineering and scientific</h4><p>Number-crunching, simulation, analysis.</p><span class="ex">MATLAB, SPSS, AutoCAD, ANSYS</span></div>
+  <div class="c"><h4>Embedded software</h4><p>Resides inside a product to control it.</p><span class="ex">Autopilot, car ABS, biometric devices</span></div>
+  <div class="c"><h4>Personal / product-line</h4><p>Packaged for many users.</p><span class="ex">Microsoft Office, Photoshop</span></div>
+  <div class="c"><h4>Web and mobile apps</h4><p>Used through a browser or a phone.</p><span class="ex">Gmail, bKash, Daraz, Pathao</span></div>
+  <div class="c"><h4>Artificial intelligence</h4><p>Learns, reasons or perceives.</p><span class="ex">LLM assistants, recommenders, computer vision</span></div>
+  <div class="c"><h4>Cloud / SaaS and legacy</h4><p>Delivered as a service, or old systems that are still vital.</p><span class="ex">Google Workspace; decades-old COBOL banking</span></div>
+</div>
+<div class="sorter" data-options="System|Business|Engineering/scientific|Embedded|Web and mobile|AI">
+  <div class="head"><strong>Practice: which domain?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Embedded" data-why="It lives inside a device and controls it."><p class="item">The fingerprint software inside an office attendance machine.</p></div>
+  <div class="sort" data-a="Business" data-why="Commercial data processing: accounts, transactions, decisions."><p class="item">The core banking system of a commercial bank that posts every deposit.</p></div>
+  <div class="sort" data-a="Web and mobile" data-why="Used through a phone."><p class="item">The Foodpanda app on your phone.</p></div>
+  <div class="sort" data-a="System" data-why="Serves other programs and controls hardware."><p class="item">The printer driver that lets Word talk to a printer.</p></div>
+  <div class="sort" data-a="AI" data-why="It learns from data to perceive or predict."><p class="item">A model that reads X-ray images and flags possible tuberculosis.</p></div>
+  <div class="sort" data-a="Engineering/scientific" data-why="Simulation and analysis."><p class="item">A flood simulation that models rainfall in the Padma basin.</p></div>
+</div>
+</section>
+
+<!-- 8 -->
+<section id="sdlc">
+<h2 data-short="SDLC"><span class="n">08</span>The software development life cycle (SDLC)</h2>
+<div class="box exact"><span class="lbl">Exam text: SDLC</span>
+<p>SDLC is the structured set of activities used to develop a software system, from understanding the need to retiring the product.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 310" role="img" aria-label="SDLC cycle of six phases with a feedback loop from maintenance to requirements">
+  <defs><marker id="a8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker>
+  <marker id="a8b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-acc"/></marker></defs>
+  <circle cx="180" cy="155" r="62" class="f-sunk"/>
+  <text x="180" y="145" text-anchor="middle" font-size="10" font-weight="600">Documentation</text>
+  <text x="180" y="159" text-anchor="middle" font-size="10" font-weight="600">and QA</text>
+  <text x="180" y="173" text-anchor="middle" font-size="8.5" class="t-muted">run through every phase</text>
+  <g font-size="10.5" font-weight="600" text-anchor="middle">
+    <rect x="133" y="20" width="94" height="40" rx="6" class="f-box"/><text x="180" y="37">Requirements</text><text x="180" y="51" font-size="8" font-weight="400" class="t-muted">SRS, use cases</text>
+    <rect x="248" y="78" width="94" height="40" rx="6" class="f-box"/><text x="295" y="95">Design</text><text x="295" y="109" font-size="8" font-weight="400" class="t-muted">architecture, UML, DB</text>
+    <rect x="248" y="192" width="94" height="40" rx="6" class="f-box"/><text x="295" y="209">Coding</text><text x="295" y="223" font-size="8" font-weight="400" class="t-muted">code, unit tests</text>
+    <rect x="133" y="250" width="94" height="40" rx="6" class="f-box"/><text x="180" y="267">Testing</text><text x="180" y="281" font-size="8" font-weight="400" class="t-muted">test plans, reports</text>
+    <rect x="18" y="192" width="94" height="40" rx="6" class="f-box"/><text x="65" y="209">Deployment</text><text x="65" y="223" font-size="8" font-weight="400" class="t-muted">release build</text>
+    <rect x="18" y="78" width="94" height="40" rx="6" class="f-acc-t"/><text x="65" y="95">Maintenance</text><text x="65" y="109" font-size="8" font-weight="400" class="t-muted">patches, versions</text>
+  </g>
+  <g class="s-ink" stroke-width="1.4" marker-end="url(#a8)">
+    <path d="M228,44 Q270,50 288,76"/><path d="M296,120 L296,189"/><path d="M288,234 Q270,262 230,268"/>
+    <path d="M131,268 Q90,262 72,234"/><path d="M65,190 L65,121"/>
+  </g>
+  <path d="M72,76 Q90,50 131,44" class="s-acc" stroke-width="2.2" stroke-dasharray="5 3" marker-end="url(#a8b)"/>
+  <text x="62" y="48" font-size="8.5" class="t-acc" font-weight="600">feedback:</text>
+  <text x="62" y="58" font-size="8.5" class="t-acc">change requests, bugs</text>
+</svg>
+<figcaption>Six phases, each with an output. Change requests and bug reports restart the cycle. <span class="src">Slide 11</span></figcaption>
+</figure>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>R-D-C-T-D-M</strong>: "Real Developers Code, Test, Deploy, Maintain".</p></div>
+<h3>Phases, techniques and industry tools</h3>
+<div class="tscroll"><table>
+<tr><th>Phase</th><th>Output</th><th>Key techniques</th><th>Common tools</th></tr>
+<tr><td>Requirements</td><td>SRS, use cases</td><td>Interviews, use cases, user stories, prototyping</td><td>Jira, Confluence, Figma</td></tr>
+<tr><td>Design</td><td>Architecture, UML, DB schema</td><td>UML modelling, architecture patterns (MVC, microservices), ER modelling</td><td>draw.io, Lucidchart, StarUML, Enterprise Architect</td></tr>
+<tr><td>Coding</td><td>Source code, unit tests</td><td>Coding standards, pair programming, code review</td><td>VS Code, IntelliJ, Git / GitHub, SonarQube</td></tr>
+<tr><td>Testing</td><td>Test plans and reports</td><td>Unit, integration, system and acceptance testing</td><td>JUnit, pytest, Selenium, Postman</td></tr>
+<tr><td>Deployment</td><td>Integrated release build</td><td>Continuous integration and delivery, containerisation</td><td>GitHub Actions, Jenkins, Docker, Kubernetes</td></tr>
+<tr><td>Maintenance</td><td>Patches, new versions</td><td>Monitoring, bug tracking, refactoring</td><td>Sentry, Grafana, New Relic, Jira</td></tr>
+</table></div>
+<h3>A typical feature workflow in a product company</h3>
+<div class="flow"><span>User story in Jira</span><i>&rarr;</i><span>Mock-up in Figma</span><i>&rarr;</i><span>PR + code review</span><i>&rarr;</i><span>CI runs tests</span><i>&rarr;</i><span>Docker deploy</span><i>&rarr;</i><span>Sentry monitoring</span></div>
+<div class="box real"><span class="lbl">Worked example from the slide: campus food-ordering app</span>
+<p>Interview canteen staff and students (requirements) &rarr; design screens and database (design) &rarr; code the Android app and API (coding) &rarr; unit and UI tests (testing) &rarr; publish on Play Store (deployment) &rarr; fix bugs and add features (maintenance).</p></div>
+</section>
+
+<!-- 9 -->
+<section id="quality">
+<h2 data-short="Good vs bad software"><span class="n">09</span>Good vs bad software</h2>
+<p>Good software is maintained. Bad software is discarded. Product quality is defined by standards such as ISO/IEC 25010.</p>
+<div class="cards two">
+  <div class="c"><h4>Maintainability</h4><p>Easy to understand and change as needs evolve.</p><span class="ex">Measure with SonarQube</span></div>
+  <div class="c"><h4>Dependability and security</h4><p>Reliable, safe, and resistant to attack.</p><span class="ex">Measure with OWASP ZAP, Snyk</span></div>
+  <div class="c"><h4>Efficiency</h4><p>No waste of CPU, memory, battery or network.</p><span class="ex">Measure with JMeter, Lighthouse</span></div>
+  <div class="c"><h4>Usability / acceptability</h4><p>Understandable, and fits the users' work.</p><span class="ex">Measure with usability tests, Hotjar</span></div>
+</div>
+<div class="tscroll"><table>
+<tr><th>Good software</th><th>Bad software</th></tr>
+<tr><td>Meets stated and implied needs</td><td>Built on vague requirements</td></tr>
+<tr><td>Modular, readable, documented</td><td>"Spaghetti" code, no documentation</td></tr>
+<tr><td>Tested; few defects in the field</td><td>Every fix breaks something else</td></tr>
+<tr><td>Easy and cheap to change</td><td>Soon replaced or abandoned</td></tr>
+</table></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p>The four attributes: <strong>M-D-E-U</strong>, "My Dog Eats Underwear". Maintainability, Dependability, Efficiency, Usability.</p></div>
+</section>
+
+<!-- 10 -->
+<section id="maintenance">
+<h2 data-short="Maintenance types"><span class="n">10</span>Types of software maintenance</h2>
+<p>Maintenance is not only bug fixing. Four types share all maintenance effort, and bug fixing is the small part.</p>
+<div class="donut-wrap">
+  <div class="donut" style="background:conic-gradient(var(--bad) 0 20%, var(--text-primary) 20% 68%, var(--accent) 68% 84%, var(--key-ink) 84% 100%)"><b>effort<br>share</b></div>
+  <ul class="legend">
+    <li><i style="background:var(--bad)"></i>Corrective <span class="v">about 20%</span></li>
+    <li><i style="background:var(--text-primary)"></i>Perfective <span class="v">about 48%</span></li>
+    <li><i style="background:var(--accent)"></i>Adaptive <span class="v">about 16%</span></li>
+    <li><i style="background:var(--key-ink)"></i>Preventive <span class="v">about 16%</span></li>
+  </ul>
+</div>
+<div class="cards two">
+  <div class="c"><h4>Corrective <span class="tag red">20%</span></h4><p>Fixes a reported fault.</p><span class="ex">The app crashes when the cart is empty.</span></div>
+  <div class="c"><h4>Perfective <span class="tag">48%</span></h4><p>Improves features, usability or performance.</p><span class="ex">Add dark mode; make checkout faster.</span></div>
+  <div class="c"><h4>Adaptive <span class="tag blue">16%</span></h4><p>Keeps up with a changing environment.</p><span class="ex">Support a new OS version or payment API.</span></div>
+  <div class="c"><h4>Preventive <span class="tag green">16%</span></h4><p>Avoids future faults and improves maintainability.</p><span class="ex">Refactor duplicated code; upgrade old libraries.</span></div>
+</div>
+<div class="box key"><span class="lbl">Where the numbers come from</span>
+<p>Enhancement is about 80% of maintenance. Inside that 80%: perfective is 60%, adaptive is 20%, preventive is 20%.</p>
+<p class="mono small">perfective = 0.60 &times; 80 = 48% &nbsp; adaptive = 0.20 &times; 80 = 16% &nbsp; preventive = 0.20 &times; 80 = 16% &nbsp; corrective = 100 - 80 = 20%</p></div>
+<p class="small muted">Tools: Jira (change tickets), Git (versions and branches), Dependabot (adaptive and preventive library updates), SonarQube (refactoring targets).</p>
+<div class="sorter" data-options="Corrective|Perfective|Adaptive|Preventive">
+  <div class="head"><strong>Classifier: SmartCanteen change requests and more</strong><span class="score"></span></div>
+  <div class="sort" data-a="Corrective" data-why="It fixes a fault."><p class="item">CR1: The app crashes when the cart is empty.</p></div>
+  <div class="sort" data-a="Adaptive" data-why="An external API changed. The environment changed, not the needs."><p class="item">CR2: bKash releases a new payment API; the old one will be retired.</p></div>
+  <div class="sort" data-a="Perfective" data-why="New or improved features that users asked for."><p class="item">CR3: Students ask for dark mode and one-tap re-order.</p></div>
+  <div class="sort" data-a="Preventive" data-why="Nothing is broken yet. It avoids future faults."><p class="item">CR4: The team refactors duplicated checkout code and upgrades a library nearing end-of-support.</p></div>
+  <div class="sort" data-a="Corrective" data-why="Wrong output is a fault."><p class="item">CR5: Receipts show the wrong VAT amount.</p></div>
+  <div class="sort" data-a="Adaptive" data-why="A new regulation is a change in the environment."><p class="item">CR6: A new government e-invoice rule requires a new receipt format.</p></div>
+  <div class="sort" data-a="Adaptive" data-why="A new OS version is a change in the environment."><p class="item">Extra: Update the app so it runs on Android 15.</p></div>
+  <div class="sort" data-a="Perfective" data-why="Performance improvement is perfective."><p class="item">Extra: Make menu search return results in 1 s instead of 3 s.</p></div>
+  <div class="rule">Rule of thumb: broken now = corrective. World changed = adaptive. Users want it better = perfective. Nothing wrong yet, but we protect the future = preventive.</div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>"Wrong VAT amount after a new VAT law" is adaptive (the law changed). "Wrong VAT amount with the same old law" is corrective (the code is wrong). Read whether the environment changed.</p></div>
+</section>
+
+<!-- 11 -->
+<section id="fault-origin">
+<h2 data-short="Where faults come from"><span class="n">11</span>Where do faults come from?</h2>
+<p>Most faults are made early, before any code exists. Two studies on the slide show this.</p>
+<h3>Faults per page found in inspections (Kelly et al., 1992)</h3>
+<div class="bars" aria-hidden="true">
+  <div class="bar"><span class="val">1.9</span><div class="fill acc" style="height:95%"></div></div>
+  <div class="bar"><span class="val">0.9</span><div class="fill" style="height:45%"></div></div>
+  <div class="bar"><span class="val">0.3</span><div class="fill soft" style="height:15%"></div></div>
+</div>
+<div class="bar-labels"><span>Specification</span><span>Design</span><span>Code</span></div>
+<h3>Faults at the end of the design phase (Bhandari et al., 1994)</h3>
+<div class="donut-wrap">
+  <div class="donut" style="background:conic-gradient(var(--text-primary) 0 71%, var(--accent) 71% 87%, var(--real-ink) 87% 100%)"><b>design<br>phase</b></div>
+  <ul class="legend">
+    <li><i style="background:var(--text-primary)"></i>New design <span class="v">71%</span></li>
+    <li><i style="background:var(--accent)"></i>New specification <span class="v">16%</span></li>
+    <li><i style="background:var(--real-ink)"></i>Previous version <span class="v">13%</span></li>
+  </ul>
+</div>
+<div class="box key"><span class="lbl">Key point</span><p>60 to 70% of faults are specification and design faults. A specification page holds about 6&times; more faults than a code page (1.9 &divide; 0.3 &asymp; 6.3). So review early with Fagan inspections, requirement reviews and design walkthroughs, before code exists.</p></div>
+<div class="calc" id="kelly">
+  <div class="head"><strong>Calculator: estimate faults in your documents (Kelly rates)</strong><span class="tag">Exercise 2, part A</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Specification pages<input type="number" id="k-s" value="40" min="0"></label>
+      <label class="field">Design pages<input type="number" id="k-d" value="80" min="0"></label>
+      <label class="field">Code pages<input type="number" id="k-c" value="300" min="0"></label>
+    </div>
+    <div class="out" id="k-out"></div>
+  </div>
+</div>
+</section>
+
+<!-- 12 -->
+<section id="fault-cost">
+<h2 data-short="Cost of fixing a fault"><span class="n">12</span>The cost of detecting and correcting a fault</h2>
+<p>The later a fault is found, the more it costs to fix. These are Boehm's relative costs. Learn the five numbers.</p>
+<div class="bars" aria-hidden="true">
+  <div class="bar"><span class="val">1&times;</span><div class="fill" style="height:1.5%"></div></div>
+  <div class="bar"><span class="val">5&times;</span><div class="fill" style="height:3.3%"></div></div>
+  <div class="bar"><span class="val">10&times;</span><div class="fill" style="height:6.7%"></div></div>
+  <div class="bar"><span class="val">20&times;</span><div class="fill" style="height:13.3%"></div></div>
+  <div class="bar"><span class="val">150&times;</span><div class="fill acc" style="height:100%"></div></div>
+</div>
+<div class="bar-labels"><span>Requirements</span><span>Design</span><span>Coding</span><span>Testing</span><span>Maintenance</span></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>1, 5, 10, 20, 150</strong>. Each step roughly doubles after design, then release multiplies it by about 7.</p></div>
+<h3>Why the curve explodes</h3>
+<ul>
+<li>The earlier a defect is found, the cheaper and easier it is to fix.</li>
+<li>A late fault forces rework of every artefact built on it: spec, design, code, tests, docs.</li>
+<li>In production you add outages, data repair, re-release and lost customers. This is often 100&times; or more of the requirements-phase cost.</li>
+</ul>
+<p><strong>Shift-left practice</strong> at Google, Microsoft and Amazon moves checking earlier:</p>
+<div class="flow"><span>Code reviews</span><span>Automated testing</span><span>CI/CD pipelines</span><span>Security scans (SAST)</span><span>Early QA</span><span>Static analysis</span></div>
+<div class="calc" id="canteen">
+  <div class="head"><strong>Calculator: SmartCanteen cost of bugs</strong><span class="tag">Exercise 1</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Cost of one fault fixed in requirements (BDT)<input type="number" id="c-base" value="1000" min="0"></label></div>
+    <div class="tscroll"><table>
+      <tr><th>Phase found</th><th>Faults</th><th>Multiplier</th><th class="num">Cost (BDT)</th></tr>
+      <tr><td>Requirements</td><td><input type="number" data-f value="10" min="0"></td><td><input type="number" data-m value="1" min="0"></td><td class="num" data-cost></td></tr>
+      <tr><td>Design</td><td><input type="number" data-f value="15" min="0"></td><td><input type="number" data-m value="5" min="0"></td><td class="num" data-cost></td></tr>
+      <tr><td>Coding</td><td><input type="number" data-f value="20" min="0"></td><td><input type="number" data-m value="10" min="0"></td><td class="num" data-cost></td></tr>
+      <tr><td>Testing</td><td><input type="number" data-f value="8" min="0"></td><td><input type="number" data-m value="20" min="0"></td><td class="num" data-cost></td></tr>
+      <tr><td>Maintenance</td><td><input type="number" data-f value="5" min="0"></td><td><input type="number" data-m value="150" min="0"></td><td class="num" data-cost></td></tr>
+    </table></div>
+    <div class="out" id="c-out"></div>
+    <div class="bars" id="c-bars" style="height:150px"></div>
+    <div class="bar-labels"><span>Req</span><span>Design</span><span>Coding</span><span>Testing</span><span>Maint.</span></div>
+  </div>
+</div>
+</section>
+
+<!-- 13 -->
+<section id="effort">
+<h2 data-short="Where effort goes"><span class="n">13</span>Where does the effort go?</h2>
+<div class="cards two">
+  <div class="c"><h4>Development: the 40-20-40 rule</h4>
+    <div class="donut-wrap" style="margin:.6rem 0 0">
+      <div class="donut" style="width:120px;background:conic-gradient(var(--text-primary) 0 40%, var(--accent) 40% 60%, var(--border-strong) 60% 100%)"><b>dev</b></div>
+      <ul class="legend"><li><i style="background:var(--text-primary)"></i>Analysis and design <span class="v">40%</span></li><li><i style="background:var(--accent)"></i>Coding <span class="v">20%</span></li><li><i style="background:var(--border-strong)"></i>Testing and debugging <span class="v">40%</span></li></ul>
+    </div></div>
+  <div class="c"><h4>Total life-cycle cost (typical)</h4>
+    <div class="donut-wrap" style="margin:.6rem 0 0">
+      <div class="donut" style="width:120px;background:conic-gradient(var(--accent) 0 33%, var(--text-primary) 33% 100%)"><b>life</b></div>
+      <ul class="legend"><li><i style="background:var(--accent)"></i>Development <span class="v">33%</span></li><li><i style="background:var(--text-primary)"></i>Maintenance <span class="v">67%</span></li></ul>
+    </div></div>
+</div>
+<div class="cards">
+  <div class="c"><h4>Coding is the small part</h4><p>Only about 20% of development effort. Thinking and checking dominate.</p></div>
+  <div class="c"><h4>Maintenance is the largest cost</h4><p>Typically 60 to 80% of the total life-cycle cost. Building is only the beginning.</p></div>
+  <div class="c"><h4>Quality pays back</h4><p>Good design and testing now reduce maintenance effort later.</p></div>
+</div>
+</section>
+
+<!-- 14 -->
+<section id="change-cost">
+<h2 data-short="Cost of change"><span class="n">14</span>Cost of change: before vs after release</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 220" role="img" aria-label="Traditional cost of change rises steeply after release; agile curve is flatter">
+  <line x1="40" y1="185" x2="345" y2="185" class="s-line"/><line x1="40" y1="20" x2="40" y2="185" class="s-line"/>
+  <rect x="240" y="20" width="105" height="165" class="f-trap" stroke="none" opacity=".55"/>
+  <text x="292" y="34" text-anchor="middle" font-size="9" class="t-muted">after release</text>
+  <path d="M45,180 C120,178 170,170 205,150 S270,70 340,25" class="s-ink" stroke-width="2.4"/>
+  <path d="M45,172 C120,165 200,150 340,128" class="s-acc" stroke-width="2.4" stroke-dasharray="6 4"/>
+  <g font-size="9" class="t-muted" text-anchor="middle"><text x="60" y="200">Reqs</text><text x="115" y="200">Design</text><text x="170" y="200">Coding</text><text x="225" y="200">Testing</text><text x="275" y="200">Release</text><text x="325" y="200">Post</text></g>
+  <text x="18" y="105" font-size="9" class="t-muted" transform="rotate(-90 18 105)" text-anchor="middle">cost of one change</text>
+  <rect x="52" y="30" width="10" height="3" class="f-ink"/><text x="67" y="34" font-size="9">Traditional process</text>
+  <rect x="52" y="44" width="10" height="3" class="f-acc"/><text x="67" y="48" font-size="9">Agile / DevOps (flattened)</text>
+</svg>
+<figcaption>Illustrative curve from slide 18. The values are relative, not real money.</figcaption>
+</figure>
+<div class="cards">
+  <div class="c"><h4>Before release</h4><p>A change edits documents and models, which is cheap. Validate requirements with prototypes and reviews while change is still easy.</p></div>
+  <div class="c"><h4>After release</h4><p>A change touches code, data, tests, docs and live users. Every change risks side effects and regression.</p></div>
+  <div class="c"><h4>Flattening the curve</h4><p>Short iterations, automated regression tests and CI/CD make later change cheaper, but never free.</p></div>
+</div>
+</section>
+
+<!-- 15 -->
+<section id="bathtub">
+<h2 data-short="Bathtub curve"><span class="n">15</span>Hardware: the bathtub curve</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 210" role="img" aria-label="Bathtub curve: high early failure, low flat useful life, rising wear-out">
+  <line x1="35" y1="180" x2="345" y2="180" class="s-line"/><line x1="35" y1="15" x2="35" y2="180" class="s-line"/>
+  <rect x="36" y="20" width="62" height="159" class="f-trap" stroke="none" opacity=".5"/>
+  <rect x="98" y="20" width="160" height="159" class="f-key" stroke="none" opacity=".5"/>
+  <rect x="258" y="20" width="86" height="159" class="f-trap" stroke="none" opacity=".5"/>
+  <path d="M40,30 C60,120 80,148 110,150 L250,150 C290,150 315,110 340,35" class="s-ink" stroke-width="2.6"/>
+  <g font-size="10" font-weight="600" text-anchor="middle"><text x="67" y="168">1 Infant</text><text x="178" y="168">2 Useful life</text><text x="300" y="168">3 Wear-out</text></g>
+  <text x="67" y="178" font-size="8" text-anchor="middle" class="t-muted">mortality</text>
+  <text x="178" y="140" font-size="8.5" text-anchor="middle" class="t-muted">low, constant: only random failures</text>
+  <text x="190" y="198" font-size="9" text-anchor="middle" class="t-muted">time</text>
+  <text x="15" y="100" font-size="9" class="t-muted" transform="rotate(-90 15 100)" text-anchor="middle">failure rate</text>
+</svg>
+<figcaption>Slide 19. Hardware wears out physically.</figcaption>
+</figure>
+<div class="cards">
+  <div class="c"><h4><span class="idx">1</span> Infant mortality</h4><p>High but falling failure rate from design or manufacturing defects and poor components.</p><span class="ex">A new device failing in its first days.</span></div>
+  <div class="c"><h4><span class="idx">2</span> Useful life</h4><p>Low, stable rate with only random failures.</p><span class="ex">A TV working reliably for years.</span></div>
+  <div class="c"><h4><span class="idx">3</span> Wear-out</h4><p>Rate rises with wear, fatigue, corrosion and environment.</p><span class="ex">An old car engine needing frequent repair.</span></div>
+</div>
+</section>
+
+<!-- 16 -->
+<section id="sw-curve">
+<h2 data-short="Software failure curve"><span class="n">16</span>Software: idealized vs actual failure curve</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 220" role="img" aria-label="Software failure curve: idealized falls and stays flat; actual has spikes at each change and its minimum creeps up">
+  <line x1="35" y1="190" x2="345" y2="190" class="s-line"/><line x1="35" y1="15" x2="35" y2="190" class="s-line"/>
+  <path d="M40,30 C60,140 90,170 130,172 L340,172" class="s-acc" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <path d="M40,30 C60,140 85,160 110,160 L118,160 L124,95 C132,140 150,150 170,150 L176,150 L182,82 C190,128 208,138 228,138 L234,138 L240,70 C248,115 266,125 286,125 L292,125 L298,58 C306,100 322,112 340,112" class="s-ink" stroke-width="2.2"/>
+  <path d="M110,162 L340,112" class="s-bad" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <g font-size="8.5" class="t-muted" text-anchor="middle"><text x="124" y="88">change</text><text x="182" y="75">change</text><text x="240" y="63">change</text><text x="298" y="51">change</text></g>
+  <text x="300" y="185" font-size="9" class="t-acc" text-anchor="middle">idealized</text>
+  <text x="250" y="160" font-size="8.5" fill="var(--bad)">minimum creeps up</text>
+  <text x="190" y="207" font-size="9" text-anchor="middle" class="t-muted">time</text>
+  <text x="15" y="100" font-size="9" class="t-muted" transform="rotate(-90 15 100)" text-anchor="middle">failure rate</text>
+</svg>
+<figcaption>Each spike is a change (update, patch) that adds side-effect defects. The minimum failure rate creeps up, so software deteriorates. <span class="src">Slide 20</span></figcaption>
+</figure>
+<div class="cards">
+  <div class="c"><h4>Idealized curve</h4><p>Bugs are found and fixed. The failure rate falls and stays low. It assumes no new defects and no changes.</p></div>
+  <div class="c"><h4>Actual curve</h4><p>Every change adds new bugs. The rate spikes, falls after debugging, and complexity keeps growing.</p></div>
+  <div class="c"><h4>Industry controls</h4><p>Regression testing, CI, code review, canary releases, crash analytics (Firebase Crashlytics, Sentry).</p></div>
+</div>
+<div class="tscroll"><table>
+<tr><th>Question</th><th>Hardware</th><th>Software</th></tr>
+<tr><td>Shape</td><td>Bathtub</td><td>Spikes with a rising floor</td></tr>
+<tr><td>Why it gets worse</td><td>Physical wear: fatigue, corrosion, heat</td><td>Change: each update adds side-effect defects</td></tr>
+<tr><td>Fix</td><td>Replace the worn part</td><td>No spare parts. Fix the design or code</td></tr>
+<tr><td>Word to use</td><td>Wears out</td><td>Deteriorates</td></tr>
+</table></div>
+</section>
+
+<!-- 17 -->
+<section id="myths">
+<h2 data-short="Software myths"><span class="n">17</span>Software myths</h2>
+<p>Myths are beliefs that sound right but cost time and money. The lecture groups them by who holds them. Tap each myth to see the reality.</p>
+<h3>Management myths</h3>
+<details class="rv"><summary>"We have a book of standards. That's all my people need."</summary><div class="body"><p>Is it used, complete and up to date with modern practice? Usually not. Standards help only when they are followed and adapted.</p></div></details>
+<details class="rv"><summary>"We bought the newest computers, so we have state-of-the-art tools."</summary><div class="body"><p>Hardware is not process. Productivity comes from good methods, tools and trained people.</p></div></details>
+<details class="rv"><summary>"Behind schedule? Add more programmers and catch up."</summary><div class="body"><p><strong>Brooks's Law</strong>: adding people to a late project makes it later. Onboarding and communication overhead grow as n(n&minus;1)/2. Try the slider below.</p></div></details>
+<details class="rv"><summary>"We outsourced it, so we can relax."</summary><div class="body"><p>If you cannot manage a project in-house, you will struggle to manage it outsourced. You still need clear specs and oversight.</p></div></details>
+<h3>Customer myths</h3>
+<details class="rv"><summary>Vague requirements: "A general statement of objectives is enough to start coding; details later."</summary><div class="body"><p>Poor up-front definition is a major cause of failed projects. Ambiguous requirements mean building the wrong system.</p></div></details>
+<details class="rv"><summary>Cost-free change: "Software is flexible, so changes are easy and cheap at any time."</summary><div class="body"><p>Change is never free. The later it comes in the SDLC, the more it costs (see the cost-of-change curve).</p></div></details>
+<details class="rv"><summary>Off-the-shelf magic: "Just buy a package or use open-source modules. Little effort."</summary><div class="body"><p>Integrating and customising third-party parts for unique business rules can cost as much as building, and adds hidden dependencies.</p></div></details>
+<h3>Practitioner myths</h3>
+<details class="rv"><summary>"Once the program runs, our job is done."</summary><div class="body"><p>Most effort, often 60 to 80%, comes after first delivery, in maintenance.</p></div></details>
+<details class="rv"><summary>"I can't assess quality until the program is running."</summary><div class="body"><p>QA starts on day one. Technical reviews and design checks catch logic and design faults more effectively than testing finished code.</p></div></details>
+<details class="rv"><summary>"Working code is the only deliverable; documentation slows us down."</summary><div class="body"><p>Code is one part of the configuration. Without architecture diagrams, API specs, deployment guides and data dictionaries, software is unmaintainable.</p></div></details>
+
+<div class="calc" id="brooks">
+  <div class="head"><strong>Slider: Brooks's Law, communication paths n(n&minus;1)/2</strong><span class="tag">Exercise 2, part C</span></div>
+  <div class="body">
+    <label class="field">Team size: <b class="mono" id="b-n">4</b><input type="range" id="b-r" min="2" max="16" value="4"></label>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-items:center">
+      <svg id="b-svg" viewBox="0 0 300 220" style="max-height:240px" role="img" aria-label="Team members as dots, every pair joined by a line"></svg>
+    </div>
+    <div class="out" id="b-out"></div>
+  </div>
+</div>
+
+<div class="sorter" data-options="Management|Customer|Practitioner">
+  <div class="head"><strong>Practice: whose myth is it?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Customer" data-why="The customer wants to skip requirements: vague requirements myth."><p class="item">Canteen manager: "Just start coding; we'll decide the menu rules later."</p></div>
+  <div class="sort" data-a="Management" data-why="Adding people to a late project: Brooks's Law."><p class="item">Project lead: "We're 3 weeks late. Add 4 developers to our team of 4."</p></div>
+  <div class="sort" data-a="Practitioner" data-why="Code is not the only deliverable."><p class="item">Developer: "It runs, so we're done; docs can wait."</p></div>
+  <div class="sort" data-a="Customer" data-why="Off-the-shelf magic: integration can cost as much as building."><p class="item">A clinic owner: "Just download a free open-source hospital system. It will take a week."</p></div>
+  <div class="sort" data-a="Management" data-why="Outsourcing myth: you still need specs and oversight."><p class="item">CEO: "We gave the app to a vendor in India, so we can relax until delivery."</p></div>
+  <div class="sort" data-a="Practitioner" data-why="Quality can be assessed from day one with reviews."><p class="item">Tester: "I can't check anything until the build is ready."</p></div>
+</div>
+</section>
+
+<!-- 18 -->
+<section id="exercises">
+<h2 data-short="Worked exercises"><span class="n">18</span>Worked exercises from the slides</h2>
+
+<div class="ex-card">
+  <header><h3>Exercise 1: The cost of bugs in "SmartCanteen"</h3>
+  <p>SmartCanteen is a food-ordering app for a university canteen. Fixing one fault found in requirements costs BDT 1,000. Faults found: requirements 10 (1&times;), design 15 (5&times;), coding 20 (10&times;), testing 8 (20&times;), maintenance 5 (150&times;).</p></header>
+  <div class="inner"><ol class="small"><li>(a) Total cost of fixing all faults.</li><li>(b) Cost if every fault had been caught in requirements. How many times cheaper?</li><li>(c) What % of faults, and what % of cost, come from post-release faults?</li><li>(d) Suggest two practices to cut this cost.</li></ol><p class="small muted">Hint: cost = faults &times; BDT 1,000 &times; multiplier.</p></div>
+  <details><summary>Full solution</summary><div class="sol">
+    <div class="tscroll"><table>
+      <tr><th>Phase</th><th>Calculation</th><th class="num">Cost (BDT)</th></tr>
+      <tr><td>Requirements</td><td class="mono">10 &times; 1,000 &times; 1</td><td class="num">10,000</td></tr>
+      <tr><td>Design</td><td class="mono">15 &times; 1,000 &times; 5</td><td class="num">75,000</td></tr>
+      <tr><td>Coding</td><td class="mono">20 &times; 1,000 &times; 10</td><td class="num">200,000</td></tr>
+      <tr><td>Testing</td><td class="mono">8 &times; 1,000 &times; 20</td><td class="num">160,000</td></tr>
+      <tr><td>Maintenance</td><td class="mono">5 &times; 1,000 &times; 150</td><td class="num">750,000</td></tr>
+      <tr class="total"><td>Total</td><td>58 faults</td><td class="num">1,195,000</td></tr>
+    </table></div>
+    <p><strong>(a)</strong> Total = 10,000 + 75,000 + 200,000 + 160,000 + 750,000 = <strong>BDT 1,195,000</strong>.</p>
+    <p><strong>(b)</strong> All in requirements: 58 &times; 1,000 = BDT 58,000. 1,195,000 &divide; 58,000 &asymp; <strong>20.6&times; cheaper</strong>.</p>
+    <p><strong>(c)</strong> Post-release: 5 &divide; 58 = <strong>8.6% of faults</strong>, but 750,000 &divide; 1,195,000 = <strong>62.8% of cost</strong>.</p>
+    <p><strong>(d)</strong> Shift left: requirement and design inspections, prototyping with users, test-driven development, CI with automated regression tests.</p>
+    <div class="box key"><span class="lbl">Insight</span><p>Fewer than 1 in 10 faults caused almost two-thirds of the cost.</p></div>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><h3>Exercise 2: SmartCanteen faults, maintenance and myths</h3>
+  <p>Part A: 40 pages of specification, 80 of design and 300 of code. Using Kelly et al. (1.9, 0.9, 0.3 faults per page), estimate faults in each, the total, and the % from spec + design. Part B: classify CR1 to CR6 (see section 10). Part C: spot the myth, type and reality, and compute communication paths before and after adding 4 developers to a team of 4.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <h4>Part A</h4>
+    <div class="tscroll"><table>
+      <tr><th>Document</th><th>Calculation</th><th class="num">Faults</th></tr>
+      <tr><td>Specification</td><td class="mono">40 &times; 1.9</td><td class="num">76</td></tr>
+      <tr><td>Design</td><td class="mono">80 &times; 0.9</td><td class="num">72</td></tr>
+      <tr><td>Code</td><td class="mono">300 &times; 0.3</td><td class="num">90</td></tr>
+      <tr class="total"><td>Total</td><td></td><td class="num">238</td></tr>
+    </table></div>
+    <p>Spec + design = 148 &divide; 238 = <strong>62.2%</strong>, consistent with the 60 to 70% rule. A spec page is 1.9 &divide; 0.3 &asymp; 6.3&times; more fault-dense than a code page.</p>
+    <h4>Part B</h4>
+    <div class="tscroll"><table>
+      <tr><th>Request</th><th>Type</th><th>Reason</th></tr>
+      <tr><td>CR1</td><td>Corrective</td><td>Fixes a fault</td></tr>
+      <tr><td>CR2</td><td>Adaptive</td><td>External API changed</td></tr>
+      <tr><td>CR3</td><td>Perfective</td><td>New or improved features</td></tr>
+      <tr><td>CR4</td><td>Preventive</td><td>Avoids future faults</td></tr>
+      <tr><td>CR5</td><td>Corrective</td><td>Fixes a fault</td></tr>
+      <tr><td>CR6</td><td>Adaptive</td><td>New regulation</td></tr>
+    </table></div>
+    <p>Tally: corrective 2, adaptive 2, perfective 1, preventive 1. Most requests are enhancements, not bug fixes, just as the maintenance data predicts.</p>
+    <h4>Part C</h4>
+    <p>(i) Customer myth: vague requirements. Agree requirements first.<br>
+    (ii) Management myth: Brooks's Law. Paths: 4&middot;3/2 = <strong>6</strong> &rarr; 8&middot;7/2 = <strong>28</strong> (4.7&times;).<br>
+    (iii) Practitioner myth: code is the only deliverable. Docs are required.</p>
+  </div></details>
+</div>
+</section>
+
+<!-- 19 -->
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">19</span>Exam questions with model answers</h2>
+<p>These follow the real midterm format (IUB CSE451, Summer 2026): short answers worth 5 marks and case studies worth 10. A good answer defines the term, applies it to the scenario, and proposes a fix. Use tables where you compare things.</p>
+
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Short answer: SDLC phases and their importance in software engineering</h3><p>Asked in the Summer 2026 midterm, Part A.</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><strong>Definition.</strong> The SDLC is the structured set of activities used to develop a software system, from understanding the need to retiring the product.</p>
+    <div class="tscroll"><table>
+      <tr><th>Phase</th><th>What happens</th><th>Output</th><th>Why it is important</th></tr>
+      <tr><td>Requirements</td><td>Find what users need (interviews, use cases)</td><td>SRS</td><td>60 to 70% of faults start here. Fixing them now costs 1&times; instead of 150&times;</td></tr>
+      <tr><td>Design</td><td>Plan architecture, data and interfaces</td><td>Architecture, UML, DB schema</td><td>A good design makes the system easy to change, so maintenance costs less</td></tr>
+      <tr><td>Coding</td><td>Write the programs to standards</td><td>Source code, unit tests</td><td>Turns the design into a working product</td></tr>
+      <tr><td>Testing</td><td>Unit, integration, system, acceptance tests</td><td>Test reports</td><td>Finds faults before users find them</td></tr>
+      <tr><td>Deployment</td><td>Release with CI/CD</td><td>Release build</td><td>Delivers value to users safely</td></tr>
+      <tr><td>Maintenance</td><td>Fix, adapt, improve, prevent</td><td>Patches, versions</td><td>60 to 80% of total cost lives here</td></tr>
+    </table></div>
+    <p><strong>Importance in SE.</strong> The SDLC makes development systematic (a defined order), disciplined (outputs are reviewed at each phase), and quantifiable (each phase can be estimated and measured). Documentation and QA run through every phase, and a feedback loop from maintenance restarts the cycle.</p>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Case study: National ID card system failure, Bangladesh</h3>
+  <p>The Election Commission launched a digital NID system. In the first version, citizens reported frequent crashes and wrong data mappings, and the system went over budget by 40%. Officials blamed the lack of systematic engineering practices.<br>(i) Define software engineering and explain how applying its principles could have prevented these issues. [5]<br>(ii) How does SE differ from simply writing programs, and what is meant by the "software crisis"? [5]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <h4>(i)</h4>
+    <p><strong>Definition (IEEE).</strong> Software engineering is the application of a systematic, disciplined, quantifiable approach to the development, operation, and maintenance of software.</p>
+    <div class="tscroll"><table>
+      <tr><th>Problem in the case</th><th>Likely cause</th><th>SE principle that prevents it</th></tr>
+      <tr><td>Frequent crashes</td><td>Latent errors; no load or system testing</td><td><strong>Disciplined</strong>: unit, integration, system and performance testing in the SDLC; code reviews; CI with regression tests</td></tr>
+      <tr><td>Wrong data mappings</td><td>Vague or unverified requirements and data design</td><td><strong>Systematic</strong>: a reviewed SRS and data dictionary; requirement and design inspections. Spec and design hold 60 to 70% of faults, so check them early</td></tr>
+      <tr><td>40% over budget</td><td>Poor estimation, faults found late</td><td><strong>Quantifiable</strong>: measured estimates of size and effort; fixing a fault in requirements costs 1&times; vs 150&times; after release</td></tr>
+    </table></div>
+    <p>Add one line on the process: a plan-driven model with sign-offs (or the V-Model, where each phase has a matching test) suits a government system with fixed scope and a fixed budget.</p>
+    <h4>(ii)</h4>
+    <div class="tscroll"><table>
+      <tr><th>Writing programs</th><th>Software engineering</th></tr>
+      <tr><td>Focus on the product: does it run?</td><td>Focus on the process and methodology</td></tr>
+      <tr><td>Can be done by one person</td><td>Teams with tools, standards and reviews</td></tr>
+      <tr><td>Goal: functionality</td><td>Goal: quality, reliability, scalability, maintainability</td></tr>
+      <tr><td>Stops when the code works</td><td>Covers the whole life cycle, including maintenance (60 to 80% of cost)</td></tr>
+    </table></div>
+    <p><strong>Software crisis</strong>: the persistent failure to deliver software on time, within budget and at the required quality, as system complexity outgrows development practice. The term became common at the 1968 NATO conference. The NID case shows all its symptoms: low quality (crashes, wrong mappings) and over budget (40%). Root causes are growing complexity, changing requirements, poor estimation, weak process and testing, and poor communication.</p>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Practice case: "Pathao Food" maintenance and myths</h3>
+  <p>After launch, Pathao Food received these requests: (1) the app shows a blank screen on Android 8; (2) Google Maps changes its pricing and API, so the team must move to a new map SDK; (3) restaurants want a sales dashboard; (4) the team splits a 3,000-line OrderService into smaller classes. The product head says: "We are late for Eid. Hire 6 more developers for the team of 5." (a) Classify the requests and justify. [4] (b) Name the myth, compute communication paths, and give the reality. [3] (c) Draw and explain why the app's failure rate will rise over time even though "software does not wear out". [3]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><strong>(a)</strong> (1) Corrective: a fault in current behaviour. (2) Adaptive: the external environment (map API) changed. (3) Perfective: a new feature users asked for. (4) Preventive: nothing is broken yet; it improves maintainability and avoids future faults.</p>
+    <p><strong>(b)</strong> Management myth: "add more programmers to catch up". Brooks's Law says adding people to a late project makes it later. Paths: 5&middot;4/2 = <strong>10</strong> before; 11&middot;10/2 = <strong>55</strong> after, 5.5&times; more. New people also need onboarding from the existing team. Better: cut lower-priority scope for the Eid release.</p>
+    <p><strong>(c)</strong> Sketch the actual software curve: a falling idealized line, and an actual line with a spike at each change. Each update adds side-effect defects, the rate falls after debugging, but the minimum creeps up. So software <em>deteriorates</em> because of change, not physical wear. Controls: regression testing, CI, code review, canary releases, crash analytics.</p>
+  </div></details>
+</div>
+
+<div class="box trap"><span class="lbl">How marks are lost</span><ul><li>Giving a definition but not linking it to the scenario's problems.</li><li>Writing "add testing" without saying which testing and why (cost multiplier, latent errors).</li><li>Forgetting the numbers: 1/5/10/20/150, 60 to 70%, 60 to 80%, n(n&minus;1)/2.</li></ul></div>
+</section>
+
+<!-- 20 -->
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">20</span>Quiz</h2>
+<p>One try per question. The correct answer shows after you pick.</p>
+<div class="quiz" id="q1">
+  <div class="mcq"><p class="q">Pressman's definition of software has three parts. Which list is correct?</p><div class="opts">
+    <button>Programs, hardware, users</button><button data-ok>Programs, data structures, documentation</button><button>Code, tests, deployment scripts</button><button>Requirements, design, code</button></div>
+    <p class="why">Programs + the data structures they manipulate + the documentation that describes their operation and use.</p></div>
+  <div class="mcq"><p class="q">The term "software crisis" became widely used at which event?</p><div class="opts">
+    <button>The 2001 Agile Manifesto meeting</button><button>The 1986 Spiral model paper</button><button data-ok>The 1968 NATO Software Engineering Conference</button><button>The 1996 Ariane 5 report</button></div>
+    <p class="why">The 1968 NATO conference made the term common.</p></div>
+  <div class="mcq"><p class="q">In the IEEE definition, "quantifiable" means:</p><div class="opts">
+    <button>Following a defined process</button><button data-ok>Effort, cost, size and defects are measured</button><button>Using standards and reviews</button><button>The software can be sold</button></div>
+    <p class="why">Systematic = defined process. Disciplined = standards and reviews. Quantifiable = measured.</p></div>
+  <div class="mcq"><p class="q">What is the base layer of Pressman's layered technology?</p><div class="opts">
+    <button>Tools</button><button>Process</button><button>Methods</button><button data-ok>A quality focus</button></div>
+    <p class="why">Every layer rests on a commitment to quality.</p></div>
+  <div class="mcq"><p class="q">A fault costs BDT 2,000 to fix in requirements. Using the slide's multipliers, what does it cost if found after release?</p><div class="opts">
+    <button>BDT 40,000</button><button>BDT 20,000</button><button data-ok>BDT 300,000</button><button>BDT 200,000</button></div>
+    <p class="why">Maintenance multiplier is 150&times;. 2,000 &times; 150 = 300,000.</p></div>
+  <div class="mcq"><p class="q">Which maintenance type takes the largest share of effort?</p><div class="opts">
+    <button>Corrective</button><button data-ok>Perfective</button><button>Adaptive</button><button>Preventive</button></div>
+    <p class="why">Perfective is about 48% (60% of the 80% enhancement share).</p></div>
+  <div class="mcq"><p class="q">A new government rule needs a new receipt format. This change is:</p><div class="opts">
+    <button>Corrective</button><button>Perfective</button><button data-ok>Adaptive</button><button>Preventive</button></div>
+    <p class="why">A change in the environment (a regulation) is adaptive.</p></div>
+  <div class="mcq"><p class="q">According to Kelly et al., which document has the highest fault density per page?</p><div class="opts">
+    <button data-ok>Specification (1.9)</button><button>Design (0.9)</button><button>Code (0.3)</button><button>Test plan</button></div>
+    <p class="why">Spec pages are about 6&times; more fault-dense than code pages.</p></div>
+  <div class="mcq"><p class="q">In the 40-20-40 rule, what does the 20 stand for?</p><div class="opts">
+    <button>Testing and debugging</button><button>Analysis and design</button><button data-ok>Coding</button><button>Maintenance</button></div>
+    <p class="why">Coding is only about 20% of development effort.</p></div>
+  <div class="mcq"><p class="q">Why does the software failure curve's minimum creep upward?</p><div class="opts">
+    <button>Hardware components wear out</button><button data-ok>Each change adds side-effect defects and complexity grows</button><button>Users get more demanding</button><button>Compilers age</button></div>
+    <p class="why">Software deteriorates through change. It does not wear out.</p></div>
+  <div class="mcq"><p class="q">A team grows from 6 to 9 people. How many communication paths are added?</p><div class="opts">
+    <button>3</button><button>15</button><button data-ok>21</button><button>36</button></div>
+    <p class="why">6&middot;5/2 = 15. 9&middot;8/2 = 36. 36 &minus; 15 = 21 new paths.</p></div>
+  <div class="mcq"><p class="q">"Integrating open-source modules is little effort." Which myth group is this?</p><div class="opts">
+    <button>Management</button><button data-ok>Customer</button><button>Practitioner</button><button>It is not a myth</button></div>
+    <p class="why">Customer myth "off-the-shelf magic". Integration for unique rules can cost as much as building.</p></div>
+</div>
+</section>
+
+<!-- 21 -->
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">21</span>Exam checklist</h2>
+<p>Tick what you can do without looking. <span class="check-progress" data-for="ck1"></span></p>
+<ul class="checklist" id="ck1" data-key="main">
+  <li>Write Pressman's definition of software with its three parts and a banking example.</li>
+  <li>Name the five reasons systems fail and match Ariane 5, Therac-25, Healthcare.gov, Knight Capital.</li>
+  <li>Define the software crisis, its three symptoms, five root causes, and the 1968 NATO link.</li>
+  <li>Write the IEEE definition and explain systematic, disciplined, quantifiable.</li>
+  <li>Draw the four layers bottom to top: quality focus, process, methods, tools.</li>
+  <li>Compare software vs SE, and CS vs SE, in tables.</li>
+  <li>List the characteristics of software and explain "deteriorates, not wears out".</li>
+  <li>Draw the SDLC cycle with outputs and the feedback loop; name one tool per phase.</li>
+  <li>Classify any change as corrective, perfective, adaptive or preventive, and give 20/48/16/16.</li>
+  <li>Quote Kelly (1.9, 0.9, 0.3) and the 60 to 70% spec and design rule.</li>
+  <li>Use the 1, 5, 10, 20, 150 multipliers to cost faults like SmartCanteen.</li>
+  <li>State the 40-20-40 rule and that maintenance is 60 to 80% of life-cycle cost.</li>
+  <li>Draw the bathtub curve and the actual software failure curve and explain both.</li>
+  <li>Name management, customer and practitioner myths with realities; compute n(n&minus;1)/2.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE, $=S.$, $$=S.$$, fmt=S.fmt;
+  // Kelly fault estimator
+  S.live($("#kelly"), function(){
+    var s=S.num("#k-s")*1.9, d=S.num("#k-d")*0.9, c=S.num("#k-c")*0.3, t=s+d+c;
+    $("#k-out").innerHTML='<div><span>Spec faults (&times;1.9)</span><b>'+fmt(s,1)+'</b></div><div><span>Design faults (&times;0.9)</span><b>'+fmt(d,1)+'</b></div><div><span>Code faults (&times;0.3)</span><b>'+fmt(c,1)+'</b></div><div><span>Total</span><b>'+fmt(t,1)+'</b></div><div class="hl"><span>From spec + design</span><b>'+(t?fmt((s+d)/t*100,1):"0")+'%</b></div>';
+  });
+  // SmartCanteen calculator
+  S.live($("#canteen"), function(){
+    var base=S.num("#c-base"), rows=$$("#canteen tr").slice(1), costs=[], faults=[], tot=0, nf=0;
+    rows.forEach(function(r){ var f=S.num($("[data-f]",r)), m=S.num($("[data-m]",r)), c=f*base*m; costs.push(c); faults.push(f); tot+=c; nf+=f; $("[data-cost]",r).textContent=fmt(c,0); });
+    var allReq=nf*base, post=costs[4], pf=faults[4];
+    $("#c-out").innerHTML='<div class="hl"><span>(a) Total cost</span><b>'+fmt(tot,0)+'</b></div><div><span>(b) All found in requirements</span><b>'+fmt(allReq,0)+'</b></div><div><span>(b) Times cheaper</span><b>'+(allReq?fmt(tot/allReq,1):"-")+'&times;</b></div><div><span>(c) Post-release share of faults</span><b>'+(nf?fmt(pf/nf*100,1):"0")+'%</b></div><div><span>(c) Post-release share of cost</span><b>'+(tot?fmt(post/tot*100,1):"0")+'%</b></div>';
+    var mx=Math.max.apply(null,costs)||1;
+    $("#c-bars").innerHTML=costs.map(function(c,i){return '<div class="bar"><span class="val">'+fmt(c/1000,0)+'k</span><div class="fill'+(i===4?' acc':'')+'" style="height:'+(c/mx*100)+'%"></div></div>';}).join("");
+  });
+  // Brooks's Law slider
+  var svg=$("#b-svg");
+  function brooks(){
+    var n=+$("#b-r").value, p=n*(n-1)/2, base=6, cx=150, cy=110, R=88, pts=[], h="";
+    $("#b-n").textContent=n;
+    for(var i=0;i<n;i++){var a=-Math.PI/2+i*2*Math.PI/n; pts.push([cx+R*Math.cos(a),cy+R*Math.sin(a)]);}
+    for(i=0;i<n;i++)for(var j=i+1;j<n;j++)h+='<line x1="'+pts[i][0].toFixed(1)+'" y1="'+pts[i][1].toFixed(1)+'" x2="'+pts[j][0].toFixed(1)+'" y2="'+pts[j][1].toFixed(1)+'" class="s-line" stroke-width="1"/>';
+    pts.forEach(function(q,k){h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="7" class="'+(k<4?'f-ink':'f-acc')+'"/>';});
+    svg.innerHTML=h;
+    $("#b-out").innerHTML='<div class="hl"><span>Communication paths</span><b>'+p+'</b></div><div><span>vs a team of 4 (6 paths)</span><b>'+fmt(p/base,1)+'&times;</b></div><div><span>Formula</span><b>'+n+'&middot;'+(n-1)+'/2</b></div>';
+  }
+  $("#b-r").addEventListener("input",brooks); brooks();
+})();
+</script>
+</body>
+</html>

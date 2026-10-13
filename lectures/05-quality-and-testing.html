@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quality and Testing</title>
+<meta name="description" content="CSE451 Lecture 5: quality attributes, availability and SLOs, test levels, black-box and white-box design, cyclomatic complexity, mutation, DRE and the UniCafe case.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="05-quality-and-testing">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 05 &nbsp;/&nbsp; Final exam</p>
+  <h1>Software quality attributes and testing strategies</h1>
+  <p class="summary">From measurable quality requirements to modern, automated testing pipelines. Part A turns "fast and reliable" into numbers. Part B designs the tests. Part C runs everything on one real project, UniCafe.</p>
+  <p class="meta"><span><b>Source</b> Lecture 5, 46 slides</span><span><b>Reading</b> about 80 min</span><span><b>Exercises</b> A, B1, B2, C with solutions</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<section id="attributes">
+<h2 data-short="Quality attributes"><span class="n">01</span>What are software quality attributes?</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Quality attributes (quality factors) are the non-functional characteristics that describe how well a system delivers its functions: how easy it is to use, how fast it runs, how often it fails and how it handles unexpected conditions.</p></div>
+<div class="tscroll"><table><tr><th>Functional requirement: WHAT the system does</th><th>Quality (non-functional) requirement: HOW WELL it does it</th></tr>
+<tr><td>"The system shall let a student pay for an order from the campus wallet."</td><td>"Payment shall complete in &le; 2 s for 95% of requests at 300 concurrent users."</td></tr></table></div>
+<p>Only the right one is testable: it has a pass/fail number.</p>
+<div class="cards">
+  <div class="c"><h4>Rarely stated explicitly</h4><p>Customers say "user-friendly, fast, reliable". The analyst must turn these into numbers.</p></div>
+  <div class="c"><h4>They drive architecture</h4><p>Caching, replication, encryption and modularity are chosen because of quality goals.</p></div>
+  <div class="c"><h4>Retrofitting is expensive</h4><p>Re-architecting a finished system for quality costs far more than designing for it up front.</p></div>
+  <div class="c"><h4>Industry practice</h4><p>Google and Amazon express them as SLOs. ISO/IEC 25010 standardises the vocabulary.</p></div>
+</div>
+</section>
+
+<section id="models">
+<h2 data-short="McCall and ISO 25010"><span class="n">02</span>Two lenses: McCall's triangle and ISO/IEC 25010:2023</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 240" role="img" aria-label="McCall's triangle: product revision, product transition, product operation">
+  <polygon points="180,40 320,200 40,200" class="f-sunk"/>
+  <g font-size="10" font-weight="700" text-anchor="middle"><text x="90" y="30">PRODUCT REVISION</text><text x="275" y="30">PRODUCT TRANSITION</text><text x="180" y="222">PRODUCT OPERATION</text></g>
+  <g font-size="9" text-anchor="middle"><text x="90" y="44">Maintainability</text><text x="90" y="56">Flexibility</text><text x="90" y="68">Testability</text>
+  <text x="275" y="44">Portability</text><text x="275" y="56">Reusability</text><text x="275" y="68">Interoperability</text>
+  <text x="180" y="236">Correctness, Reliability, Efficiency, Integrity, Usability</text></g>
+  <text x="180" y="150" font-size="9" text-anchor="middle" class="t-muted">11 factors grouped by the</text><text x="180" y="162" font-size="9" text-anchor="middle" class="t-muted">three ways a product is used:</text><text x="180" y="174" font-size="9" text-anchor="middle" class="t-muted">operated, changed, moved</text>
+</svg>
+<figcaption>McCall's Triangle of Quality (1977). <span class="src">Slide 5</span></figcaption>
+</figure>
+<div class="box mem"><span class="lbl">Memory aid</span><p>Revision = <strong>MFT</strong> ("Make Fixes Twice"). Transition = <strong>PRI</strong> ("Portable, Reusable, Interoperable"). Operation = <strong>CREIU</strong> ("Can Rabbits Eat Ice Underground?").</p></div>
+<h3>ISO/IEC 25010:2023 product quality model</h3>
+<div class="cards">
+  <div class="c"><h4>Functional suitability</h4><p>Complete, correct, appropriate.</p></div>
+  <div class="c"><h4>Performance efficiency</h4><p>Time, resources, capacity.</p></div>
+  <div class="c"><h4>Compatibility</h4><p>Co-existence, interoperability.</p></div>
+  <div class="c"><h4>Interaction capability</h4><p>Formerly "usability"; includes inclusivity.</p></div>
+  <div class="c"><h4>Reliability</h4><p>Faultlessness, availability, recoverability.</p></div>
+  <div class="c"><h4>Security</h4><p>Confidentiality, integrity, authenticity.</p></div>
+  <div class="c"><h4>Maintainability</h4><p>Modularity, analysability, testability.</p></div>
+  <div class="c"><h4>Flexibility</h4><p>Formerly "portability"; includes scalability.</p></div>
+  <div class="c tint"><h4>Safety <span class="tag blue">new in 2023</span></h4><p>Fail-safe, hazard warning.</p></div>
+</div>
+<p>It replaces ISO 9126. Use it as a checklist during elicitation so no attribute is forgotten.</p>
+<div class="box trap"><span class="lbl">Exam trap</span><p>In the 2023 version "usability" is renamed <b>interaction capability</b>, "portability" is renamed <b>flexibility</b>, and <b>safety</b> is new. McCall's model is from 1977 and has 11 factors in three groups.</p></div>
+</section>
+
+<section id="runtime">
+<h2 data-short="Runtime attributes"><span class="n">03</span>Attributes users feel at runtime</h2>
+<div class="tscroll"><table>
+<tr><th>Attribute</th><th>Meaning</th><th>Measure</th><th>Example requirement</th><th>Tools</th></tr>
+<tr><td>Availability</td><td>Share of planned up-time during which the system is actually operational</td><td>MTTF / (MTTF + MTTR)</td><td>AV-1: &ge; 99.5% available on weekdays 6 am to midnight</td><td>Prometheus, Grafana, UptimeRobot</td></tr>
+<tr><td>Reliability</td><td>Probability of executing without failure for a specified period</td><td>MTBF, failure rate, % correct operations</td><td>RE-1: &le; 5 of 1000 experimental runs lost to software failure</td><td>Sentry, Crashlytics, reliability growth models</td></tr>
+<tr><td>Performance</td><td>How fast / how much: response time, throughput, capacity, real-time timing</td><td>p95 latency, transactions/s, concurrent users</td><td>PE-2: ATM withdrawal authorisation &le; 10 s</td><td>k6, JMeter, Gatling, Locust</td></tr>
+<tr><td>Efficiency</td><td>How well the system uses CPU, memory, disk and bandwidth</td><td>% resource headroom at peak load</td><td>EF-1: &ge; 25% of CPU and RAM unused at planned peak</td><td>Profilers (py-spy, VisualVM), Lighthouse</td></tr>
+<tr><td>Integrity / security</td><td>Blocks unauthorised access, prevents data loss, protects privacy. Zero tolerance for error</td><td>Findings, failed attacks</td><td>IN-1: Only users with Auditor privilege may view customer transaction histories</td><td>OWASP ZAP, Burp Suite, Snyk, Semgrep (STRIDE, OWASP ASVS, MFA)</td></tr>
+<tr><td>Robustness (fault tolerance)</td><td>Keeps working under invalid input, faulty components or odd conditions; recovers gracefully</td><td>Recovery behaviour</td><td>RO-1: After a crash the editor recovers all changes made up to 1 min before failure</td><td>Chaos Monkey, LitmusChaos, Resilience4j</td></tr>
+<tr><td>Usability (interaction capability)</td><td>Effort to learn, operate and interpret output; includes accessibility</td><td>Task time, SUS</td><td>US-1: A trained user submits a catalogue request in avg. 4, max. 6 minutes</td><td>axe, Lighthouse, Maze, Hotjar (WCAG 2.2)</td></tr>
+<tr><td>Interoperability</td><td>How easily the system exchanges data or services with other systems</td><td>Integrations working</td><td>IO-1: SIM registration verifies identity against the national NID database via API</td><td>Postman, Swagger/OpenAPI, Pact</td></tr>
+</table></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>Availability is about being <em>up</em> (% of time). Reliability is about <em>not failing</em> while running (probability, MTBF). A system can be available 99.9% and still give wrong answers.</p></div>
+</section>
+
+<section id="availability">
+<h2 data-short="Availability and SLOs"><span class="n">04</span>Availability math, "the nines" and error budgets</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">A = MTTF / (MTTF + MTTR)<br>Downtime = (1 &minus; A) &times; 8,760 h per year</p><p>MTTF: mean time to failure. MTTR: mean time to repair. Each extra "9" costs roughly 10&times; more engineering.</p></div>
+<div class="tscroll"><table><tr><th>Availability</th><th class="num">Downtime per year</th></tr>
+<tr><td>99%</td><td class="num">3.65 days</td></tr><tr><td>99.9%</td><td class="num">8.76 hours</td></tr><tr><td>99.95%</td><td class="num">4.38 hours</td></tr><tr><td>99.99%</td><td class="num">52.6 minutes</td></tr><tr><td>99.999%</td><td class="num">5.26 minutes</td></tr></table></div>
+<div class="cards">
+  <div class="c"><h4>SLI</h4><p>The indicator you measure, e.g. % of successful requests.</p></div>
+  <div class="c"><h4>SLO</h4><p>The internal target, e.g. 99.9% success over 30 days.</p></div>
+  <div class="c"><h4>SLA</h4><p>The contract with the customer, with penalties.</p></div>
+  <div class="c tint"><h4>Error budget</h4><p>1 &minus; SLO = 0.1% of 30 days = 43.2 min. Budget spent &rarr; freeze features, fix reliability.</p></div>
+</div>
+<div class="box key"><span class="lbl">Worked example and insight</span><p>MTTF = 500 h, MTTR = 2 h &rarr; A = 500 / 502 = 0.9960 &rarr; <strong>99.60%</strong>. Cutting MTTR (fast alerts, auto-restart, one-click rollback) is often cheaper than raising MTTF.</p></div>
+<div class="calc" id="av">
+  <div class="head"><strong>Calculator: availability, downtime, SLA and error budget</strong><span class="tag">Exercise A</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">MTTF (hours)<input type="number" id="av-f" value="720" min="0"></label>
+      <label class="field">MTTR (hours)<input type="number" id="av-r" value="4" min="0" step="0.1"></label>
+      <label class="field">SLA / SLO target (%)<input type="number" id="av-s" value="99.5" step="0.01"></label>
+      <label class="field">Period for downtime (hours)<input type="number" id="av-p" value="720"></label>
+    </div>
+    <div class="out" id="av-out"></div>
+    <div class="verdict" id="av-v"></div>
+  </div>
+</div>
+</section>
+
+<section id="dev-attributes">
+<h2 data-short="Change-time attributes"><span class="n">05</span>Attributes developers feel at change-time</h2>
+<div class="tscroll"><table>
+<tr><th>Attribute</th><th>Meaning</th><th>How to measure</th><th>Example requirement</th><th>Tools</th></tr>
+<tr><td>Maintainability</td><td>Ease of correcting a defect or modifying the software</td><td>Mean time to fix; % fixes correct; tech-debt ratio</td><td>MA-1: Update reports for new regulations in &le; 20 labour-hours</td><td>SonarQube, CodeScene</td></tr>
+<tr><td>Flexibility</td><td>Ease of adding new capabilities (extensibility)</td><td>Effort (hours) per new feature</td><td>FL-1: Add a new copy output, incl. tests, in &le; 1 hour</td><td>ArchUnit fitness functions</td></tr>
+<tr><td>Reusability</td><td>Effort to use a component in another application</td><td>% reused code; coupling to host app</td><td>RU-1: Structure-input functions reusable at object-code level</td><td>npm / Maven packages</td></tr>
+<tr><td>Testability</td><td>Ease of testing components or the whole product</td><td>Cyclomatic complexity; coverage</td><td>TE-1: Cyclomatic complexity of any module &le; 20</td><td>SonarQube, lizard, radon</td></tr>
+<tr><td>Portability</td><td>Effort to run on other platforms (ISO: flexibility)</td><td>Number of platforms; porting effort</td><td>PO-1: Same core runs on Android 10+ and iOS 15+</td><td>Docker, Kubernetes, Flutter</td></tr>
+</table></div>
+<div class="box key"><span class="lbl">Key link</span><p>Maintainability depends on how easily code can be understood, changed and tested, so it is tightly coupled to flexibility and testability. High maintainability is critical for products that are revised often or built fast.</p></div>
+<h3>Which attributes matter, to whom, and where?</h3>
+<div class="cards two">
+  <div class="c"><h4>Primary audience</h4><p><b>Users</b>: availability, efficiency, integrity, interoperability, reliability, robustness, usability. <b>Developers</b>: flexibility, maintainability, portability, reusability, testability.</p></div>
+  <div class="c"><h4>By system type</h4><p><b>Embedded</b> (pacemaker, ABS, elevator): efficiency, reliability, safety, installability, serviceability. <b>Internet and mainframe</b> (bKash, Daraz, core banking): availability, integrity, maintainability, scalability. <b>Desktop</b> (MS Office, IDEs): interoperability, usability. <b>AI/ML</b> (chatbots, credit scoring): fairness, explainability, robustness to adversarial input, privacy.</p></div>
+</div>
+<p>Different parts of one product need different mixes: efficiency for the payment engine, usability for the checkout screen.</p>
+</section>
+
+<section id="tradeoffs">
+<h2 data-short="Trade-offs"><span class="n">06</span>You cannot maximise everything: the trade-off matrix</h2>
+<p>Read each row: raising the row attribute helps (+) or hurts (&minus;) the column. Blank = little impact. Simplified from Wiegers.</p>
+<div class="tscroll"><table style="text-align:center">
+<tr><th>Row &uarr; affects column &rarr;</th><th>Efficiency</th><th>Integrity</th><th>Usability</th><th>Portability</th><th>Flexibility</th><th>Maintain.</th></tr>
+<tr><td>Efficiency</td><td class="muted">-</td><td></td><td style="color:var(--bad)">&minus;</td><td style="color:var(--bad)">&minus;</td><td style="color:var(--bad)">&minus;</td><td style="color:var(--bad)">&minus;</td></tr>
+<tr><td>Integrity</td><td style="color:var(--bad)">&minus;</td><td class="muted">-</td><td style="color:var(--bad)">&minus;</td><td></td><td></td><td></td></tr>
+<tr><td>Usability</td><td style="color:var(--bad)">&minus;</td><td></td><td class="muted">-</td><td></td><td></td><td></td></tr>
+<tr><td>Portability</td><td style="color:var(--bad)">&minus;</td><td></td><td style="color:var(--bad)">&minus;</td><td class="muted">-</td><td style="color:var(--ok)">+</td><td style="color:var(--ok)">+</td></tr>
+<tr><td>Flexibility</td><td style="color:var(--bad)">&minus;</td><td style="color:var(--bad)">&minus;</td><td></td><td style="color:var(--ok)">+</td><td class="muted">-</td><td style="color:var(--ok)">+</td></tr>
+<tr><td>Maintain.</td><td style="color:var(--bad)">&minus;</td><td></td><td></td><td></td><td style="color:var(--ok)">+</td><td class="muted">-</td></tr>
+</table></div>
+<div class="cards">
+  <div class="c"><h4>Not symmetric</h4><p>More integrity (authentication, encryption, virus scans) slows the system, but more efficiency does not weaken integrity.</p></div>
+  <div class="c"><h4>Portability pays twice</h4><p>Designing for portability also makes software more flexible, reusable and testable.</p></div>
+  <div class="c"><h4>Performance penalty</h4><p>Usability, flexibility and interoperability layers usually cost speed and memory.</p></div>
+  <div class="c"><h4>Avoid conflicting goals</h4><p>Don't promise maximum usability on every platform; prioritise attributes during elicitation.</p></div>
+  <div class="c"><h4>Modern practice</h4><p>SEI's ATAM evaluates architectures against prioritised quality-attribute scenarios.</p></div>
+</div>
+</section>
+
+<section id="measurable">
+<h2 data-short="Measurable NFRs"><span class="n">07</span>From vague wish to verifiable requirement</h2>
+<h3>Quality-attribute scenario (SEI six-part form)</h3>
+<div class="flow"><span><b>Source</b><br><small class="muted">300 students</small></span><span><b>Stimulus</b><br><small class="muted">place orders</small></span><span><b>Artifact</b><br><small class="muted">Order API</small></span><span><b>Environment</b><br><small class="muted">lunch peak</small></span><span><b>Response</b><br><small class="muted">orders processed</small></span><span class="hl"><b>Measure</b><br><small>p95 &le; 800 ms</small></span></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>S-S-A-E-R-M</strong>: "Sixty Students Ate Eighty Rice Meals".</p></div>
+<div class="tscroll"><table><tr><th>Vague</th><th>Measurable</th></tr>
+<tr><td>"The app must be fast."</td><td>p95 search response &le; 1 s at 500 concurrent users on 4G.</td></tr>
+<tr><td>"The system must be secure."</td><td>0 high/critical OWASP ZAP findings; passwords hashed with Argon2/bcrypt; lock after 5 failed logins.</td></tr>
+<tr><td>"It should be easy to use."</td><td>80% of first-time users finish checkout in &le; 2 min without help; SUS score &ge; 75.</td></tr></table></div>
+<h3>What a quality attribute turns into</h3>
+<div class="tscroll"><table><tr><th>Quality attributes</th><th>Likely technical output</th></tr>
+<tr><td>Integrity, interoperability, robustness, usability, safety</td><td>Derived functional requirement</td></tr>
+<tr><td>Availability, efficiency, flexibility, performance, reliability</td><td>System architecture</td></tr>
+<tr><td>Interoperability, usability</td><td>Design constraint</td></tr>
+<tr><td>Flexibility, maintainability, portability, reusability, testability</td><td>Design guideline</td></tr>
+<tr><td>Portability</td><td>Implementation constraint</td></tr></table></div>
+<p>Example: a medical device with strict availability gets a backup battery (architecture) plus a derived functional requirement to show "running on battery".</p>
+<div class="ex-card">
+  <header><h3>Exercise A: availability, measurable NFRs and trade-offs</h3><p>The UniCafe order server has MTTF = 720 h and MTTR = 4 h. The SLA demands 99.5%. (a) Compute availability; is the SLA met? (b) Expected downtime in a 30-day (720 h) month? (c) Maximum MTTR that satisfies the SLA? (d) Rewrite "The app should be reliable and fast" as two measurable requirements. (e) The team adds MFA and end-to-end encryption. Which attributes may suffer?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>(a)</strong> A = 720 / (720 + 4) = 0.99448 &rarr; <strong>99.45%</strong> &#10007; misses 99.5%.</p>
+    <p><strong>(b)</strong> Downtime = (1 &minus; 0.99448) &times; 720 h &asymp; <strong>3.98 h &asymp; 4 h per month</strong>.</p>
+    <p><strong>(c)</strong> 720 / (720 + MTTR) &ge; 0.995 &rArr; MTTR &le; 720 &times; 0.005 / 0.995 = <strong>3.62 h</strong> (about 3 h 37 min). Target: automated failover/rollback.</p>
+    <p><strong>(d)</strong> RE-1: &ge; 99.5% of payment transactions complete without error each month. PE-1: p95 order placement &le; 800 ms at 300 concurrent users.</p>
+    <p><strong>(e)</strong> Integrity &uarr; but efficiency/performance &darr; (extra crypto and checks), usability &darr; (extra login step), interoperability &darr; (harder integration).</p>
+  </div></details>
+</div>
+</section>
+
+<section id="testing">
+<h2 data-short="What is testing"><span class="n">08</span>What is software testing, and who should do it?</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Testing is the process of exercising a program with the specific intent of finding errors before delivery to the end user. Testability is simply how easily a program can be tested.</p><p>"Program testing can be used to show the presence of bugs, but never to show their absence." (E. W. Dijkstra)</p></div>
+<p>A test run reveals errors, performance, requirements conformance, and an indication of quality.</p>
+<div class="tscroll"><table><tr><th>Developer</th><th>Independent tester</th></tr>
+<tr><td>Understands the system</td><td>Must learn the system</td></tr>
+<tr><td>Tests "gently", driven by delivery</td><td>Tries to break it, driven by quality</td></tr>
+<tr><td>Owns unit and integration tests, TDD</td><td>Exploratory, system and acceptance tests</td></tr></table></div>
+<p>Modern agile teams use "whole-team quality": SDETs embedded in squads; developers automate, testers explore and assess risk. Remember Lecture 1: a defect found in maintenance can cost 100&times; one found in requirements.</p>
+<h3>V&amp;V and the V-model</h3>
+<div class="tscroll"><table><tr><th>Verification</th><th>Validation</th></tr>
+<tr><td>"Are we building the product right?" Tasks that ensure the software correctly implements a specific function.</td><td>"Are we building the right product?" Tasks that ensure the built software is traceable to customer requirements.</td></tr>
+<tr><td>Reviews, inspections, static analysis, unit tests</td><td>Acceptance tests, beta tests, usability studies</td></tr></table></div>
+<p>The V-model pairs requirements &harr; acceptance, system design &harr; system testing, architecture &harr; integration, module design &harr; unit testing (Lecture 2). Test cases for each level are designed during the matching design phase (early test design = shift-left). The V&amp;V wording is from B. Boehm.</p>
+</section>
+
+<section id="strategy">
+<h2 data-short="Strategy and pyramid"><span class="n">09</span>Testing strategy: in the small, then in the large</h2>
+<div class="cards two">
+<figure class="fig" style="margin:0">
+<svg viewBox="0 0 220 200" role="img" aria-label="Testing spiral: unit at centre, then integration, validation, system">
+  <circle cx="110" cy="100" r="92" class="f-box"/><circle cx="110" cy="100" r="68" class="f-sunk"/><circle cx="110" cy="100" r="44" class="f-box"/><circle cx="110" cy="100" r="22" class="f-acc-t"/>
+  <g font-size="8.5" text-anchor="middle" font-weight="600"><text x="110" y="103">Unit</text><text x="110" y="68">Integration</text><text x="110" y="45">Validation</text><text x="110" y="21">System testing</text></g>
+</svg>
+<figcaption>Each outer ring widens scope: unit (code) &rarr; integration (design) &rarr; validation (requirements) &rarr; system (whole system). In OO, "small" = a class.</figcaption>
+</figure>
+<figure class="fig" style="margin:0">
+<svg viewBox="0 0 220 200" role="img" aria-label="Test pyramid: unit 70%, integration 20%, end-to-end 10%">
+  <polygon points="110,12 150,62 70,62" class="f-trap"/><polygon points="70,62 150,62 180,112 40,112" class="f-acc-t"/><polygon points="40,112 180,112 210,180 10,180" class="f-key"/>
+  <g font-size="9" text-anchor="middle" font-weight="650"><text x="110" y="50">E2E / UI</text><text x="110" y="85">Integration / API</text><text x="110" y="98" font-weight="400">about 20%</text><text x="110" y="142">Unit</text><text x="110" y="155" font-weight="400">about 70%</text></g>
+  <text x="110" y="196" font-size="8" text-anchor="middle" class="t-muted">top: slower, costlier, more realistic (about 10%)</text>
+</svg>
+<figcaption>Mike Cohn's test pyramid. Unit: pytest, JUnit 5, Jest. Integration: Testcontainers, Postman, Pact. E2E: Playwright, Cypress, Appium.</figcaption>
+</figure>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>The anti-pattern is the "ice-cream cone": mostly manual and E2E tests, few unit tests &rarr; slow, flaky feedback. A variant, the Testing Trophy (Kent C. Dodds), stresses integration tests for web front-ends.</p></div>
+<h3>Eight strategic issues (Pressman)</h3>
+<ol>
+<li>Specify requirements quantifiably long before testing starts.</li>
+<li>State test objectives explicitly (coverage, MTBF, defect density).</li>
+<li>Profile every user category (personas, use cases).</li>
+<li>Plan "rapid-cycle" testing with fast feedback.</li>
+<li>Build robust software that tests itself (assertions, self-diagnostics).</li>
+<li>Use technical reviews as a filter before testing.</li>
+<li>Review the test strategy and test cases themselves.</li>
+<li>Continuously improve the test process with metrics.</li>
+</ol>
+<h3>Continuous testing: shift left and shift right</h3>
+<div class="flow"><span>Plan</span><i>&rarr;</i><span>Code</span><i>&rarr;</i><span>Build</span><i>&rarr;</i><span>Test</span><i>&rarr;</i><span>Release</span><i>&rarr;</i><span>Operate</span></div>
+<div class="cards two">
+  <div class="c"><h4>Shift-left</h4><p>Requirement and design reviews. Static analysis in the IDE. TDD / unit tests on every commit. Contract tests before integration.</p><span class="ex">SonarLint, Semgrep, pytest, Pact</span></div>
+  <div class="c"><h4>Shift-right</h4><p>Canary releases and feature flags. A/B tests with real users. Synthetic monitoring. Chaos engineering in production.</p><span class="ex">LaunchDarkly, OpenTelemetry, Gremlin</span></div>
+</div>
+</section>
+
+<section id="unit">
+<h2 data-short="Unit testing"><span class="n">10</span>Level 1: unit testing</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Tests the smallest testable unit (function, method, class) in isolation, usually by the programmer who wrote it, before integration.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="Driver calls module under test, which calls stubs A and B">
+  <defs><marker id="un" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g font-size="9.5" text-anchor="middle" font-weight="600">
+  <rect x="120" y="8" width="120" height="34" rx="5" class="f-box"/><text x="180" y="23">Driver</text><text x="180" y="35" font-weight="400" font-size="8" class="t-muted">(test harness)</text>
+  <rect x="110" y="62" width="140" height="30" rx="5" class="f-acc-t"/><text x="180" y="81">Module under test</text>
+  <rect x="60" y="112" width="90" height="28" rx="5" class="f-sunk"/><text x="105" y="130">Stub A</text>
+  <rect x="210" y="112" width="90" height="28" rx="5" class="f-sunk"/><text x="255" y="130">Stub B</text></g>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#un)"><path d="M180,42 V60"/><path d="M160,92 L118,110"/><path d="M200,92 L242,110"/></g>
+  <text x="250" y="55" font-size="8" class="t-muted">test cases in, results out</text>
+</svg>
+</figure>
+<ul>
+<li><b>Driver</b>: a "main program" that feeds test data to the unit and prints results.</li>
+<li><b>Stub</b>: stands in for lower-level modules not yet built; returns canned values.</li>
+<li>Test doubles today: dummy, stub, mock, spy, fake (Mockito, unittest.mock, Jest mocks).</li>
+<li><b>What to test</b>: interface, local data structures, boundary conditions, independent paths, error-handling paths.</li>
+</ul>
+<pre><code># test_grade.py
+import pytest
+from grade import letter_grade
+
+@pytest.mark.parametrize("score, expected", [
+    (95, "A"), (80, "B"), (65, "C"), (40, "F")])
+def test_letter_grade(score, expected):
+    assert letter_grade(score) == expected
+
+def test_rejects_invalid_score():
+    with pytest.raises(ValueError):
+        letter_grade(105)
+
+$ pytest -q   &rarr;  5 passed in 0.03s</code></pre>
+<div class="box trap"><span class="lbl">Exam trap: driver vs stub</span><p>The driver is <em>above</em> the unit and calls it. The stub is <em>below</em> the unit and is called by it. Top-down integration needs stubs; bottom-up needs drivers.</p></div>
+</section>
+
+<section id="integration">
+<h2 data-short="Integration testing"><span class="n">11</span>Level 2: integration testing strategies</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Integration testing assembles the software step by step while running tests to uncover errors in the interfaces between modules.</p></div>
+<div class="calc" id="intg">
+  <div class="head"><strong>Explorer: integration order on the module tree</strong><span class="tag">Slide 20</span></div>
+  <div class="body">
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem">
+      <button class="btn primary" type="button" data-o="df">Top-down, depth-first</button><button class="btn" type="button" data-o="bf">Top-down, breadth-first</button><button class="btn" type="button" data-o="bu">Bottom-up</button>
+    </div>
+    <svg id="ig-svg" viewBox="0 0 360 200" role="img" aria-label="Module tree M1 to M7 with integration order numbers"></svg>
+    <p class="small" id="ig-txt" style="margin:.4rem 0 0"></p>
+  </div>
+</div>
+<div class="tscroll"><table><tr><th>Approach</th><th>How it works</th><th>Pros</th><th>Cons</th></tr>
+<tr><td>Big bang</td><td>Link all units at once, test the whole</td><td>No scaffolding; OK for tiny systems</td><td>Faults very hard to localise</td></tr>
+<tr><td>Top-down</td><td>Start at the main control module; replace stubs one at a time (depth- or breadth-first)</td><td>Major control and decision points verified early; early demo</td><td>Many stubs; low-level processing tested late</td></tr>
+<tr><td>Bottom-up</td><td>Start with atomic modules; combine into clusters driven by drivers</td><td>No stubs; easy to observe results</td><td>No working program until the last module</td></tr>
+<tr><td>Sandwich</td><td>Top-down for upper layers + bottom-up for lower layers</td><td>Parallel work; balances both</td><td>More planning; middle layer tested late</td></tr></table></div>
+<p class="small">Modern practice: regression-test after every added module; Testcontainers spins up real PostgreSQL or Kafka in Docker; WireMock fakes external APIs; Pact verifies consumer-provider contracts between microservices.</p>
+<h3>Regression and smoke testing</h3>
+<div class="cards two">
+  <div class="c"><h4>Regression testing</h4><p>Re-executing a subset of tests already run, to ensure changes have not propagated unintended side effects.</p><span class="ex">Any change (code, docs, data) can break existing behaviour. Suite = representative sample + tests for affected functions + tests for changed components. Modern: test-impact analysis, flaky-test quarantine, visual regression.</span></div>
+  <div class="c"><h4>Smoke testing</h4><p>A quick, broad check of each daily build to expose "show-stopper" errors before deeper testing starts.</p><span class="ex">Code is integrated into a daily build; tests target errors that would keep the build from working; benefits: lower integration risk, easier diagnosis, visible progress.</span></div>
+</div>
+<div class="flow"><span>Commit / PR</span><i>&rarr;</i><span>Build</span><i>&rarr;</i><span>Smoke (about 5 min)</span><i>&rarr;</i><span>Regression (about 30 min)</span><i>&rarr;</i><span>Deploy to staging</span><i>fail &rarr; block merge, notify author</i></div>
+</section>
+
+<section id="oo">
+<h2 data-short="OO and higher-order"><span class="n">12</span>Object-oriented and higher-order testing</h2>
+<ul>
+<li>Class testing = OO unit testing. Test the operations of the class <em>and</em> its state behaviour.</li>
+<li>An operation cannot be tested alone: its result depends on the object's state.</li>
+<li>Inherited operations must be retested in every subclass context.</li>
+</ul>
+<div class="cards">
+  <div class="c"><h4>Thread-based</h4><p>Integrate the classes needed to respond to one input or event.</p></div>
+  <div class="c"><h4>Use-based</h4><p>Integrate the classes needed for one use case: independent classes first, then dependent layers.</p></div>
+  <div class="c"><h4>Cluster testing</h4><p>Integrate the classes needed to demonstrate one collaboration (from CRC or collaboration diagrams).</p></div>
+</div>
+<p>Example: state behaviour of the UniCafe Order: Created &rarr; pay() &rarr; Paid &rarr; start() &rarr; Preparing &rarr; finish() &rarr; Ready &rarr; collect() &rarr; Collected; cancel() leads to Cancelled.</p>
+<div class="tscroll"><table><tr><th>Test</th><th>Sequence</th><th>Expected</th></tr>
+<tr><td>T1 valid path</td><td>create &rarr; pay &rarr; start &rarr; finish &rarr; collect</td><td>State = Collected</td></tr>
+<tr><td>T2 cancel</td><td>create &rarr; pay &rarr; cancel</td><td>Cancelled + refund issued</td></tr>
+<tr><td>T3 illegal</td><td>create &rarr; start</td><td>InvalidTransition raised</td></tr>
+<tr><td>T4 illegal</td><td>Ready &rarr; cancel</td><td>Rejected (food already made)</td></tr></table></div>
+<h3>Higher-order testing: the whole system under real conditions</h3>
+<div class="cards">
+  <div class="c"><h4>System testing</h4><p>Verifies the fully integrated system incl. hardware, OS, DB and network.</p><span class="ex">Playwright, Selenium, Cypress</span></div>
+  <div class="c"><h4>Alpha / beta testing</h4><p>Alpha: users or an independent team at the developer's site. Beta: real users at their own sites.</p><span class="ex">TestFlight, Play testing tracks</span></div>
+  <div class="c"><h4>Recovery testing</h4><p>Forces the software to fail and verifies recovery (reinit, checkpoint restart, MTTR within limits).</p><span class="ex">Chaos Monkey, LitmusChaos, Gremlin</span></div>
+  <div class="c"><h4>Security testing</h4><p>Verifies protection mechanisms resist penetration: SAST, DAST, SCA, pen-testing.</p><span class="ex">OWASP ZAP, Burp Suite, Snyk</span></div>
+  <div class="c"><h4>Stress testing</h4><p>Demands resources in abnormal quantity, frequency or volume to find the breaking point.</p><span class="ex">k6, JMeter, Locust</span></div>
+  <div class="c"><h4>Performance testing</h4><p>Run-time response time, throughput and resource use: load, spike and soak (endurance) tests.</p><span class="ex">k6, Gatling, Lighthouse</span></div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap: alpha vs beta</span><p>Alpha = at the <b>developer's</b> site (controlled). Beta = at the <b>users'</b> sites (uncontrolled, real environment).</p></div>
+<div class="sorter" data-options="Unit|Integration|System|Acceptance / beta|Regression|Smoke|Stress|Recovery">
+  <div class="head"><strong>Practice: which kind of testing?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Unit" data-why="One function tested in isolation by its programmer."><p class="item">A developer checks that calculateVAT() returns 15% of the subtotal, with the database mocked.</p></div>
+  <div class="sort" data-a="Integration" data-why="It checks the interface between two modules."><p class="item">The order service and the real PostgreSQL database are run together in Docker to check the save and load calls.</p></div>
+  <div class="sort" data-a="Smoke" data-why="A quick, broad check of the daily build for show-stoppers."><p class="item">Every morning the new build is started and five key screens are opened to see that nothing crashes.</p></div>
+  <div class="sort" data-a="Regression" data-why="Re-running earlier tests to catch side effects of a change."><p class="item">After a bug fix in checkout, the whole existing payment test suite is run again.</p></div>
+  <div class="sort" data-a="Stress" data-why="Abnormal load to find the breaking point."><p class="item">The ticket site is pushed to 3&times; the expected Eid traffic to see where it breaks.</p></div>
+  <div class="sort" data-a="Recovery" data-why="Force a failure and verify the system recovers within MTTR."><p class="item">The database server is switched off mid-transaction to check that orders roll back and the service restarts.</p></div>
+  <div class="sort" data-a="Acceptance / beta" data-why="Real users at their own sites decide if it meets their needs."><p class="item">200 students use the new canteen app on their own phones for a week before launch.</p></div>
+  <div class="sort" data-a="System" data-why="The whole integrated system, including hardware, OS, DB and network."><p class="item">The complete app, API, database and payment sandbox are tested end to end in staging.</p></div>
+</div>
+</section>
+
+<section id="design">
+<h2 data-short="White-box vs black-box"><span class="n">13</span>Test-case design: white-box vs black-box</h2>
+<div class="tscroll"><table><tr><th></th><th>White-box (glass-box, structural)</th><th>Black-box (behavioural)</th></tr>
+<tr><td>Based on</td><td>Internal logic and code structure</td><td>Requirements / specification only</td></tr>
+<tr><td>Aim</td><td>Exercise every independent path at least once; all logical decisions on true and false sides; loops at their boundaries and within bounds; internal data structures for validity</td><td>Find incorrect or missing functions; interface errors; errors in external database access; behaviour or performance errors; initialisation and termination errors</td></tr>
+<tr><td>Techniques</td><td>Basis path, condition / MC-DC coverage, data-flow, loop testing</td><td>Equivalence partitioning, BVA, decision table, state transition, pairwise</td></tr>
+<tr><td>Who</td><td>Developers</td><td>Testers, users</td></tr>
+<tr><td>Tools</td><td>coverage.py, JaCoCo, Istanbul, PIT</td><td>Playwright, Postman, Cucumber, PICT</td></tr></table></div>
+<p><strong>Greybox</strong>: partial knowledge, e.g. API tests that also check DB state.</p>
+<div class="box key"><span class="lbl">Key point</span><p>They are complements. Specification-based techniques find missing behaviour. Structure-based techniques find untested logic.</p></div>
+</section>
+
+<section id="blackbox">
+<h2 data-short="Black-box techniques"><span class="n">14</span>Black-box: partitions, boundaries, decision tables</h2>
+<p>Spec: a student may register for 9 to 15 credits per semester.</p>
+<figure class="fig">
+<svg viewBox="0 0 360 90" role="img" aria-label="Number line with invalid below 9, valid 9 to 15, invalid above 15, and BVA points">
+  <rect x="10" y="20" width="110" height="24" class="f-trap"/><rect x="120" y="20" width="120" height="24" class="f-key"/><rect x="240" y="20" width="110" height="24" class="f-trap"/>
+  <g font-size="9" text-anchor="middle" font-weight="600"><text x="65" y="36">Invalid &lt; 9</text><text x="180" y="36">Valid 9 to 15</text><text x="295" y="36">Invalid &gt; 15</text></g>
+  <g font-size="9" text-anchor="middle" class="t-mono"><text x="100" y="66">8</text><text x="125" y="66">9</text><text x="150" y="66">10</text><text x="210" y="66">14</text><text x="235" y="66">15</text><text x="260" y="66">16</text></g>
+  <g class="f-ink"><circle cx="100" cy="52" r="3"/><circle cx="125" cy="52" r="3"/><circle cx="150" cy="52" r="3"/><circle cx="210" cy="52" r="3"/><circle cx="235" cy="52" r="3"/><circle cx="260" cy="52" r="3"/></g>
+  <text x="180" y="84" font-size="8" text-anchor="middle" class="t-muted">BVA test points: min&minus;1, min, min+1, max&minus;1, max, max+1</text>
+</svg>
+</figure>
+<ul>
+<li><b>Equivalence partitioning</b>: split inputs into classes that behave the same; one test per class (e.g. 5, 12, 20, "abc").</li>
+<li><b>Boundary value analysis</b>: errors cluster at edges. Test min&minus;1, min, min+1, max&minus;1, max, max+1.</li>
+<li><b>Pairwise</b>: 3 browsers &times; 3 OS &times; 2 languages = 18 combinations; only 9 tests cover every pair (tool: PICT).</li>
+<li><b>State transition</b>: test every valid transition and at least one invalid one.</li>
+</ul>
+<div class="calc" id="bva">
+  <div class="head"><strong>Generator: equivalence classes and boundary values</strong><span class="tag">Practice</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Valid minimum<input type="number" id="bv-min" value="100"></label><label class="field">Valid maximum<input type="number" id="bv-max" value="2000"></label><label class="field">Step (smallest unit)<input type="number" id="bv-st" value="1" step="0.01"></label></div>
+    <div class="out" id="bv-out"></div>
+  </div>
+</div>
+<h3>Decision table: login rule</h3>
+<div class="tscroll"><table style="text-align:center"><tr><th></th><th>R1</th><th>R2</th><th>R3</th><th>R4</th></tr>
+<tr><td>C1 user exists</td><td>Y</td><td>Y</td><td>Y</td><td>N</td></tr>
+<tr><td>C2 password correct</td><td>Y</td><td>N</td><td>-</td><td>-</td></tr>
+<tr><td>C3 failed attempts &lt; 5</td><td>Y</td><td>Y</td><td>N</td><td>-</td></tr>
+<tr><td>Action</td><td>A1 grant access</td><td>A2 "wrong password"</td><td>A3 lock account</td><td>A4 "unknown user"</td></tr></table></div>
+<p>Each rule (column) becomes one test case &rarr; 4 tests cover all combinations that matter. "-" = don't care.</p>
+</section>
+
+<section id="basis">
+<h2 data-short="Basis path and V(G)"><span class="n">15</span>White-box: basis path testing and cyclomatic complexity</h2>
+<div class="cards two">
+<figure class="fig" style="margin:0">
+<svg viewBox="0 0 220 260" role="img" aria-label="Flow graph with nodes 1, 2-3, 4-5, 6, 7, 8, 9, 10, 11 and regions R1 to R4">
+  <defs><marker id="fg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#fg)">
+  <path d="M95,25 H155"/><path d="M80,36 V64"/><path d="M70,86 L42,118"/><path d="M90,86 L120,118"/><path d="M122,142 L108,170"/><path d="M138,142 L152,170"/><path d="M110,192 L126,212"/><path d="M152,192 L140,212"/><path d="M122,226 L80,240"/><path d="M38,142 L62,234"/><path d="M58,246 H18 V25 H66"/></g>
+  <g font-size="9" text-anchor="middle" font-weight="700">
+  <circle cx="80" cy="25" r="13" class="f-ink"/><text x="80" y="28" class="t-inv">1</text>
+  <circle cx="168" cy="25" r="13" class="f-box"/><text x="168" y="28">11</text>
+  <circle cx="80" cy="75" r="13" class="f-ink"/><text x="80" y="78" class="t-inv">2,3</text>
+  <circle cx="34" cy="130" r="13" class="f-box"/><text x="34" y="133">4,5</text>
+  <circle cx="130" cy="130" r="13" class="f-ink"/><text x="130" y="133" class="t-inv">6</text>
+  <circle cx="102" cy="182" r="12" class="f-box"/><text x="102" y="185">7</text>
+  <circle cx="158" cy="182" r="12" class="f-box"/><text x="158" y="185">8</text>
+  <circle cx="132" cy="222" r="12" class="f-box"/><text x="132" y="225">9</text>
+  <circle cx="70" cy="244" r="12" class="f-box"/><text x="70" y="247">10</text></g>
+  <g font-size="8.5" class="t-acc" font-weight="600"><text x="34" y="62">R1</text><text x="80" y="160">R2</text><text x="130" y="188">R3</text><text x="176" y="236">R4 (outside)</text></g>
+</svg>
+<figcaption>Dark nodes are predicate nodes (1; 2,3; 6). 11 edges, 9 nodes. <span class="src">Slide 26</span></figcaption>
+</figure>
+<div>
+<p><b>Node</b>: one or more procedural statements (a sequence can collapse into one node). <b>Edge</b>: flow of control between nodes. <b>Region</b>: area bounded by edges and nodes (the outside counts as one). <b>Predicate node</b>: contains a condition; two or more edges leave it.</p>
+<p class="mono small">Path 1: 1-11<br>Path 2: 1-2-3-4-5-10-1-11<br>Path 3: 1-2-3-6-8-9-10-1-11<br>Path 4: 1-2-3-6-7-9-10-1-11</p>
+<p class="small">1-2-3-4-5-10-1-2-3-6-8-9-10-1-11 is NOT independent: it only combines paths 2 and 3, with no new edge.</p>
+<div class="flow"><span>1 Draw flow graph</span><span>2 Compute V(G)</span><span>3 Find basis set</span><span class="hl">4 Write test cases</span></div>
+</div>
+</div>
+<div class="box exact"><span class="lbl">Exam text: cyclomatic complexity</span><p>A quantitative measure of a program's logical complexity = the number of independent paths in the basis set = the upper bound on tests needed for basis-path coverage.</p><p class="mono">V(G) = number of regions = E &minus; N + 2 = P + 1</p><p class="small">Here: 4 regions; 11 &minus; 9 + 2 = 4; 3 predicate nodes + 1 = 4.</p></div>
+<div class="calc" id="vg">
+  <div class="head"><strong>Calculator: V(G) three ways and risk band</strong><span class="tag">Slides 27, 32, 44</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Edges E<input type="number" id="vg-e" value="11" min="0"></label><label class="field">Nodes N<input type="number" id="vg-n" value="9" min="1"></label><label class="field">Predicate nodes P<input type="number" id="vg-p" value="3" min="0"></label><label class="field">Regions (incl. outside)<input type="number" id="vg-r" value="4" min="1"></label></div>
+    <div class="out" id="vg-out"></div><div class="verdict" id="vg-v"></div>
+  </div>
+</div>
+<div class="tscroll"><table><tr><th>V(G)</th><th>Risk (SEI)</th></tr><tr><td>1 to 10</td><td>Simple, low risk</td></tr><tr><td>11 to 20</td><td>Moderate risk</td></tr><tr><td>21 to 50</td><td>Complex, high risk</td></tr><tr><td>&gt; 50</td><td>Untestable, very high risk</td></tr></table></div>
+<p>Uses: sets the number of basis-path test cases; a testability requirement (TE-1: V(G) &le; 20 per module; many teams use &le; 10); a refactoring trigger in code review. Compound conditions: <code>if (a &amp;&amp; b)</code> counts as 2 predicates. Modern twist: SonarSource "cognitive complexity" also penalises nesting.</p>
+</section>
+
+<section id="adequacy">
+<h2 data-short="Coverage and mutation"><span class="n">16</span>Measuring test adequacy: coverage and mutation</h2>
+<h3>Coverage criteria, weak to strong</h3>
+<div class="flow"><span>Statement: every line runs once</span><i>&lt;</i><span>Branch: every decision T and F</span><i>&lt;</i><span>Condition: every sub-condition T/F</span><i>&lt;</i><span>MC/DC: each condition shown to matter (DO-178C avionics)</span><i>&lt;</i><span class="hl">Path: every path (often infeasible)</span></div>
+<div class="box exact"><span class="lbl">Exam text: formulas</span><p class="mono">Statement coverage = executed statements &divide; total &times; 100%<br>Mutation score = killed &divide; (total &minus; equivalent) &times; 100</p></div>
+<p><b>Mutation testing</b> tests your tests: a tool injects small faults ("mutants": &gt; &rarr; &gt;=, + &rarr; &minus;, delete a statement). Run the suite: a mutant is <b>killed</b> if any test fails, <b>survived</b> otherwise. Survivors reveal weak assertions or missing boundary tests.</p>
+<div class="box key"><span class="lbl">Example</span><p>50 mutants, 4 equivalent, 40 killed &rarr; 40 &divide; 46 = <strong>87%</strong>. The 6 survivors each become a new test.</p></div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>100% coverage &ne; bug-free. Coverage shows what <em>ran</em>, not what was <em>checked</em>. Do not forget to subtract equivalent mutants in the denominator.</p></div>
+<p class="small muted">Tools: JaCoCo, coverage.py, Istanbul/nyc, Codecov; PIT, Stryker, mutmut.</p>
+</section>
+
+<section id="debugging">
+<h2 data-short="Debugging and tools"><span class="n">17</span>Debugging, cutting-edge techniques and the toolchain</h2>
+<div class="flow"><span>Test execution</span><i>&rarr;</i><span>Symptom (unexpected result)</span><i>&rarr;</i><span>Suspected causes</span><i>&rarr;</i><span>Additional tests</span><i>&rarr;</i><span>Identified cause</span><i>&rarr;</i><span class="hl">Correction + regression tests</span><i>&#8635; iterate until the cause is isolated</i></div>
+<div class="cards two">
+  <div class="c"><h4>Why debugging is hard</h4><p>Symptom and cause may be far apart. The symptom may vanish when another bug is fixed. The cause may be a combination of non-errors (round-off), a system or compiler error, timing, or an assumption everyone believes.</p></div>
+  <div class="c"><h4>Classic techniques</h4><p><b>Brute force</b>: memory dumps, traces, print statements. Most common, least efficient. <b>Backtracking</b>: trace source backward from the symptom; works for small programs. <b>Cause elimination</b>: form a hypothesis, design data to prove or disprove it; binary partitioning.</p></div>
+</div>
+<p><b>Modern toolbox</b>: git bisect (binary search over commits = automated cause elimination); IDE debuggers; observability (OpenTelemetry, Sentry); record and replay (rr); AI assistants (explain stack traces, suggest fixes; verify).</p>
+<h3>Cutting-edge techniques</h3>
+<div class="cards">
+  <div class="c"><h4>TDD and BDD</h4><p>Red &rarr; Green &rarr; Refactor. BDD writes executable specs in Given-When-Then (Gherkin).</p><span class="ex">Cucumber, behave, Reqnroll</span></div>
+  <div class="c"><h4>Property-based testing</h4><p>State an invariant (reverse(reverse(xs)) == xs); the tool generates hundreds of inputs and shrinks failures.</p><span class="ex">Hypothesis, QuickCheck, fast-check</span></div>
+  <div class="c"><h4>Contract testing</h4><p>Consumers publish expectations; providers verify them in CI, so microservices deploy independently.</p><span class="ex">Pact, Spring Cloud Contract</span></div>
+  <div class="c"><h4>Fuzzing</h4><p>Random or mutated inputs, guided by coverage, find crashes and security holes.</p><span class="ex">AFL++, libFuzzer, OSS-Fuzz</span></div>
+  <div class="c"><h4>Visual and a11y regression</h4><p>Screenshot diffing catches layout breaks; automated WCAG checks catch accessibility regressions.</p><span class="ex">Percy, Applitools, axe-core</span></div>
+  <div class="c"><h4>AI-assisted testing</h4><p>LLMs draft unit tests and data; self-healing UI locators; risk-based test selection. Always review assertions.</p><span class="ex">GitHub Copilot, Diffblue Cover, mabl</span></div>
+</div>
+<div class="tscroll"><table><tr><th>Level / type</th><th>Purpose</th><th>Popular tools</th></tr>
+<tr><td>Unit</td><td>Isolated logic, fast feedback</td><td>JUnit 5, pytest, Jest / Vitest, xUnit, Mockito</td></tr>
+<tr><td>API / integration</td><td>Services, databases, external APIs</td><td>Postman / Newman, REST Assured, Testcontainers, WireMock, Pact</td></tr>
+<tr><td>UI / E2E (web)</td><td>Critical user journeys in real browsers</td><td>Playwright, Cypress, Selenium WebDriver</td></tr>
+<tr><td>Mobile</td><td>Android and iOS apps on devices/emulators</td><td>Appium, Espresso, XCUITest, Firebase Test Lab</td></tr>
+<tr><td>Performance</td><td>Load, stress, spike, soak</td><td>k6, JMeter, Gatling, Locust</td></tr>
+<tr><td>Security</td><td>SAST, DAST, dependency (SCA) scanning</td><td>SonarQube, Semgrep, OWASP ZAP, Burp Suite, Snyk, Dependabot</td></tr>
+<tr><td>Static quality</td><td>Complexity, code smells, technical debt</td><td>SonarQube, ESLint, Pylint, lizard</td></tr>
+<tr><td>Test management</td><td>Plans, cases, traceability</td><td>Jira + Xray / Zephyr, TestRail</td></tr>
+<tr><td>CI/CD and reporting</td><td>Automate and publish every run</td><td>GitHub Actions, Jenkins, GitLab CI, Allure, Codecov</td></tr>
+<tr><td>Observability</td><td>Quality in production (shift-right)</td><td>Prometheus, Grafana, OpenTelemetry, Sentry</td></tr></table></div>
+</section>
+
+<section id="ex-b">
+<h2 data-short="Exercises B1, B2"><span class="n">18</span>Exercises B1 and B2</h2>
+<div class="ex-card">
+  <header><h3>Exercise B1: flow graph, V(G) and basis-path tests</h3>
+<pre><code>def count_grades(scores):
+    a = b = f = 0          # 1
+    for s in scores:       # 2
+        if s >= 80:        # 3
+            a += 1         # 4
+        elif s >= 50:      # 5
+            b += 1         # 6
+        else:
+            f += 1         # 7
+        # end of loop body # 8
+    return a, b, f         # 9</code></pre>
+  <p>(a) Draw the flow graph. (b) Compute V(G) in three ways. (c) List a basis set. (d) Derive one test case per path.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>(a)</strong> Edges: 1&rarr;2, 2&rarr;3, 2&rarr;9, 3&rarr;4, 3&rarr;5, 4&rarr;8, 5&rarr;6, 5&rarr;7, 6&rarr;8, 7&rarr;8, 8&rarr;2. Predicate nodes: 2 (loop), 3, 5.</p>
+    <p><strong>(b)</strong> E &minus; N + 2 = 11 &minus; 9 + 2 = <strong>4</strong>. P + 1 = 3 (nodes 2, 3, 5) + 1 = <strong>4</strong>. Regions = <strong>4</strong>.</p>
+    <p class="mono small"><strong>(c)</strong> P1: 1-2-9<br>P2: 1-2-3-4-8-2-9<br>P3: 1-2-3-5-6-8-2-9<br>P4: 1-2-3-5-7-8-2-9</p>
+    <div class="tscroll"><table><tr><th>Path</th><th>Input</th><th>Expected</th></tr><tr><td>P1</td><td>[]</td><td>(0, 0, 0)</td></tr><tr><td>P2</td><td>[90]</td><td>(1, 0, 0)</td></tr><tr><td>P3</td><td>[65]</td><td>(0, 1, 0)</td></tr><tr><td>P4</td><td>[30]</td><td>(0, 0, 1)</td></tr></table></div>
+    <p>Bonus (BVA): add 80, 79, 50, 49 to catch &gt;= vs &gt; mistakes.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><h3>Exercise B2: black-box test design for a coupon rule</h3><p>UniCafe accepts a coupon only if: the order subtotal is BDT 100 to 2000, the student has used fewer than 2 coupons this week, and the coupon is not expired. (a) Equivalence classes for the subtotal. (b) Boundary values. (c) Decision table. (d) Browsers {Chrome, Firefox, Safari} &times; OS {Android, iOS} &times; payment {wallet, card}: how many tests for full vs pairwise coverage?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>(a)</strong> E1 &lt; 100 (invalid); E2 100 to 2000 (valid); E3 &gt; 2000 (invalid); E4 empty / non-numeric (invalid).</p>
+    <p><strong>(b)</strong> 99, 100, 101, 1999, 2000, 2001.</p>
+    <div class="tscroll"><table style="text-align:center"><tr><th></th><th>R1</th><th>R2</th><th>R3</th><th>R4</th></tr>
+    <tr><td>Subtotal in 100 to 2000</td><td>Y</td><td>N</td><td>Y</td><td>Y</td></tr><tr><td>Weekly uses &lt; 2</td><td>Y</td><td>-</td><td>N</td><td>Y</td></tr><tr><td>Coupon not expired</td><td>Y</td><td>-</td><td>-</td><td>N</td></tr><tr><td>Outcome</td><td>Apply</td><td>Out of range</td><td>Limit reached</td><td>Expired</td></tr></table></div>
+    <p><strong>(d)</strong> Full: 3 &times; 2 &times; 2 = <strong>12</strong> tests. Pairwise: 3 &times; 2 = <strong>6</strong> tests cover every pair (generate with PICT). Minimum suite: 4 rule tests + 6 boundary tests + 1 non-numeric input = <strong>11 tests</strong>.</p>
+  </div></details>
+</div>
+</section>
+
+<section id="unicafe">
+<h2 data-short="UniCafe case study"><span class="n">19</span>Case study: testing "UniCafe" from requirements to release</h2>
+<p>UniCafe is campus food ordering: students order and pay from a mobile app, the kitchen sees a live queue, admins manage the menu. 24 KLOC (Python/FastAPI + React Native), PostgreSQL, campus wallet payment API, 5-person team, 2-week sprints.</p>
+<div class="flow"><span>Mobile app</span><i>&rarr;</i><span>API gateway</span><i>&rarr;</i><span>Order service</span><i>&rarr;</i><span>PostgreSQL</span><i>/</i><span class="hl">Wallet API (external)</span></div>
+<p class="small">The external dependency needs a stub or mock in test, a contract test in CI and a circuit breaker in production. Top risks: wrong bill amount, double charge on retry, lunch-peak overload (12:30 to 13:30), leaked student data.</p>
+<h3>Step 1: measurable quality requirements</h3>
+<div class="tscroll"><table><tr><th>ID</th><th>Requirement</th><th>Verified by</th></tr>
+<tr><td>PE-1</td><td>p95 order placement &le; 800 ms at 300 concurrent users</td><td>k6 load test</td></tr>
+<tr><td>AV-1</td><td>&ge; 99.5% availability 07:00 to 23:00 (MTTR &le; 3.6 h)</td><td>Chaos + monitoring</td></tr>
+<tr><td>RE-1</td><td>&le; 1 failed payment per 1000 transactions</td><td>Integration + soak test</td></tr>
+<tr><td>IN-1</td><td>Only the owner or an admin may read an order; 0 high/critical findings</td><td>OWASP ZAP + Semgrep</td></tr>
+<tr><td>RO-1</td><td>Wallet API timeout &rarr; order kept, user sees retry, no double charge</td><td>Fault-injection test</td></tr>
+<tr><td>US-1</td><td>90% of first-time users complete an order in &le; 3 min; SUS &ge; 75</td><td>Usability test + axe</td></tr>
+<tr><td>TE-1</td><td>Cyclomatic complexity &le; 10; line coverage &ge; 80%</td><td>SonarQube gate</td></tr></table></div>
+<div class="box key"><span class="lbl">Rule</span><p>If a quality requirement has no number, it cannot become a test case.</p></div>
+<h3>Step 2: test plan with entry and exit criteria</h3>
+<div class="tscroll"><table><tr><th>Level</th><th>Scope</th><th>Approach and tools</th><th>Owner</th><th class="num">Cases</th></tr>
+<tr><td>Unit</td><td>Pricing, coupon, state machine, validators</td><td>TDD, pytest + mocks, coverage.py</td><td>Developers</td><td class="num">186</td></tr>
+<tr><td>Integration</td><td>Service, DB, wallet API</td><td>Bottom-up, Testcontainers, WireMock, Pact</td><td>Developers</td><td class="num">54</td></tr>
+<tr><td>System</td><td>End-to-end journeys in staging</td><td>Playwright + Cucumber (BDD)</td><td>SDET</td><td class="num">28</td></tr>
+<tr><td>Performance</td><td>Order and payment endpoints at peak</td><td>k6 load, stress, 2 h soak</td><td>SDET</td><td class="num">6</td></tr>
+<tr><td>Security</td><td>Auth, IDOR, injection, dependencies</td><td>Semgrep (SAST), ZAP (DAST), Snyk (SCA)</td><td>SDET + DevOps</td><td class="num">15</td></tr>
+<tr><td>Robustness</td><td>Dependency failure, pod kill, latency</td><td>Fault injection, LitmusChaos</td><td>DevOps</td><td class="num">5</td></tr>
+<tr><td>Acceptance</td><td>20 students, 2 kitchen staff, 1 week</td><td>Beta on TestFlight, SUS survey</td><td>Product owner</td><td class="num">-</td></tr></table></div>
+<div class="cards two">
+  <div class="c"><h4>Entry criteria</h4><p>Requirements baselined and reviewed. Build passes smoke test. Test data and staging env ready. Unit coverage &ge; 80% on new code.</p></div>
+  <div class="c"><h4>Exit criteria (release gate)</h4><p>100% of planned cases executed. 0 critical / 0 high open defects. Line coverage &ge; 80%, mutation &ge; 70%. 0 high or critical security findings. All performance SLOs met. Regression suite green 3 builds in a row.</p></div>
+</div>
+<p class="small">Risk-based priority: payment and pricing code gets the deepest coverage (basis-path + mutation); the menu-browsing screen gets smoke-level checks only.</p>
+<h3>Step 3: white-box on the pricing engine</h3>
+<pre><code>def order_total(subtotal, coupon_ok, is_member):
+    # 1 entry
+    if subtotal &lt;= 0:                      # 2 (P1)
+        raise ValueError("empty order")    # 3
+    discount = 0                           # 4
+    if coupon_ok:                          # (P2)
+        discount = 0.10 * subtotal         # 5
+    if is_member:                          # 6 (P3)
+        discount += 0.05 * subtotal        # 7
+    total = subtotal - discount            # 8
+    return round(total, 2)                 # 9 exit</code></pre>
+<p>E = 11, N = 9: V(G) = E &minus; N + 2 = 4 = P + 1 = 3 + 1 = 4 regions &rarr; 4 basis-path tests.</p>
+<div class="tscroll"><table><tr><th>#</th><th>Path</th><th>Input (subtotal, coupon, member)</th><th>Expected</th></tr>
+<tr><td>T1</td><td>1-2-3-9</td><td>(0, F, F)</td><td>ValueError "empty order"</td></tr>
+<tr><td>T2</td><td>1-2-4-6-8-9</td><td>(500, F, F)</td><td>500.00</td></tr>
+<tr><td>T3</td><td>1-2-4-5-6-8-9</td><td>(500, T, F)</td><td>450.00 (&minus;50)</td></tr>
+<tr><td>T4</td><td>1-2-4-6-7-8-9</td><td>(500, F, T)</td><td>475.00 (&minus;25)</td></tr>
+<tr><td>T5*</td><td>combination</td><td>(500, T, T)</td><td>425.00 (&minus;75)</td></tr></table></div>
+<p class="small">* T5 is not an independent path; it is added as a realistic combination test. Result: <code>pytest --cov=pricing</code> &rarr; 186 passed; pricing.py 96 statements, 0 missed, 100% branch.</p>
+<h3>Step 4: black-box and BDD on the coupon and checkout</h3>
+<div class="tscroll"><table><tr><th>Class</th><th>Representative</th><th>Boundaries</th><th>Expected</th></tr>
+<tr><td>Below range</td><td>50</td><td>99</td><td>Coupon rejected</td></tr><tr><td>In range</td><td>850</td><td>100, 101, 1999</td><td>Coupon applied, 10% off</td></tr>
+<tr><td>Above range</td><td>3000</td><td>2000, 2001</td><td>2000 &#10003; / 2001 rejected</td></tr><tr><td>Invalid input</td><td>"abc", empty, &minus;5</td><td>-</td><td>400 Bad Request</td></tr></table></div>
+<pre><code>Feature: Checkout with coupon
+  Scenario: Coupon applied to a valid order
+    Given a student with BDT 1000 in the wallet
+    And a cart worth BDT 500
+    When the student applies coupon "LUNCH10"
+    And confirms the order
+    Then the charged amount should be BDT 450
+    And the wallet balance should be BDT 550
+    And the order state should be "Paid"</code></pre>
+<div class="tscroll"><table style="text-align:center"><tr><th>Condition</th><th>R1</th><th>R2</th><th>R3</th><th>R4</th></tr>
+<tr><td>Cart not empty</td><td>Y</td><td>Y</td><td>Y</td><td>N</td></tr><tr><td>Wallet balance &ge; total</td><td>Y</td><td>N</td><td>Y</td><td>-</td></tr><tr><td>Kitchen open</td><td>Y</td><td>-</td><td>N</td><td>-</td></tr><tr><td>Result</td><td>Paid</td><td>Low funds</td><td>Closed</td><td>Empty</td></tr></table></div>
+<p class="small">4 rules &rarr; 4 system test cases, each traceable to requirement FR-Pay-1, automated as Playwright E2E tests.</p>
+<h3>Step 5: API, contract and fault injection</h3>
+<p>API test: <code>POST /api/orders</code> &rarr; 201 Created, total 450.00. <code>POST /api/orders/901/pay</code> &rarr; 200 OK; a repeat &rarr; 409 Conflict (idempotent, no double charge). <code>GET /api/orders/901</code> with another student's token &rarr; 403 Forbidden (IN-1: no insecure direct object reference). Bottom-up: real PostgreSQL in Docker (Testcontainers), wallet API stub (WireMock). Consumer-driven contract (Pact): the API build fails in CI if a field the app expects is renamed or removed.</p>
+<div class="tscroll"><table><tr><th>Injected fault</th><th>Expected behaviour</th><th>Result</th></tr>
+<tr><td>Wallet API delay 500 ms &rarr; 8 s</td><td>Timeout at 3 s, order kept "Created", retry offered</td><td>PASS</td></tr>
+<tr><td>Wallet API returns 500</td><td>Circuit breaker opens after 5 failures; queue payment</td><td>PASS</td></tr>
+<tr><td>Duplicate pay request (retry)</td><td>Idempotency key &rarr; single charge, 409 on repeat</td><td>FAIL &rarr; fixed</td></tr>
+<tr><td>DB connection dropped</td><td>Transaction rolled back; no partial order</td><td>PASS</td></tr>
+<tr><td>Kill one API pod (Litmus)</td><td>Requests served by remaining pods; 0 errors</td><td>PASS</td></tr></table></div>
+<div class="box trap"><span class="lbl">Defect #47 (critical)</span><p>A retried payment charged the wallet twice. Fixed with an idempotency key + unique DB constraint; regression test added.</p></div>
+<h3>Step 6: load, stress and soak (PE-1)</h3>
+<div class="bars" aria-hidden="true" style="height:170px">
+  <div class="bar"><span class="val">410 ms</span><div class="fill soft" style="height:28%"></div></div>
+  <div class="bar"><span class="val">620 ms</span><div class="fill soft" style="height:43%"></div></div>
+  <div class="bar"><span class="val">780 ms</span><div class="fill" style="height:54%"></div></div>
+  <div class="bar"><span class="val">1,450 ms</span><div class="fill acc" style="height:100%"></div></div>
+</div>
+<div class="bar-labels"><span>100 VU</span><span>200 VU</span><span>300 VU (target)</span><span>400 VU (stress)</span></div>
+<div class="tscroll"><table><tr><th>Metric</th><th>300 VU (target)</th><th>400 VU (stress)</th></tr>
+<tr><td>p95 latency</td><td>780 ms &#10003;</td><td>1450 ms &#10007;</td></tr><tr><td>Throughput</td><td>284 req/s</td><td>301 req/s (plateau)</td></tr><tr><td>Error rate</td><td>0.2% &#10003;</td><td>3.8% &#10007; (DB pool exhausted)</td></tr><tr><td>CPU at peak</td><td>68%</td><td>97%</td></tr></table></div>
+<p class="small"><b>Load</b>: expected peak (300 users, lunch hour). <b>Stress</b>: push past the peak to find the breaking point. <b>Soak</b>: 2 h at 200 users to expose memory leaks. <b>Spike</b>: 0 &rarr; 400 users in 30 s (exam-day promo). Action: PE-1 is met at 300 users. Breaking point &asymp; 320 users &rarr; raise the DB connection pool from 20 to 50 and add a read replica.</p>
+<h3>Step 7: security, robustness and usability</h3>
+<div class="cards two">
+  <div class="c"><h4>SAST: Semgrep</h4><p>Scans source on every PR for hard-coded secrets, SQL string concatenation, unsafe deserialisation. 3 medium findings &rarr; fixed (parameterised queries).</p></div>
+  <div class="c"><h4>DAST: OWASP ZAP</h4><p>Attacks the running staging app: injection, XSS, broken auth, IDOR, missing headers. 1 high: order IDs enumerable &rarr; fixed with a per-user authorisation check.</p></div>
+  <div class="c"><h4>SCA: Snyk / Dependabot</h4><p>Checks third-party libraries and containers against CVE databases. 2 critical CVEs in transitive deps &rarr; upgraded and re-scanned.</p></div>
+  <div class="c"><h4>Manual pen-test and abuse cases</h4><p>Replay a payment, tamper with the price field, brute-force the login. Price now recomputed server-side; login locks after 5 attempts.</p></div>
+  <div class="c wide"><h4>Chaos experiment (steady-state hypothesis)</h4><p>Hypothesis: killing 1 of 3 API pods during a 200-user load keeps errors &lt; 1% and p95 &lt; 800 ms. Method: LitmusChaos pod-delete for 60 s while k6 runs. Result: errors 0.4%, p95 810 ms for 12 s, then recovery &rarr; hypothesis holds; MTTR 14 s.</p></div>
+</div>
+<div class="tscroll"><table><tr><th>Usability check</th><th>Method</th><th>Target</th><th>Result</th></tr>
+<tr><td>First order completion</td><td>20 students, think-aloud</td><td>&le; 3 min, 90%</td><td>2 min 12 s, 95% &#10003;</td></tr>
+<tr><td>Satisfaction</td><td>SUS questionnaire</td><td>&ge; 75</td><td>81 &#10003;</td></tr>
+<tr><td>Accessibility</td><td>axe-core + screen reader</td><td>0 critical WCAG 2.2</td><td>2 fixed &rarr; 0 &#10003;</td></tr>
+<tr><td>Error recovery</td><td>Wrong coupon entered</td><td>Clear message + retry</td><td>Message reworded &#10003;</td></tr></table></div>
+<h3>Step 8: the CI/CD quality pipeline</h3>
+<div class="flow"><span>Commit: lint + unit, 2 min</span><i>&rarr;</i><span>PR build: unit + SAST + coverage gate, 6 min</span><i>&rarr;</i><span>Merge: integration + contract, 11 min</span><i>&rarr;</i><span>Staging: smoke &rarr; E2E + a11y, 18 min</span><i>&rarr;</i><span>Nightly: regression + ZAP + soak, 90 min</span><i>&rarr;</i><span class="hl">Release: canary 10% &rarr; 100%</span></div>
+<div class="tscroll"><table><tr><th>Gate</th><th>Threshold</th><th>Status</th></tr>
+<tr><td>Line coverage (new code)</td><td>&ge; 80%</td><td>87% &#10003;</td></tr><tr><td>Mutation score (pricing)</td><td>&ge; 70%</td><td>88% &#10003;</td></tr><tr><td>Cyclomatic complexity</td><td>&le; 10 / function</td><td>max 8 &#10003;</td></tr><tr><td>High/critical security</td><td>0</td><td>0 &#10003;</td></tr><tr><td>p95 order latency</td><td>&le; 800 ms</td><td>780 ms &#10003;</td></tr><tr><td>Flaky-test rate</td><td>&lt; 1%</td><td>0.6% &#10003;</td></tr></table></div>
+<p class="small">Any gate fails &rarr; build red, merge blocked, author notified. Every gate is a quality requirement turned into an automated check.</p>
+<h3>Step 9: defects, DRE and the release decision</h3>
+<div class="bars" aria-hidden="true" style="height:170px">
+  <div class="bar"><span class="val">12</span><div class="fill acc" style="height:35%"></div></div>
+  <div class="bar"><span class="val">18</span><div class="fill acc" style="height:53%"></div></div>
+  <div class="bar"><span class="val">34</span><div class="fill" style="height:100%"></div></div>
+  <div class="bar"><span class="val">27</span><div class="fill" style="height:79%"></div></div>
+  <div class="bar"><span class="val">19</span><div class="fill" style="height:56%"></div></div>
+  <div class="bar"><span class="val">8</span><div class="fill soft" style="height:24%"></div></div>
+  <div class="bar"><span class="val">7</span><div class="fill soft" style="height:21%;background:var(--bad)"></div></div>
+</div>
+<div class="bar-labels"><span>Req. review</span><span>Design review</span><span>Unit</span><span>Integration</span><span>System</span><span>UAT</span><span>Post-release</span></div>
+<p class="small muted" style="text-align:center">Where the 125 defects were found</p>
+<div class="box exact"><span class="lbl">Exam text: defect removal efficiency</span><p class="mono">DRE = E / (E + D)</p><p>E = errors found before release; D = defects found after release. UniCafe: 118 / (118 + 7) = 0.944 &rarr; <strong>94.4%</strong> (industry good practice &ge; 90%).</p></div>
+<div class="cards">
+  <div class="c tint"><h4>118</h4><p>found before release</p></div>
+  <div class="c tint"><h4>94.4%</h4><p>defect removal efficiency</p></div>
+  <div class="c tint"><h4>4.9</h4><p>defects per KLOC (118 / 24)</p></div>
+  <div class="c tint"><h4>24%</h4><p>found by reviews before any test (30 of 125)</p></div>
+</div>
+<div class="tscroll"><table><tr><th>Severity</th><th class="num">Found</th><th class="num">Fixed</th><th class="num">Open</th><th>Gate</th></tr>
+<tr><td>Critical</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td>&#10003;</td></tr><tr><td>High</td><td class="num">21</td><td class="num">21</td><td class="num">0</td><td>&#10003;</td></tr><tr><td>Medium</td><td class="num">47</td><td class="num">41</td><td class="num">6</td><td>&#10003; &le; 10</td></tr><tr><td>Low</td><td class="num">44</td><td class="num">25</td><td class="num">19</td><td>backlog</td></tr></table></div>
+<p><b>Traceability check</b>: every quality requirement (PE-1, AV-1, RE-1, IN-1, RO-1, US-1, TE-1) maps to at least one executed test case, and every test case maps back to a requirement: no orphan tests, no untested requirements.</p>
+<div class="box key"><span class="lbl">Decision</span><p><b>SHIP</b> as a canary to 10% of students for 48 h, monitored against the SLOs, with a one-click rollback. Full rollout if the error budget holds.</p></div>
+</section>
+
+<section id="ex-c">
+<h2 data-short="Exercise C"><span class="n">20</span>Exercise C: you are the test lead for UniCafe v2.0</h2>
+<div class="calc" id="lead">
+  <div class="head"><strong>Dashboard: release v2.0 numbers</strong><span class="tag">Capstone</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Statements total<input type="number" id="ld-st" value="1200"></label>
+      <label class="field">Statements executed<input type="number" id="ld-ex" value="1050"></label>
+      <label class="field">Mutants generated<input type="number" id="ld-m" value="80"></label>
+      <label class="field">Equivalent mutants<input type="number" id="ld-eq" value="5"></label>
+      <label class="field">Mutants killed<input type="number" id="ld-k" value="66"></label>
+      <label class="field">Defects before release<input type="number" id="ld-e" value="96"></label>
+      <label class="field">Defects after release<input type="number" id="ld-d" value="9"></label>
+      <label class="field">MTTF (h)<input type="number" id="ld-f" value="300"></label>
+      <label class="field">MTTR (h)<input type="number" id="ld-r" value="1.5" step="0.1"></label>
+      <label class="field">Predicate nodes in refund()<input type="number" id="ld-p" value="5"></label>
+    </div>
+    <div class="out" id="ld-out"></div>
+  </div>
+</div>
+<div class="ex-card">
+  <header><h3>Problem</h3><p>Release v2.0: 1200 statements, 1050 executed by the suite; 80 mutants, 5 equivalent, 66 killed; 96 defects before release and 9 in the first month; MTTF 300 h, MTTR 1.5 h; a new refund function has 5 predicate nodes. (a) Statement coverage: does it pass the 80% gate? (b) Mutation score: does it pass the 70% gate? (c) DRE. (d) Availability: is AV-1 (99.5%) met? (e) How many basis-path tests does refund need? (f) Which two tests would you add for the "partial refund" rule, and why?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>(a)</strong> 1050 / 1200 = 0.875 &rarr; <strong>87.5%</strong> &#10003; passes. 150 statements never executed: inspect them for dead code or missing tests.</p>
+    <p><strong>(b)</strong> 66 / (80 &minus; 5) = 66/75 = 0.88 &rarr; <strong>88%</strong> &#10003;. The 9 survivors each indicate a missing assertion.</p>
+    <p><strong>(c)</strong> DRE = 96 / (96 + 9) = 0.9143 &rarr; <strong>91.4%</strong> &#10003; above the 90% benchmark, but below v1.0's 94.4%: investigate which phase leaked.</p>
+    <p><strong>(d)</strong> A = 300 / (300 + 1.5) = 0.99502 &rarr; <strong>99.50%</strong> &#10003; meets AV-1 exactly; downtime &asymp; 43.6 h/yr. No margin: reduce MTTR to keep headroom.</p>
+    <p><strong>(e)</strong> V(G) = P + 1 = 5 + 1 = <strong>6</strong> independent paths &rarr; 6 basis-path test cases.</p>
+    <p><strong>(f)</strong> Boundary test: a refund of exactly the full amount vs one paisa more (rejected). Robustness / idempotency test: the same refund request sent twice must refund only once (the v1.0 double-charge defect class).</p>
+  </div></details>
+</div>
+</section>
+
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">21</span>Exam questions with model answers</h2>
+<p>The final exam (CLO3) is marked on solution design, design correctness, implementation, completeness and explanation. So show every step of the calculation and justify each design choice.</p>
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Case: Daraz 11.11 sale readiness</h3><p>Daraz expects 50,000 concurrent shoppers during the 11.11 sale. Last year the checkout API failed at peak and some customers were charged twice. (a) Write three measurable quality requirements for checkout. [3] (b) Propose a test strategy across levels, naming the tests that verify each requirement. [4] (c) The order service has MTTF 400 h and MTTR 2 h. Does it meet a 99.9% SLO? What MTTR is needed? [3]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><b>(a)</b> PE-1: p95 checkout response &le; 1 s at 50,000 concurrent users. RE-1: &le; 1 failed payment per 1000 transactions. RO-1: a repeated pay request with the same idempotency key shall charge only once and return 409.</p>
+    <div class="tscroll"><table><tr><th>Level</th><th>Test</th><th>Verifies</th></tr>
+    <tr><td>Unit</td><td>Pricing and discount logic with basis-path tests; mutation &ge; 70%</td><td>Correct bill</td></tr>
+    <tr><td>Integration</td><td>Testcontainers DB + WireMock payment gateway; Pact contract with the app</td><td>RE-1</td></tr>
+    <tr><td>Robustness</td><td>Fault injection: duplicate pay, gateway timeout, pod kill</td><td>RO-1</td></tr>
+    <tr><td>Performance</td><td>k6 load at 50k VU, stress beyond it, spike 0 &rarr; 50k, 2 h soak</td><td>PE-1</td></tr>
+    <tr><td>System / acceptance</td><td>Playwright E2E checkout; canary 10% with SLO monitoring</td><td>Real journeys</td></tr></table></div>
+    <p><b>(c)</b> A = 400 / 402 = 0.99502 = 99.50% &lt; 99.9% &#10007;. Need 400 / (400 + MTTR) &ge; 0.999 &rArr; MTTR &le; 400 &times; 0.001 / 0.999 = <b>0.40 h (about 24 min)</b>. Use auto-restart, fast alerts and one-click rollback.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: basis path for a fee function</h3>
+<pre><code>def late_fee(days, member):
+    fee = 0                     # 1
+    if days > 0:                # 2
+        fee = days * 10         # 3
+        if member:              # 4
+            fee = fee / 2       # 5
+    if fee > 500:               # 6
+        fee = 500               # 7
+    return fee                  # 8</code></pre>
+  <p>Draw the flow graph, compute V(G) two ways, and give the basis-path tests.</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p>Edges: 1&rarr;2, 2&rarr;3, 2&rarr;6, 3&rarr;4, 4&rarr;5, 4&rarr;6, 5&rarr;6, 6&rarr;7, 6&rarr;8, 7&rarr;8. E = 10, N = 8 &rarr; V(G) = 10 &minus; 8 + 2 = <b>4</b>. Predicates 2, 4, 6 &rarr; P + 1 = <b>4</b>.</p>
+    <div class="tscroll"><table><tr><th>Path</th><th>Input</th><th>Expected</th></tr>
+    <tr><td>1-2-6-8</td><td>(0, F)</td><td>0</td></tr><tr><td>1-2-3-4-6-8</td><td>(5, F)</td><td>50</td></tr><tr><td>1-2-3-4-5-6-8</td><td>(5, T)</td><td>25</td></tr><tr><td>1-2-3-4-6-7-8</td><td>(60, F)</td><td>500 (capped)</td></tr></table></div>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: DRE and mutation</h3><p>A bKash release found 180 defects before release and 20 after. Its mutation run had 120 mutants, 10 equivalent and 88 killed. Compute DRE and mutation score and say what each tells you.</p></header>
+  <details><summary>Model answer</summary><div class="sol"><p>DRE = 180 / 200 = <b>90%</b>: exactly at the good-practice line; 1 in 10 defects escaped to users. Mutation score = 88 / (120 &minus; 10) = 88 / 110 = <b>80%</b>: above a 70% gate; the 22 survivors point to missing assertions or boundary tests that should be added.</p></div></details>
+</div>
+</section>
+
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">22</span>Quiz</h2>
+<div class="quiz" id="q5">
+  <div class="mcq"><p class="q">Which ISO/IEC 25010:2023 characteristic is new?</p><div class="opts"><button>Reliability</button><button data-ok>Safety</button><button>Security</button><button>Maintainability</button></div><p class="why">Safety (fail-safe, hazard warning) is new in 2023.</p></div>
+  <div class="mcq"><p class="q">In McCall's triangle, portability belongs to:</p><div class="opts"><button>Product operation</button><button>Product revision</button><button data-ok>Product transition</button><button>None</button></div><p class="why">Transition: portability, reusability, interoperability.</p></div>
+  <div class="mcq"><p class="q">MTTF = 990 h, MTTR = 10 h. Availability =</p><div class="opts"><button>98.0%</button><button data-ok>99.0%</button><button>99.9%</button><button>99.5%</button></div><p class="why">990 / 1000 = 0.99.</p></div>
+  <div class="mcq"><p class="q">The error budget of a 99.9% SLO over 30 days is:</p><div class="opts"><button>4.3 min</button><button data-ok>43.2 min</button><button>8.76 h</button><button>3.65 days</button></div><p class="why">0.1% &times; 43,200 min = 43.2 min.</p></div>
+  <div class="mcq"><p class="q">Raising integrity usually hurts:</p><div class="opts"><button>Portability</button><button data-ok>Efficiency and usability</button><button>Maintainability</button><button>Nothing</button></div><p class="why">Integrity row: &minus; efficiency, &minus; usability.</p></div>
+  <div class="mcq"><p class="q">In the test pyramid, about what share should be unit tests?</p><div class="opts"><button>10%</button><button>20%</button><button>50%</button><button data-ok>70%</button></div><p class="why">Unit 70%, integration 20%, E2E 10%.</p></div>
+  <div class="mcq"><p class="q">Top-down integration needs:</p><div class="opts"><button>Drivers</button><button data-ok>Stubs</button><button>Neither</button><button>Only mocks of the UI</button></div><p class="why">Lower modules are replaced by stubs one at a time.</p></div>
+  <div class="mcq"><p class="q">Beta testing happens:</p><div class="opts"><button>At the developer's site</button><button data-ok>With real users at their own sites</button><button>Only on unit level</button><button>Before integration</button></div><p class="why">Alpha = developer's site; beta = users' sites.</p></div>
+  <div class="mcq"><p class="q">Valid range 1 to 50. Which set is the BVA set?</p><div class="opts"><button>1, 25, 50</button><button data-ok>0, 1, 2, 49, 50, 51</button><button>&minus;1, 0, 51, 52</button><button>1, 50</button></div><p class="why">min&minus;1, min, min+1, max&minus;1, max, max+1.</p></div>
+  <div class="mcq"><p class="q">A flow graph has 14 edges and 11 nodes. V(G) =</p><div class="opts"><button>3</button><button>4</button><button data-ok>5</button><button>25</button></div><p class="why">14 &minus; 11 + 2 = 5.</p></div>
+  <div class="mcq"><p class="q">60 mutants, 10 equivalent, 45 killed. Mutation score =</p><div class="opts"><button>75%</button><button data-ok>90%</button><button>83%</button><button>45%</button></div><p class="why">45 / (60 &minus; 10) = 90%.</p></div>
+  <div class="mcq"><p class="q">200 defects before release, 25 after. DRE =</p><div class="opts"><button>87.5%</button><button data-ok>88.9%</button><button>92.0%</button><button>12.5%</button></div><p class="why">200 / 225 = 0.889.</p></div>
+</div>
+</section>
+
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">23</span>Exam checklist</h2>
+<p><span class="check-progress" data-for="ck5"></span></p>
+<ul class="checklist" id="ck5" data-key="main">
+  <li>Define quality attributes and turn a vague wish into a measurable requirement.</li>
+  <li>Draw McCall's triangle (11 factors) and list the 9 ISO/IEC 25010:2023 characteristics.</li>
+  <li>Explain availability, reliability, performance, efficiency, integrity, robustness, usability, interoperability with example requirements.</li>
+  <li>Compute A = MTTF/(MTTF+MTTR), downtime, maximum MTTR, the nines, SLI/SLO/SLA and error budget.</li>
+  <li>Explain change-time attributes and read the trade-off matrix.</li>
+  <li>Write a six-part quality-attribute scenario.</li>
+  <li>Define testing; compare developer and independent tester; separate verification and validation.</li>
+  <li>Draw the testing spiral and the test pyramid; name the ice-cream cone anti-pattern.</li>
+  <li>List the eight strategic issues; explain shift-left and shift-right.</li>
+  <li>Explain unit testing with drivers and stubs.</li>
+  <li>Give the integration order (depth-first, breadth-first, bottom-up) and compare big bang, top-down, bottom-up, sandwich.</li>
+  <li>Explain regression, smoke, OO, system, alpha/beta, recovery, security, stress and performance testing.</li>
+  <li>Compare white-box and black-box; apply EP, BVA, decision tables and pairwise.</li>
+  <li>Draw a flow graph, compute V(G) three ways and write basis-path tests.</li>
+  <li>Compute statement coverage, mutation score and DRE, and interpret them.</li>
+  <li>Walk through the UniCafe case: requirements, plan, gates, defects and the release decision.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE,$=S.$,$$=S.$$,fmt=S.fmt;
+  /* availability */
+  S.live($("#av"),function(){
+    var f=S.num("#av-f"),r=S.num("#av-r"),s=S.num("#av-s")/100,p=S.num("#av-p"),A=f+r?f/(f+r):0,maxR=s>0&&s<1?f*(1-s)/s:0;
+    $("#av-out").innerHTML='<div class="hl"><span>Availability A</span><b>'+fmt(A*100,3)+'%</b></div><div><span>Downtime in period</span><b>'+fmt((1-A)*p,2)+' h</b></div><div><span>Downtime per year</span><b>'+fmt((1-A)*8760,1)+' h</b></div><div><span>Max MTTR for target</span><b>'+fmt(maxR,2)+' h</b></div><div><span>Error budget (30 days)</span><b>'+fmt((1-s)*43200,1)+' min</b></div>';
+    var ok=A>=s-1e-9,v=$("#av-v");v.className="verdict "+(ok?"ok":"no");
+    v.textContent=ok?"Target met.":"Target missed by "+fmt((s-A)*100,3)+" percentage points. Cut MTTR to "+fmt(maxR,2)+" h or less.";
+  });
+  /* integration order */
+  var pos={M1:[180,26],M2:[70,90],M3:[180,90],M4:[290,90],M5:[30,160],M6:[110,160],M7:[290,160]}, edges=[["M1","M2"],["M1","M3"],["M1","M4"],["M2","M5"],["M2","M6"],["M4","M7"]];
+  var orders={df:{o:["M1","M2","M5","M6","M3","M4","M7"],t:"Top-down, depth-first: M1 &rarr; M2 &rarr; M5 &rarr; M6 &rarr; M3 &rarr; M4 &rarr; M7. Stubs replace the modules below until they are added."},
+    bf:{o:["M1","M2","M3","M4","M5","M6","M7"],t:"Top-down, breadth-first: M1 &rarr; M2 &rarr; M3 &rarr; M4 &rarr; M5 &rarr; M6 &rarr; M7, level by level."},
+    bu:{o:["M5","M6","M2","M7","M4","M3","M1"],t:"Bottom-up: clusters {M5, M6} + M2 and {M7} + M4 run with drivers, then M1 (with M3) on top. No stubs needed."}};
+  function ig(k){
+    var g='';edges.forEach(function(e){var a=pos[e[0]],b=pos[e[1]];g+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" class="s-line" stroke-width="1.4"/>';});
+    var o=orders[k].o;Object.keys(pos).forEach(function(m){var p=pos[m],i=o.indexOf(m);g+='<rect x="'+(p[0]-26)+'" y="'+(p[1]-14)+'" width="52" height="28" rx="6" class="'+(i<3?"f-acc-t":"f-box")+'"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" font-size="10" font-weight="700" text-anchor="middle">'+m+'</text><circle cx="'+(p[0]+26)+'" cy="'+(p[1]-14)+'" r="8" class="f-ink"/><text x="'+(p[0]+26)+'" y="'+(p[1]-11)+'" font-size="8.5" text-anchor="middle" class="t-inv" font-weight="700">'+(i+1)+'</text>';});
+    $("#ig-svg").innerHTML=g;$("#ig-txt").innerHTML=orders[k].t;
+    $$("#intg [data-o]").forEach(function(b){b.classList.toggle("primary",b.getAttribute("data-o")===k);});
+  }
+  $$("#intg [data-o]").forEach(function(b){b.addEventListener("click",function(){ig(b.getAttribute("data-o"));});}); ig("df");
+  /* BVA */
+  S.live($("#bva"),function(){
+    var a=S.num("#bv-min"),b=S.num("#bv-max"),s=S.num("#bv-st")||1,d=s%1?2:0,f=function(x){return fmt(x,d);};
+    $("#bv-out").innerHTML='<div><span>Invalid below</span><b>&lt; '+f(a)+'</b></div><div><span>Valid class</span><b>'+f(a)+' to '+f(b)+'</b></div><div><span>Invalid above</span><b>&gt; '+f(b)+'</b></div><div class="hl"><span>BVA points</span><b>'+[a-s,a,a+s,b-s,b,b+s].map(f).join(", ")+'</b></div><div><span>Plus</span><b>empty / non-numeric</b></div>';
+  });
+  /* V(G) */
+  S.live($("#vg"),function(){
+    var e=S.num("#vg-e"),n=S.num("#vg-n"),p=S.num("#vg-p"),r=S.num("#vg-r"),v1=e-n+2,v2=p+1;
+    $("#vg-out").innerHTML='<div><span>E &minus; N + 2</span><b>'+v1+'</b></div><div><span>P + 1</span><b>'+v2+'</b></div><div><span>Regions</span><b>'+r+'</b></div><div class="hl"><span>Basis-path tests</span><b>'+v1+'</b></div>';
+    var band=v1<=10?"1 to 10: simple, low risk":v1<=20?"11 to 20: moderate risk":v1<=50?"21 to 50: complex, high risk":"over 50: untestable, very high risk";
+    var same=v1===v2&&v2===r,el=$("#vg-v");el.className="verdict "+(same?"ok":"no");
+    el.textContent=(same?"All three methods agree. ":"The three methods disagree: recount edges, nodes, predicates or regions. ")+"Risk band "+band+".";
+  });
+  /* test lead dashboard */
+  S.live($("#lead"),function(){
+    var cov=S.num("#ld-ex")/(S.num("#ld-st")||1),ms=S.num("#ld-k")/((S.num("#ld-m")-S.num("#ld-eq"))||1),e=S.num("#ld-e"),d=S.num("#ld-d"),dre=e+d?e/(e+d):0,f=S.num("#ld-f"),r=S.num("#ld-r"),A=f+r?f/(f+r):0,vg=S.num("#ld-p")+1;
+    var tick=function(ok){return ok?" &#10003;":" &#10007;";};
+    $("#ld-out").innerHTML='<div><span>(a) Statement coverage (gate 80%)</span><b>'+fmt(cov*100,1)+'%'+tick(cov>=0.8)+'</b></div><div><span>(b) Mutation score (gate 70%)</span><b>'+fmt(ms*100,1)+'%'+tick(ms>=0.7)+'</b></div><div><span>(c) DRE (benchmark 90%)</span><b>'+fmt(dre*100,1)+'%'+tick(dre>=0.9)+'</b></div><div><span>(d) Availability (AV-1 99.5%)</span><b>'+fmt(A*100,2)+'%'+tick(A>=0.995-1e-9)+'</b></div><div><span>Downtime per year</span><b>'+fmt((1-A)*8760,1)+' h</b></div><div class="hl"><span>(e) Basis-path tests V(G) = P + 1</span><b>'+vg+'</b></div>';
+  });
+})();
+</script>
+</body>
+</html>

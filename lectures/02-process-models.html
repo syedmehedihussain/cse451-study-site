@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Software Process Models</title>
+<meta name="description" content="CSE451 Lecture 2: Waterfall, V-Model, prototyping, incremental, spiral, RAD, CBD, RUP, agile, XP, Scrum, DSDM and FDD.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="02-process-models">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 02 &nbsp;/&nbsp; Mid exam</p>
+  <h1>Software development process models</h1>
+  <p class="summary">From plan-driven models to agile methods. Every model arranges the same basic activities in a different order. You must explain each one, choose the right one for a project, and do the velocity, burndown, MoSCoW and FDD calculations.</p>
+  <p class="meta"><span><b>Source</b> Lecture 2, 59 slides</span><span><b>Reading</b> about 75 min</span><span><b>Exercises</b> 6 with solutions</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<section id="process">
+<h2 data-short="Process basics"><span class="n">01</span>Software process and process models</h2>
+<div class="cards two">
+  <div class="c"><h4>Software process</h4><p>A structured set of activities required to develop a software system.</p></div>
+  <div class="c"><h4>Software process model</h4><p>An abstract representation of a process. It describes the process from a particular perspective: what is done, in what order, by whom, and producing what.</p></div>
+</div>
+<h3>Five generic framework activities</h3>
+<div class="flow"><span><b>Communication</b><br><small class="muted">gather requirements</small></span><i>&rarr;</i><span><b>Planning</b><br><small class="muted">estimate, schedule, risk</small></span><i>&rarr;</i><span><b>Modeling</b><br><small class="muted">analysis and design</small></span><i>&rarr;</i><span><b>Construction</b><br><small class="muted">code and test</small></span><i>&rarr;</i><span><b>Deployment</b><br><small class="muted">deliver, support, feedback</small></span></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>C-P-M-C-D</strong>: "Can Pressman Make Coffee Daily?"</p></div>
+<p><strong>Umbrella activities</strong> span every phase: project tracking and control, risk management, quality assurance, technical reviews, configuration management, documentation.</p>
+<div class="box key"><span class="lbl">Key point</span><p>Models differ only in how they order the framework activities: linear, iterative, incremental, evolutionary or parallel.</p></div>
+<h3>A map of process models</h3>
+<div class="tscroll"><table>
+<tr><th>Family</th><th>Idea</th><th>Models</th></tr>
+<tr><td>Linear / plan-driven</td><td>Phase by phase, document-driven</td><td>Waterfall, V-Model</td></tr>
+<tr><td>Evolutionary</td><td>Learn by iterating</td><td>Prototyping, Spiral (risk-driven)</td></tr>
+<tr><td>Incremental</td><td>Deliver in pieces</td><td>Incremental, RAD</td></tr>
+<tr><td>Specialized</td><td>Reuse / architecture-centric</td><td>Component-Based, Rational Unified Process</td></tr>
+<tr><td>Agile</td><td>People-centric, short timeboxes</td><td>XP, Scrum, DSDM, FDD</td></tr>
+</table></div>
+<p>The models sit on a spectrum. <strong>Predictive (plan-driven)</strong>: heavy up-front planning, stable requirements. <strong>Adaptive (agile)</strong>: light planning, embraced change, frequent feedback.</p>
+</section>
+
+<section id="waterfall">
+<h2 data-short="Waterfall"><span class="n">02</span>Waterfall (linear sequential) model</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>A linear, sequential model: the project is partitioned into distinct stages that flow downward like a waterfall, each completed before the next begins.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 200" role="img" aria-label="Five waterfall stages as a staircase">
+  <defs><marker id="w1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g font-size="10" font-weight="600">
+  <rect x="5" y="8" width="130" height="28" rx="5" class="f-box"/><text x="13" y="26">1 Requirements analysis</text>
+  <rect x="55" y="46" width="140" height="28" rx="5" class="f-box"/><text x="63" y="64">2 System and software design</text>
+  <rect x="110" y="84" width="140" height="28" rx="5" class="f-box"/><text x="118" y="102">3 Implementation, unit test</text>
+  <rect x="165" y="122" width="140" height="28" rx="5" class="f-box"/><text x="173" y="140">4 Integration, system test</text>
+  <rect x="215" y="160" width="140" height="28" rx="5" class="f-acc-t"/><text x="223" y="178">5 Operation, maintenance</text>
+  </g>
+  <g class="s-ink" stroke-width="1.3" marker-end="url(#w1)"><path d="M135,22 h10 v22"/><path d="M195,60 h12 v22"/><path d="M250,98 h12 v22"/><path d="M305,136 h10 v22"/></g>
+</svg>
+<figcaption>A sign-off document at every gate (SRS &rarr; SDD &rarr; code &rarr; test report). A phase starts only after the previous one is complete. <span class="src">Slide 5</span></figcaption>
+</figure>
+<div class="cards two">
+  <div class="c"><h4>Use when</h4><p>Requirements are well understood and stable. Technology is familiar and the project is short. A fixed-price contract needs fixed scope.</p></div>
+  <div class="c"><h4>Problems</h4><p>Inflexible partitioning, no backtracking. Hard to respond to changing requirements. Working software appears late, and defects found late cost most (Lecture 1).</p></div>
+</div>
+<p class="small muted">Tools: Gantt charts (MS Project), stage-gate reviews, requirements baselines (IBM DOORS), formal SRS/SDD templates (IEEE 830/1016). Industry: fixed-bid government and public-sector contracts, legacy maintenance with stable scope, hardware-coupled projects.</p>
+</section>
+
+<section id="vmodel">
+<h2 data-short="V-Model"><span class="n">03</span>V-Model (verification and validation)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>An extension of the waterfall in which every development phase has a directly associated testing phase, executed sequentially in a V-shape. Highly disciplined: the next phase starts only after the previous one ends.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 230" role="img" aria-label="V shape: left side design phases, right side matching tests, coding at the bottom">
+  <g font-size="9.5" font-weight="600" text-anchor="middle">
+    <rect x="8" y="20" width="110" height="26" rx="5" class="f-box"/><text x="63" y="37">Requirements analysis</text>
+    <rect x="32" y="66" width="100" height="26" rx="5" class="f-box"/><text x="82" y="83">System design</text>
+    <rect x="56" y="112" width="100" height="26" rx="5" class="f-box"/><text x="106" y="129">Architecture design</text>
+    <rect x="80" y="158" width="90" height="26" rx="5" class="f-box"/><text x="125" y="175">Module design</text>
+    <rect x="242" y="20" width="110" height="26" rx="5" class="f-key"/><text x="297" y="37">Acceptance testing</text>
+    <rect x="228" y="66" width="100" height="26" rx="5" class="f-key"/><text x="278" y="83">System testing</text>
+    <rect x="204" y="112" width="100" height="26" rx="5" class="f-key"/><text x="254" y="129">Integration testing</text>
+    <rect x="190" y="158" width="90" height="26" rx="5" class="f-key"/><text x="235" y="175">Unit testing</text>
+    <rect x="140" y="198" width="80" height="26" rx="5" class="f-acc-t"/><text x="180" y="215">Coding</text>
+  </g>
+  <g class="s-line" stroke-dasharray="4 3" stroke-width="1.2"><path d="M118,33 H242"/><path d="M132,79 H228"/><path d="M156,125 H204"/><path d="M170,171 H190"/></g>
+  <text x="60" y="12" font-size="9" class="t-muted t-mono" text-anchor="middle">VERIFICATION</text>
+  <text x="300" y="12" font-size="9" class="t-muted t-mono" text-anchor="middle">VALIDATION</text>
+</svg>
+<figcaption>Dashed lines: the test plan is written in the design phase and executed in the test phase. <span class="src">Slide 6</span></figcaption>
+</figure>
+<div class="cards two">
+  <div class="c"><h4>Strengths</h4><p>Tests planned early. Full traceability. Defects caught near their source.</p></div>
+  <div class="c"><h4>Limitations</h4><p>Still rigid to change. No early working prototype. Costly for evolving needs.</p></div>
+</div>
+<p class="small muted">Tools: requirement-test traceability matrices; IBM DOORS, Siemens Polarion, Jama Connect; OpenText ALM. Industry: automotive (ISO 26262), medical devices (IEC 62304), avionics (DO-178C), German public sector (V-Modell XT).</p>
+<div class="box trap"><span class="lbl">Exam trap</span><p>Match each pair correctly: requirements &harr; acceptance, system design &harr; system testing, architecture &harr; integration, module design &harr; unit. Coding is the point of the V.</p></div>
+</section>
+
+<section id="prototyping">
+<h2 data-short="Prototyping"><span class="n">04</span>Prototyping and evolutionary development</h2>
+<div class="flow"><span>Listen to customer</span><i>&rarr;</i><span>Build / revise mock-up</span><i>&rarr;</i><span>Customer test-drives mock-up</span><i>&#8635; iterate until requirements are clear</i></div>
+<div class="cards">
+  <div class="c"><h4>Prototyping model</h4><p>Used when requirements are not clear. The prototype is a mechanism for discovering them. It iterates as the prototype is tuned to satisfy the customer.</p><span class="ex">Risk: customers mistake a prototype for the finished product.</span></div>
+  <div class="c"><h4>Exploratory development</h4><p>Work with customers to evolve the final system from an outline spec. Start with WELL-understood requirements.</p></div>
+  <div class="c"><h4>Throw-away prototyping</h4><p>Goal: understand the requirements, then discard the prototype. Start with POORLY understood requirements.</p></div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>Exploratory starts with <em>well</em>-understood requirements and keeps the result. Throw-away starts with <em>poorly</em> understood requirements and discards the prototype. Students swap these.</p></div>
+<p>Requirements always evolve, so reworking earlier stages is a normal part of large projects.</p>
+<p class="small muted">Tools: Figma, Balsamiq, Axure RP, paper sketches and wireframes, clickable mock-ups, Wizard-of-Oz tests, A/B tests. Industry: UX of mobile and web apps, start-up MVPs, research systems.</p>
+</section>
+
+<section id="incremental">
+<h2 data-short="Incremental"><span class="n">05</span>Incremental development</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="Three overlapping increments over calendar time, each analysis design code test deliver">
+  <g font-size="8.5" text-anchor="middle">
+    <g><rect x="10" y="15" width="40" height="24" class="f-box"/><rect x="50" y="15" width="40" height="24" class="f-box"/><rect x="90" y="15" width="40" height="24" class="f-box"/><rect x="130" y="15" width="40" height="24" class="f-box"/><rect x="170" y="15" width="42" height="24" class="f-acc-t"/>
+      <text x="30" y="30">Analysis</text><text x="70" y="30">Design</text><text x="110" y="30">Code</text><text x="150" y="30">Test</text><text x="191" y="30">Deliver 1</text></g>
+    <g><rect x="70" y="55" width="40" height="24" class="f-box"/><rect x="110" y="55" width="40" height="24" class="f-box"/><rect x="150" y="55" width="40" height="24" class="f-box"/><rect x="190" y="55" width="40" height="24" class="f-box"/><rect x="230" y="55" width="42" height="24" class="f-acc-t"/>
+      <text x="90" y="70">Analysis</text><text x="130" y="70">Design</text><text x="170" y="70">Code</text><text x="210" y="70">Test</text><text x="251" y="70">Deliver 2</text></g>
+    <g><rect x="130" y="95" width="40" height="24" class="f-box"/><rect x="170" y="95" width="40" height="24" class="f-box"/><rect x="210" y="95" width="40" height="24" class="f-box"/><rect x="250" y="95" width="40" height="24" class="f-box"/><rect x="290" y="95" width="42" height="24" class="f-acc-t"/>
+      <text x="150" y="110">Analysis</text><text x="190" y="110">Design</text><text x="230" y="110">Code</text><text x="270" y="110">Test</text><text x="311" y="110">Deliver 3</text></g>
+  </g>
+  <line x1="10" y1="135" x2="350" y2="135" class="s-line"/><text x="180" y="148" font-size="9" class="t-muted" text-anchor="middle">calendar time &rarr; (increment 1 = core product)</text>
+</svg>
+</figure>
+<div class="cards two">
+  <div class="c"><h4>Key characteristics</h4><p>Delivered as a series of increments, each adding part of the functionality. Highest-priority requirements go in the earliest increments. An increment's requirements are frozen once it starts; later ones can still evolve.</p></div>
+  <div class="c"><h4>Advantages</h4><p>Customer value delivered early. Early increments act as prototypes to elicit later requirements. Lower risk of total project failure. Highest-priority services receive the most testing.</p></div>
+</div>
+<div class="box real"><span class="lbl">Real life</span><p>ERP roll-outs module by module (finance first, then HR and payroll). A university system that launches course registration first and adds result publishing and fee payment later.</p></div>
+</section>
+
+<section id="spiral">
+<h2 data-short="Spiral"><span class="n">06</span>Spiral model (Boehm, 1986): risk-driven iteration</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>An evolutionary model that combines the iterative nature of prototyping with the controlled, systematic steps of the waterfall. Each loop of the spiral is driven by explicit risk analysis before committing more resources.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 280" role="img" aria-label="Spiral with four quadrants">
+  <line x1="180" y1="10" x2="180" y2="270" class="s-line"/><line x1="10" y1="140" x2="350" y2="140" class="s-line"/>
+  <path d="M180,140 m0,-14 a14,14 0 0,1 14,14 a28,28 0 0,1 -28,28 a42,42 0 0,1 -42,-42 a56,56 0 0,1 56,-56 a70,70 0 0,1 70,70 a84,84 0 0,1 -84,84 a98,98 0 0,1 -98,-98 a112,112 0 0,1 112,-112" class="s-acc" stroke-width="2"/>
+  <g font-size="9.5" font-weight="600">
+    <text x="16" y="24">1 Determine objectives,</text><text x="16" y="36">alternatives, constraints</text>
+    <text x="344" y="24" text-anchor="end">2 Evaluate alternatives;</text><text x="344" y="36" text-anchor="end">identify, resolve risks</text>
+    <text x="344" y="252" text-anchor="end">3 Develop and verify</text><text x="344" y="264" text-anchor="end">next-level product</text>
+    <text x="16" y="252">4 Plan the next phase</text><text x="16" y="264">(review and commit)</text>
+  </g>
+  <text x="300" y="60" font-size="8.5" class="t-muted" text-anchor="middle">prototypes</text>
+</svg>
+<figcaption>Each loop is one phase. Distance from the centre is cumulative cost. <span class="src">Slide 9</span></figcaption>
+</figure>
+<ul>
+<li>Risk exposure = probability &times; impact. Resolve the highest first.</li>
+<li>Early loops produce a concept or prototype; later loops produce the full system.</li>
+<li>Incremental development can follow a spiral pattern.</li>
+<li>Limitation: needs risk-assessment expertise; costly for small projects.</li>
+</ul>
+<p class="small muted">Tools: risk registers, simulations, benchmarking, prototypes. Industry: large, high-risk defence, aerospace and new-technology programmes.</p>
+</section>
+
+<section id="rad">
+<h2 data-short="RAD"><span class="n">07</span>Rapid application development (RAD)</h2>
+<div class="flow"><span><b>Requirements planning</b><br><small class="muted">needs, scope, constraints agreed</small></span><i>&rarr;</i><span><b>User design</b><br><small class="muted">users and analysts build models and prototypes</small></span><i>&#8646;</i><span><b>Construction</b><br><small class="muted">components developed</small></span><i>&rarr;</i><span><b>Cutover</b><br><small class="muted">testing, changeover, training</small></span></div>
+<p>User design and construction iterate. Components are built in parallel as mini-projects (Team A &rarr; module 1, Team B &rarr; module 2, Team C &rarr; module 3), then integrated in about 60 to 120 days.</p>
+<ul>
+<li>A type of incremental model. Developments are timeboxed, delivered and assembled into a working prototype.</li>
+<li>Requirements are frozen within each increment.</li>
+<li>The customer sees and uses something quickly, so feedback is fast.</li>
+<li>Target: a fully functional system in <strong>90 days, give or take 30</strong>.</li>
+<li>Needs: a modular system, skilled developers, committed users.</li>
+</ul>
+<p class="small muted">Tools: JAD (joint application design) workshops, CASE and low-code tools: OutSystems, Mendix, Power Apps, Oracle APEX. Industry: internal business apps, dashboards, workflow and portal systems.</p>
+</section>
+
+<section id="cbd">
+<h2 data-short="Component-based"><span class="n">08</span>Component-based development (CBD)</h2>
+<p>Build systems by integrating pre-built, reusable components (OO classes, libraries, services, COTS) instead of writing everything from scratch.</p>
+<div class="flow"><span>Identify candidate components</span><i>&rarr;</i><span>Look up components in library</span><i>&rarr;</i><span>Available?</span><i>yes &rarr;</i><span>Extract components</span><i>/ no &rarr;</i><span>Build components &rarr; put in library</span><i>&rarr;</i><span class="hl">Construct nth iteration</span><i>&#8635; next iteration</i></div>
+<div class="cards two">
+  <div class="c"><h4>Benefits</h4><p>Shorter development time, lower cost. Proven, tested building blocks.</p></div>
+  <div class="c"><h4>Risks</h4><p>Version and dependency conflicts, licensing. Integration effort can exceed "build" (the Lecture 1 myth).</p></div>
+</div>
+<p class="small muted">Tools: npm, Maven, NuGet, PyPI, JFrog Artifactory, Sonatype Nexus; Docker Hub. Industry: nearly all modern software: React component libraries, Spring Boot starters, microservices, SAP and Salesforce add-ons.</p>
+</section>
+
+<section id="rup">
+<h2 data-short="RUP"><span class="n">09</span>Rational Unified Process (RUP)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>An iterative, use-case driven, architecture-centric process framework (Rational Software, later IBM) organized into 4 phases &times; 9 disciplines.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 215" role="img" aria-label="RUP grid: 4 phases across, disciplines down, shading shows effort">
+  <g font-size="9" font-weight="600" text-anchor="middle"><text x="140" y="14">Inception</text><text x="200" y="14">Elaboration</text><text x="260" y="14">Construction</text><text x="322" y="14">Transition</text></g>
+  <g font-size="8.5" class="t-muted"><text x="4" y="36">Business modeling</text><text x="4" y="62">Requirements</text><text x="4" y="88">Analysis and design</text><text x="4" y="114">Implementation</text><text x="4" y="140">Test</text><text x="4" y="166">Deployment</text></g>
+  <g class="f-acc">
+    <rect x="110" y="24" width="58" height="20" opacity=".85"/><rect x="170" y="24" width="58" height="20" opacity=".45"/><rect x="230" y="24" width="58" height="20" opacity=".12"/><rect x="292" y="24" width="58" height="20" opacity=".05"/>
+    <rect x="110" y="50" width="58" height="20" opacity=".7"/><rect x="170" y="50" width="58" height="20" opacity=".85"/><rect x="230" y="50" width="58" height="20" opacity=".25"/><rect x="292" y="50" width="58" height="20" opacity=".08"/>
+    <rect x="110" y="76" width="58" height="20" opacity=".25"/><rect x="170" y="76" width="58" height="20" opacity=".9"/><rect x="230" y="76" width="58" height="20" opacity=".45"/><rect x="292" y="76" width="58" height="20" opacity=".08"/>
+    <rect x="110" y="102" width="58" height="20" opacity=".08"/><rect x="170" y="102" width="58" height="20" opacity=".35"/><rect x="230" y="102" width="58" height="20" opacity=".95"/><rect x="292" y="102" width="58" height="20" opacity=".3"/>
+    <rect x="110" y="128" width="58" height="20" opacity=".08"/><rect x="170" y="128" width="58" height="20" opacity=".3"/><rect x="230" y="128" width="58" height="20" opacity=".8"/><rect x="292" y="128" width="58" height="20" opacity=".55"/>
+    <rect x="110" y="154" width="58" height="20" opacity=".03"/><rect x="170" y="154" width="58" height="20" opacity=".05"/><rect x="230" y="154" width="58" height="20" opacity=".3"/><rect x="292" y="154" width="58" height="20" opacity=".9"/>
+  </g>
+  <g font-size="8.5" font-weight="600" text-anchor="middle" class="t-mono"><text x="169" y="195">LCO</text><text x="229" y="195">LCA</text><text x="290" y="195">IOC</text><text x="350" y="195">PR</text></g>
+  <g class="s-ink"><path d="M169,178 v6"/><path d="M229,178 v6"/><path d="M290,178 v6"/><path d="M350,178 v6"/></g>
+  <text x="200" y="210" font-size="8" class="t-muted" text-anchor="middle">milestones (shading is illustrative effort intensity)</text>
+</svg>
+</figure>
+<div class="tscroll"><table>
+<tr><th>Phase</th><th>Goal</th><th>Ends at milestone</th></tr>
+<tr><td>Inception</td><td>Business case, scope, key risks</td><td>LCO: Lifecycle Objectives</td></tr>
+<tr><td>Elaboration</td><td>Stable architecture, most use cases</td><td>LCA: Lifecycle Architecture</td></tr>
+<tr><td>Construction</td><td>Build and test the product iteratively</td><td>IOC: Initial Operational Capability</td></tr>
+<tr><td>Transition</td><td>Beta test, deploy, train users</td><td>PR: Product Release</td></tr>
+</table></div>
+<p>Supporting disciplines: configuration and change management, project management, environment. Each phase contains one or more iterations.</p>
+<div class="box mem"><span class="lbl">Memory aid</span><p>Phases <strong>I-E-C-T</strong>, "I Eat Chicken Tikka". Milestones in the same order: LCO, LCA, IOC, PR.</p></div>
+</section>
+
+<section id="risk-profile">
+<h2 data-short="Why iterate"><span class="n">10</span>Risk profile: why iterate?</h2>
+<figure class="fig">
+<svg viewBox="0 0 360 200" role="img" aria-label="Waterfall risk stays high until integration; iterative risk falls early">
+  <line x1="40" y1="170" x2="345" y2="170" class="s-line"/><line x1="40" y1="15" x2="40" y2="170" class="s-line"/>
+  <path d="M45,40 L180,38 L215,45 C240,70 270,140 340,160" class="s-ink" stroke-width="2.4"/>
+  <path d="M45,40 C80,70 110,110 160,130 S280,158 340,163" class="s-acc" stroke-width="2.4" stroke-dasharray="6 4"/>
+  <g font-size="8.5" class="t-muted" text-anchor="middle"><text x="50" y="184">Start</text><text x="90" y="184">Req.</text><text x="135" y="184">Design</text><text x="180" y="184">Code</text><text x="222" y="184">Integr.</text><text x="265" y="184">Test</text><text x="305" y="184">Deploy</text><text x="340" y="184">End</text></g>
+  <text x="16" y="95" font-size="9" class="t-muted" transform="rotate(-90 16 95)" text-anchor="middle">risk exposure</text>
+  <rect x="230" y="22" width="10" height="3" class="f-ink"/><text x="245" y="26" font-size="9">Waterfall</text>
+  <rect x="230" y="36" width="10" height="3" class="f-acc"/><text x="245" y="40" font-size="9">Iterative</text>
+</svg>
+</figure>
+<div class="cards two">
+  <div class="c"><h4>Waterfall</h4><p>Risk stays high until integration and testing. Integration surprises appear late, so there is big scrap and rework.</p></div>
+  <div class="c"><h4>Iterative</h4><p>Products are visible at early stages. Each iteration integrates and tests, so risks are retired early. Low probability of rework in the delivered product.</p></div>
+</div>
+<p class="small">Link to Lecture 1: the cost of fixing a defect grows steeply the later it is found. Iteration finds defects earlier.</p>
+</section>
+
+<section id="choose">
+<h2 data-short="Choosing a model"><span class="n">11</span>Comparing and choosing a process model</h2>
+<div class="tscroll"><table>
+<tr><th>Model</th><th>Requirements</th><th>Risk handling</th><th>Customer involvement</th><th>Best suited for</th></tr>
+<tr><td>Waterfall</td><td>Fixed, well understood</td><td>Low: risks surface late</td><td>Start and end</td><td>Small, stable, fixed-price projects</td></tr>
+<tr><td>V-Model</td><td>Fixed, well understood</td><td>Medium: early test planning</td><td>Start and acceptance</td><td>Safety-critical, regulated systems</td></tr>
+<tr><td>Prototyping</td><td>Unclear, evolving</td><td>Reduces requirement risk</td><td>High, continuous</td><td>UI-heavy or novel systems</td></tr>
+<tr><td>Incremental</td><td>Mostly known, prioritized</td><td>Medium: core first</td><td>Each increment</td><td>Large systems needing early value</td></tr>
+<tr><td>Spiral</td><td>Complex, evolving</td><td>High: explicit risk analysis</td><td>Each loop review</td><td>Large, high-risk, costly projects</td></tr>
+<tr><td>RAD</td><td>Modular, known scope</td><td>Medium</td><td>High (user design)</td><td>Business apps in about 90 days</td></tr>
+<tr><td>Component-Based</td><td>Mapped to existing parts</td><td>Dependency risk</td><td>Moderate</td><td>Reuse-rich domains</td></tr>
+<tr><td>RUP</td><td>Use-case driven, evolving</td><td>High: architecture early</td><td>Each iteration</td><td>Large OO enterprise systems</td></tr>
+<tr><td>Agile (XP, Scrum, DSDM, FDD)</td><td>Changing, emergent</td><td>High: short feedback loops</td><td>Continuous, daily</td><td>Dynamic markets, small to mid teams</td></tr>
+</table></div>
+<div class="box key"><span class="lbl">Rule of thumb from the slide</span><p>The more stable the requirements and the higher the regulation, the more plan-driven. The more uncertain and fast-moving, the more agile.</p></div>
+<div class="sorter" data-options="Waterfall|V-Model|Prototyping|Incremental|Spiral|RAD|Agile">
+  <div class="head"><strong>Exercise 1 as a classifier: choose the model</strong><span class="score"></span></div>
+  <div class="sort" data-a="V-Model" data-why="Each phase has a paired test, which gives the requirement-to-test traceability that IEC 62304 certification demands."><p class="item">A. Pacemaker firmware. Requirements fixed by medical regulators; every requirement must be traced to a test for certification.</p></div>
+  <div class="sort" data-a="Waterfall" data-why="Stable, documented requirements and a fixed-price contract: sequential phases with sign-offs work at low overhead."><p class="item">B. University registration system. Replaces an old system; requirements fully documented; small team; fixed-price contract.</p></div>
+  <div class="sort" data-a="Prototyping/Agile" data-why="Requirements are unclear. Clickable mock-ups elicit needs within days, then the product evolves in short sprints (slide answer: Prototyping then Agile)."><p class="item">C. Food-delivery start-up app. Founders are unsure what users want; must show investors something in 3 weeks.</p></div>
+  <div class="sort" data-a="Incremental" data-why="The core (individual e-filing) is delivered first; business returns and refunds follow as later increments."><p class="item">D. National tax e-filing. Requirements known; individual e-filing must launch next year, business returns and refunds later.</p></div>
+  <div class="sort" data-a="Spiral" data-why="Risk-driven loops resolve hardware and technical risks with prototypes and simulations before heavy investment."><p class="item">E. Satellite ground control. Untested new hardware; large budget; failure would be extremely costly.</p></div>
+  <div class="sort" data-a="RAD" data-why="About 90-day timebox, user-design workshops, low-code tooling and modular components built in parallel."><p class="item">F. Bank leave-management portal. Needed in 3 months; business users free for workshops; low-code platform already licensed.</p></div>
+  <div class="rule">The slide adds: other answers are acceptable if well justified (Scrum for C, DSDM for F, RUP for D). Marks go to the reasoning, not the label.</div>
+</div>
+</section>
+
+<section id="agile">
+<h2 data-short="Agile basics"><span class="n">12</span>Agile software development</h2>
+<div class="box exact"><span class="lbl">Exam text: agility and the agile model</span>
+<p>Agility: the ability to create and respond to change in order to profit in a turbulent business environment.</p>
+<p>Agile model: a subset of iterative and evolutionary methods: lightweight, people-based rather than plan-based, delivering working software in short iterations of 1 to 4 weeks.</p></div>
+<div class="cards two">
+  <div class="c"><h4>Why companies need agility</h4><p>Innovate with better and faster operations. Respond quickly to competitors and new technology. Respond to changing customer requirements.</p></div>
+  <div class="c"><h4>Agile proponents believe current processes are</h4><p>Too heavyweight (much work unrelated to the product). Too rigid for incomplete or changing requirements. Lacking short cycles and active customer involvement.</p></div>
+</div>
+<blockquote class="box mem"><span class="lbl">Barry Boehm</span><p>Plan-driven methods work best when developers can determine the requirements in advance and when the requirements remain relatively stable (change rates of about 1% per month).</p></blockquote>
+<h3>Anatomy of an agile iteration</h3>
+<div class="flow"><span>Req.</span><i>&rarr;</i><span>Design</span><i>&rarr;</i><span>Build</span><i>&rarr;</i><span>Test</span><i>&rarr;</i><span class="hl">Iteration release (integrated and tested)</span><i>&#8635; feedback + new information</i></div>
+<div class="cards two">
+  <div class="c"><h4>3 to 6 months</h4><p>Iteration length in past iterative methods.</p></div>
+  <div class="c"><h4>1 to 4 weeks</h4><p>Agile iteration length: intentionally never over 30 days.</p></div>
+</div>
+<p>Each iteration is a self-contained mini-project. It spans requirements, design, implementation and test. Its output grows into an evolving subset of the final system. Research shows shorter iterations give lower complexity and risk, better feedback, and higher productivity and success rates.</p>
+<h3>Timebox and scope: fix the time, flex the scope</h3>
+<div class="cards two">
+  <div class="c"><h4>Plan-driven thinking</h4><p>Scope is fixed, so the schedule stretches. Result: late delivery, budget overrun (the software crisis).</p></div>
+  <div class="c"><h4>Agile timebox</h4><p>Iteration length is fixed, so scope is chosen to fit.</p>
+    <div style="display:flex;gap:3px;margin-top:.6rem;font:500 .72rem/1 var(--font-mono)">
+      <span style="flex:8;background:var(--text-primary);color:var(--bg-page);padding:.45rem .3rem;border-radius:3px">8</span><span style="flex:5;background:var(--text-primary);color:var(--bg-page);padding:.45rem .3rem;border-radius:3px">5</span><span style="flex:5;background:var(--text-primary);color:var(--bg-page);padding:.45rem .3rem;border-radius:3px">5</span><span style="flex:2;background:var(--bg-pill);padding:.45rem .3rem;border-radius:3px"></span>
+    </div><span class="ex">2-week timebox = 20 pts capacity. The 13 and 3 point stories go to the next iteration.</span></div>
+</div>
+<div class="box exact"><span class="lbl">Exam text: the timebox rules</span><ul><li>The pre-determined iteration length serves as a timebox for the team.</li><li>The scope (set of tasks or stories) is chosen to fill the iteration length.</li><li>Rather than increasing the iteration length to fit the chosen scope, the scope is reduced to fit the iteration length.</li></ul></div>
+</section>
+
+<section id="manifesto">
+<h2 data-short="Manifesto"><span class="n">13</span>The Agile Manifesto (2001): four values</h2>
+<div class="box exact"><span class="lbl">Exam text: the four values</span>
+<p>Individuals and interactions over processes and tools.<br>Working software over comprehensive documentation.<br>Customer collaboration over contract negotiation.<br>Responding to change over following a plan.</p></div>
+<div class="tscroll"><table>
+<tr><th>We value more</th><th>over</th><th>In practice</th></tr>
+<tr><td>Individuals and interactions</td><td>processes and tools</td><td>Daily stand-ups, pairing, face-to-face talk</td></tr>
+<tr><td>Working software</td><td>comprehensive documentation</td><td>Demo a running increment every iteration</td></tr>
+<tr><td>Customer collaboration</td><td>contract negotiation</td><td>Customer / Product Owner inside the team</td></tr>
+<tr><td>Responding to change</td><td>following a plan</td><td>Re-prioritize the backlog every iteration</td></tr>
+</table></div>
+<p>Signed in February 2001 at Snowbird, Utah, by Kent Beck and 16 other practitioners (the Agile Alliance).</p>
+<div class="box trap"><span class="lbl">Exam trap</span><p>The items on the right still have value. The items on the left are valued <em>more</em>. Never write "agile has no documentation" or "agile has no plan".</p></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p>Left side: <strong>I-W-C-R</strong>, "I Want Chicken Rezala". Individuals, Working software, Customer collaboration, Responding to change.</p></div>
+<div class="sorter" data-options="Individuals and interactions|Working software|Customer collaboration|Responding to change">
+  <div class="head"><strong>Practice (midterm case): which value does the behaviour show?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Customer collaboration" data-why="The customer is part of the conversation every day instead of being bound by a contract."><p class="item">bKash developers chat with customers daily, while the bank's IT team follows a strict contract.</p></div>
+  <div class="sort" data-a="Working software" data-why="Value is shown by running features, not by months of specification documents."><p class="item">The startup ships new features every two weeks with minimal documentation; the bank spends months writing specifications before coding.</p></div>
+  <div class="sort" data-a="Responding to change" data-why="The plan changes with feedback."><p class="item">Features are chosen based on user feedback from the last release.</p></div>
+  <div class="sort" data-a="Individuals and interactions" data-why="Direct conversations between people are preferred over formal process and tools."><p class="item">The team solves a problem by talking face to face at the stand-up instead of raising a formal ticket workflow.</p></div>
+</div>
+</section>
+
+<section id="principles">
+<h2 data-short="12 principles"><span class="n">14</span>The 12 principles behind the manifesto</h2>
+<div class="cards">
+  <div class="c"><h4><span class="idx">01</span> Early and continuous delivery</h4><p>Satisfy the customer through early and continuous delivery of valuable software.</p></div>
+  <div class="c"><h4><span class="idx">02</span> Welcome change</h4><p>Welcome changing requirements, even late in development.</p></div>
+  <div class="c"><h4><span class="idx">03</span> Deliver frequently</h4><p>Deliver working software frequently; prefer the shorter timescale.</p></div>
+  <div class="c"><h4><span class="idx">04</span> Work together daily</h4><p>Business people and developers work together daily.</p></div>
+  <div class="c"><h4><span class="idx">05</span> Motivated individuals</h4><p>Build projects around motivated individuals; support and trust them.</p></div>
+  <div class="c"><h4><span class="idx">06</span> Face to face</h4><p>Face-to-face conversation is the most effective communication.</p></div>
+  <div class="c"><h4><span class="idx">07</span> Working software measures progress</h4><p>Working software is the primary measure of progress.</p></div>
+  <div class="c"><h4><span class="idx">08</span> Sustainable pace</h4><p>Sustainable development: a constant pace indefinitely.</p></div>
+  <div class="c"><h4><span class="idx">09</span> Technical excellence</h4><p>Continuous attention to technical excellence and good design.</p></div>
+  <div class="c"><h4><span class="idx">10</span> Simplicity</h4><p>Maximize the amount of work not done.</p></div>
+  <div class="c"><h4><span class="idx">11</span> Self-organizing teams</h4><p>The best architectures and designs emerge from self-organizing teams.</p></div>
+  <div class="c"><h4><span class="idx">12</span> Reflect and adjust</h4><p>At regular intervals, reflect, tune and adjust behaviour.</p></div>
+</div>
+<div class="box key"><span class="lbl">Groups from the slide</span><p>Principles 1, 3, 7 &rarr; delivery. 2 &rarr; change. 4, 5, 6, 11 &rarr; people. 8, 9, 10, 12 &rarr; sustainable excellence.</p></div>
+</section>
+
+<section id="agile-vs-plan">
+<h2 data-short="Agile vs plan-driven"><span class="n">15</span>Agile vs plan-driven, and the agile family</h2>
+<div class="tscroll"><table>
+<tr><th>Aspect</th><th>Agile process</th><th>Plan-driven process</th></tr>
+<tr><td>Size</td><td>Small products and teams; limited scalability</td><td>Large products and teams; hard to scale down</td></tr>
+<tr><td>Criticality</td><td>Unsuited to safety-critical (frequent change)</td><td>Handles highly critical products</td></tr>
+<tr><td>Environment</td><td>Good for dynamic; costly for stable</td><td>Good for stable; costly for dynamic</td></tr>
+<tr><td>Personnel</td><td>Experienced agile people throughout</td><td>Experienced people mainly at the start</td></tr>
+<tr><td>Culture</td><td>People thrive on freedom and "chaos"</td><td>People thrive on structure and order</td></tr>
+</table></div>
+<p><strong>Agile assumptions:</strong> it is hard to predict which requirements will persist and which will change; design and construction are interleaved (designs are proven by building them); analysis, design, construction and testing are less predictable than we would like; it is hard to predict how customer priorities will shift.</p>
+<div class="box key"><span class="lbl">Key point</span><p>Neither is "better". Choose by project size, criticality, dynamism, personnel and culture (Boehm and Turner's home grounds). Hybrids are common.</p></div>
+<h3>Human factors that make agile work</h3>
+<div class="flow"><span>Competence</span><span>Common focus</span><span>Collaboration</span><span>Decision-making</span><span>Fuzzy problem-solving</span><span>Mutual trust and respect</span><span>Self-organization</span></div>
+<div class="cards">
+  <div class="c"><h4>XP</h4><p>Engineering practices: TDD, pairing, CI.</p></div>
+  <div class="c"><h4>Scrum</h4><p>Management framework: sprints, backlog, roles.</p></div>
+  <div class="c"><h4>DSDM</h4><p>Fixed time and cost, MoSCoW, business focus.</p></div>
+  <div class="c"><h4>FDD</h4><p>Model-driven, feature by feature, scales up.</p></div>
+  <div class="c tint"><h4>Also in the family</h4><p>Crystal (Cockburn, tuned to team size and criticality); Lean (Poppendieck, eliminate waste); ASD (Highsmith, speculate, collaborate, learn).</p></div>
+</div>
+<p>No single agile method fits all. Methods are combined; Scrum + XP practices is a very common hybrid.</p>
+</section>
+
+<section id="velocity">
+<h2 data-short="Velocity planning"><span class="n">16</span>Timeboxing and velocity planning</h2>
+<p>Velocity is the number of story points a team completes per iteration. Use the average of recent iterations to plan. Then fill each timebox with stories in priority order, and stop when the next story does not fit.</p>
+<div class="calc" id="vel">
+  <div class="head"><strong>Planner: velocity and iteration scope</strong><span class="tag">Exercises 2 and 3</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Preset<select id="v-preset"><option value="bb">Byte Brigade (Ex. 2)</option><option value="xp">XP bookshop (Ex. 3)</option></select></label>
+      <label class="field">Past velocities (comma separated)<input type="text" id="v-hist" value="18, 22, 20"></label>
+      <label class="field">Weeks per iteration<input type="number" id="v-weeks" value="2" min="1"></label>
+    </div>
+    <label class="field">Stories in priority order, one per line as "name, points"<textarea id="v-stories" rows="8"></textarea></label>
+    <div class="out" id="v-out"></div>
+    <div class="tscroll"><table id="v-plan"></table></div>
+  </div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>"Strictly in priority order" means you do not skip ahead to a smaller story that would fit. In Exercise 2, iteration 1 stops at 18 points even though a 3-point story exists later. A story never splits across iterations.</p></div>
+</section>
+
+<section id="xp">
+<h2 data-short="XP"><span class="n">17</span>Extreme Programming (XP)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>A lightweight agile method evolved from the problems of long development cycles (Beck, 1999). It assembles practices found effective in earlier decades and pushes them to the extreme; practices are tailored to each project.</p></div>
+<p>Origin: Kent Beck, Chrysler C3 payroll project (1996); book "Extreme Programming Explained" (1999).</p>
+<h3>The five XP values</h3>
+<div class="cards">
+  <div class="c"><h4>Communication</h4><p>Oral culture; practices force interaction. Most problems trace back to someone not talking.</p></div>
+  <div class="c"><h4>Simplicity</h4><p>Design the simplest product that meets today's needs. No speculative features.</p></div>
+  <div class="c"><h4>Feedback</h4><p>From customers every iteration and release. It drives the next iteration.</p></div>
+  <div class="c"><h4>Courage</h4><p>For example, resist pressure to make unrealistic commitments.</p></div>
+  <div class="c"><h4>Respect</h4><p>Team members care about each other and the project.</p></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>C-S-F-C-R</strong>: "Cats Sleep For Cozy Rest".</p></div>
+<h3>XP lifecycle: five phases plus death</h3>
+<div class="tscroll"><table>
+<tr><th>Phase</th><th>What happens</th></tr>
+<tr><td>1 Exploration</td><td>Customers write story cards for release 1. The team learns tools, technology and practices. A few weeks to a few months.</td></tr>
+<tr><td>2 Planning</td><td>User stories written and prioritized. Programmers estimate effort. Release planning creates the schedule.</td></tr>
+<tr><td>3 Iterations to release</td><td>Several iterations of 1 to 4 weeks. The 1st iteration builds the whole-system architecture. The customer picks stories per iteration.</td></tr>
+<tr><td>4 Productionizing</td><td>Extra testing and performance checks. Decide on late changes. Iterations may shrink (3 &rarr; 1 week). Postponed ideas are documented.</td></tr>
+<tr><td>5 Maintenance</td><td>Keep production running while building new iterations. Customer support effort. Velocity may slow; the team may change.</td></tr>
+<tr><td>6 Death</td><td>No more stories; needs met (performance, reliability). Final documentation written. Or: the system fails or is too costly.</td></tr>
+</table></div>
+<p class="small">Feedback loop: results of each iteration feed the next planning game. Functional (acceptance) tests run at the end of every iteration. The first release is typically productionized within 2 to 3 months.</p>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>E-P-I-P-M-D</strong>: "Every Programmer Iterates, Polishes, Maintains, Dies".</p></div>
+<h3>XP roles</h3>
+<div class="cards">
+  <div class="c"><h4>Customer</h4><p>Writes stories and functional tests; sets priorities; decides when a requirement is satisfied.</p></div>
+  <div class="c"><h4>Programmer</h4><p>Writes tests and code; keeps the code as simple and definite as possible.</p></div>
+  <div class="c"><h4>Tester</h4><p>Helps the customer write functional tests; runs them regularly; broadcasts results; maintains tools.</p></div>
+  <div class="c"><h4>Tracker</h4><p>Traces estimates vs actuals to improve estimation; checks whether the iteration goal is reachable.</p></div>
+  <div class="c"><h4>Coach</h4><p>Responsible for the process as a whole; guides the team in following XP.</p></div>
+  <div class="c"><h4>Consultant</h4><p>External member with specific technical knowledge the team needs.</p></div>
+  <div class="c"><h4>Manager (Big Boss)</h4><p>Makes the decisions; communicates with the team about the current situation.</p></div>
+</div>
+<div class="box key"><span class="lbl">Key point</span><p>Customer + Programmer are the core pair: one decides WHAT and WHEN, the other estimates HOW LONG and HOW. One person may hold several roles (coach + tracker), but the customer must never be replaced by a programmer guessing requirements.</p></div>
+<div class="sorter" data-options="Customer|Programmer|Tester|Tracker|Coach|Consultant|Manager">
+  <div class="head"><strong>Practice: which XP role?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Tracker" data-why="The tracker compares estimates with actuals. The midterm asked exactly this (estimated 20, delivered 14)."><p class="item">Notices the team estimated 20 points but delivered 14 for three iterations, and reports it.</p></div>
+  <div class="sort" data-a="Customer" data-why="The customer sets priorities and decides when a story is satisfied."><p class="item">Decides that "pay with Nagad" is more important than "wishlist" this iteration.</p></div>
+  <div class="sort" data-a="Coach" data-why="The coach owns the process as a whole."><p class="item">Notices pairs are skipping tests and reminds the team how TDD works in XP.</p></div>
+  <div class="sort" data-a="Tester" data-why="Helps write and runs functional tests and broadcasts the results."><p class="item">Runs the acceptance tests every night and posts the results on the wall.</p></div>
+  <div class="sort" data-a="Consultant" data-why="An external member with specific technical knowledge."><p class="item">A payment-security expert joins for two days to help with encryption.</p></div>
+  <div class="sort" data-a="Programmer" data-why="Programmers estimate stories and write tests and code."><p class="item">Estimates the "checkout" story at 5 ideal days.</p></div>
+</div>
+<h3>XP practices</h3>
+<div class="cards">
+  <div class="c"><h4>Planning game</h4><p>Programmers estimate stories; the customer decides scope and release timing.</p></div>
+  <div class="c"><h4>Small releases</h4><p>Productionize a simple system fast; new versions at least monthly.</p></div>
+  <div class="c"><h4>On-site customer</h4><p>Customer present and available full-time to the team.</p></div>
+  <div class="c"><h4>Metaphor</h4><p>A shared story of how the system works guides development.</p></div>
+  <div class="c"><h4>Simple design</h4><p>Simplest solution implementable at the moment.</p></div>
+  <div class="c"><h4>Refactoring</h4><p>Remove duplication, simplify, add flexibility. Behaviour unchanged.</p></div>
+  <div class="c"><h4>Testing (TDD)</h4><p>Unit tests written first and run continuously; customer acceptance tests.</p></div>
+  <div class="c"><h4>Pair programming</h4><p>Two people, one computer: driver + navigator.</p></div>
+  <div class="c"><h4>Continuous integration</h4><p>New code integrated as soon as it is ready; all tests pass.</p></div>
+  <div class="c"><h4>Collective ownership</h4><p>Anyone can change any part of the code at any time.</p></div>
+  <div class="c"><h4>Coding standards</h4><p>Shared rules; code that communicates clearly.</p></div>
+  <div class="c"><h4>40-hour week</h4><p>Sustainable pace: a maximum 40-hour working week.</p></div>
+  <div class="c"><h4>Open workspace</h4><p>Large room with small cubicles; team co-located.</p></div>
+  <div class="c"><h4>Just rules</h4><p>Team-owned rules; changed by agreement after assessing impact.</p></div>
+</div>
+<p>Why it works: practices reinforce each other. Tests make refactoring safe. Pairing spreads ownership.</p>
+<h3>Pair programming, TDD and continuous integration</h3>
+<div class="cards two">
+  <div class="c"><h4>Pair programming</h4><p><strong>Driver</strong>: keyboard; tactical; writes code. <strong>Navigator</strong>: observes; spots defects; thinks strategically. Switch roles periodically.</p><span class="ex">Benefits: fewer defects, instant review, knowledge sharing, collective ownership. Cost: two people per task, offset by less rework. Remote: shared editors (VS Code Live Share, Tuple).</span></div>
+  <div class="c"><h4>TDD cycle</h4>
+    <svg viewBox="0 0 220 120" role="img" aria-label="Red green refactor cycle" style="width:100%;max-width:260px">
+      <defs><marker id="t1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+      <rect x="10" y="10" width="80" height="34" rx="6" class="f-trap"/><text x="50" y="25" text-anchor="middle" font-size="10" font-weight="700">RED</text><text x="50" y="37" text-anchor="middle" font-size="7.5" class="t-muted">failing test</text>
+      <rect x="130" y="10" width="80" height="34" rx="6" class="f-key"/><text x="170" y="25" text-anchor="middle" font-size="10" font-weight="700">GREEN</text><text x="170" y="37" text-anchor="middle" font-size="7.5" class="t-muted">minimal code to pass</text>
+      <rect x="70" y="78" width="80" height="34" rx="6" class="f-acc-t"/><text x="110" y="93" text-anchor="middle" font-size="10" font-weight="700">REFACTOR</text><text x="110" y="105" text-anchor="middle" font-size="7.5" class="t-muted">tests stay green</text>
+      <g class="s-ink" marker-end="url(#t1)" stroke-width="1.3"><path d="M90,27 H128"/><path d="M170,44 L140,77"/><path d="M80,77 L52,46"/></g>
+    </svg>
+    <span class="ex">CI loop, many times a day: commit &rarr; build &rarr; run all tests &rarr; integrate.</span></div>
+</div>
+<h3>XP artefacts</h3>
+<div class="cards two">
+  <div class="c"><h4>User story card</h4><p class="mono small">STORY #07 Mobile-wallet checkout<br>As a shopper, I want to pay with a mobile wallet so that I can check out without a card.<br>Priority: High. Estimate: 3 ideal days.<br>Accept: given a Tk 500 cart, when payment succeeds, an order ID is shown.</p><span class="ex">A brief requirement, not a full specification. A promise for a conversation. Estimate &le; iteration length.</span></div>
+  <div class="c"><h4>CRC card: class Order</h4><div class="tscroll" style="margin:.4rem 0"><table><tr><th>Responsibilities</th><th>Collaborators</th></tr><tr><td>know its items<br>compute total<br>track status<br>request payment</td><td>Customer<br>Product<br>Payment</td></tr></table></div><span class="ex">Class, Responsibility, Collaboration. Optional. Found in design role-playing sessions.</span></div>
+  <div class="c"><h4>Task list</h4><p>Tasks of half a day to 3 days per story. Programmers volunteer rather than being assigned.</p></div>
+  <div class="c"><h4>Acceptance tests and wall graphs</h4><p>Acceptance tests are written with the customer; a story is done when its tests pass. Visible wall graphs show stories completed and tests passing.</p></div>
+</div>
+<h3>Scope, limitations and the problems XP solves</h3>
+<div class="tscroll"><table>
+<tr><th>SE problem</th><th>XP solution</th></tr>
+<tr><td>Slipped schedule</td><td>Short development cycles</td></tr>
+<tr><td>Cost of changes</td><td>Extensive, ongoing testing; system always running</td></tr>
+<tr><td>Defect rates</td><td>Unit tests and customer tests</td></tr>
+<tr><td>Misunderstood business</td><td>Customer is part of the team</td></tr>
+<tr><td>Business changes</td><td>Changes are welcome</td></tr>
+<tr><td>Staff turnover</td><td>Intensive teamwork, pairing, shared code</td></tr>
+</table></div>
+<p><strong>Limitations</strong>: the team must be in one place (even two floors hurts); communication must be possible at all times; it needs experienced members throughout; it is hard with fixed-bid contracts or heavy certification documentation; it is aimed at small to medium teams. Best fit: small co-located teams, vague or changing requirements, a customer available every day.</p>
+</section>
+
+<section id="scrum">
+<h2 data-short="Scrum"><span class="n">18</span>Scrum</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>An iterative, incremental framework in which a self-organizing team delivers the product in short, fixed-length Sprints, adapting to change through regular inspection of the product and the process.</p></div>
+<p>Origin: Takeuchi and Nonaka (1986), adaptive, quick, self-organizing product development from Japan. The name is a rugby term: getting an out-of-play ball back into the game through teamwork. Formalized by Schwaber and Sutherland (1995). Empirical pillars: <strong>transparency, inspection, adaptation</strong>.</p>
+<h3>Three phases</h3>
+<div class="tscroll"><table>
+<tr><th>Pre-game</th><th>Development (game)</th><th>Post-game</th></tr>
+<tr><td><strong>Planning</strong>: define the system; create the Product Backlog of all known requirements; prioritize and estimate; define team, tools, resources, risks, training, approval.<br><strong>Architecture</strong>: high-level design from current backlog items; for enhancements, identify changes and problems; a design-review meeting decides.</td><td>Treated as a "black box": the unpredictable is expected. Functionality developed or enhanced in Sprints (1 week to 1 month) to give new increments. Each Sprint: requirements, analysis, design, evolution, delivery.</td><td>Entered when all agree the requirements are complete and no more items or issues can be found or invented. Release preparation: integration, system testing, documentation.</td></tr>
+</table></div>
+<p class="small">The Product Backlog is updated continuously (new items, better estimates, new priorities) throughout all three phases.</p>
+<h3>The Scrum process flow</h3>
+<figure class="fig">
+<svg viewBox="0 0 360 170" role="img" aria-label="Product backlog to sprint planning to sprint backlog to sprint with daily scrum to increment to review and retro, loop back">
+  <defs><marker id="s1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <g font-size="8.5" font-weight="600" text-anchor="middle">
+    <rect x="4" y="50" width="62" height="40" rx="5" class="f-box"/><text x="35" y="67">Product</text><text x="35" y="78">Backlog</text>
+    <rect x="80" y="50" width="62" height="40" rx="5" class="f-box"/><text x="111" y="67">Sprint</text><text x="111" y="78">Planning</text>
+    <rect x="156" y="50" width="62" height="40" rx="5" class="f-box"/><text x="187" y="67">Sprint</text><text x="187" y="78">Backlog</text>
+    <circle cx="262" cy="70" r="28" class="f-acc-t"/><text x="262" y="67">SPRINT</text><text x="262" y="78" font-weight="400" font-size="7.5">1-4 weeks</text>
+    <rect x="300" y="50" width="56" height="40" rx="5" class="f-key"/><text x="328" y="64">Shippable</text><text x="328" y="75">increment</text>
+  </g>
+  <text x="262" y="20" font-size="8.5" text-anchor="middle" font-weight="600">Daily Scrum</text><text x="262" y="31" font-size="7.5" text-anchor="middle" class="t-muted">15 min / 24 h</text>
+  <path d="M250,42 A14,10 0 1,1 274,42" class="s-acc" stroke-width="1.4"/>
+  <g class="s-ink" stroke-width="1.2" marker-end="url(#s1)"><path d="M66,70 H78"/><path d="M142,70 H154"/><path d="M218,70 H232"/><path d="M290,70 H298"/></g>
+  <rect x="190" y="118" width="110" height="28" rx="5" class="f-box"/><text x="245" y="136" font-size="8.5" font-weight="600" text-anchor="middle">Sprint Review and Retro</text>
+  <path d="M328,90 V132 H302" class="s-ink" stroke-width="1.2" marker-end="url(#s1)"/>
+  <path d="M190,132 H35 V92" class="s-acc" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#s1)"/>
+  <text x="110" y="150" font-size="7.5" class="t-muted" text-anchor="middle">feedback: new or re-prioritized items</text>
+  <text x="35" y="104" font-size="7" class="t-muted" text-anchor="middle">prioritized by PO</text>
+  <text x="187" y="102" font-size="7" class="t-muted" text-anchor="middle">frozen in Sprint</text>
+</svg>
+<figcaption>Artifacts: Product Backlog, Sprint Backlog, Increment. Events: Sprint Planning, Daily Scrum, Sprint Review, Retrospective. Roles: Product Owner, Scrum Master, Scrum Team (+ customer, management).</figcaption>
+</figure>
+<h3>Roles</h3>
+<div class="cards">
+  <div class="c"><h4>Scrum Master</h4><p>Ensures the project follows Scrum practices, values and rules and progresses as planned. Interacts with team, customer and management. Removes impediments. Runs the Daily Scrum.</p></div>
+  <div class="c"><h4>Product Owner</h4><p>Officially responsible for the project. Manages, controls and makes visible the Product Backlog. Makes final backlog decisions. Selected by the Scrum Master, customer and management.</p></div>
+  <div class="c"><h4>Scrum Team</h4><p>Self-organizing; has authority to decide actions to reach each Sprint goal. Estimates effort, creates the Sprint Backlog, reviews the Product Backlog, flags impediments.</p></div>
+  <div class="c"><h4>Customer</h4><p>Participates in tasks related to Product Backlog items for the system being built or enhanced.</p></div>
+  <div class="c"><h4>Management</h4><p>Final decision-making; sets agreements, standards and conventions; helps set goals and requirements.</p></div>
+  <div class="c tint"><h4>Modern note</h4><p>The Scrum Guide (2020) defines three accountabilities: Product Owner, Scrum Master and Developers. Customers and managers are stakeholders.</p></div>
+</div>
+<div class="box key"><span class="lbl">Key point</span><p>PO decides WHAT (priorities). The team decides HOW (and how much per Sprint). The Scrum Master protects the PROCESS.</p></div>
+<h3>Artifacts and estimation</h3>
+<div class="tscroll"><table>
+<tr><th></th><th>Product Backlog</th><th>Sprint Backlog</th></tr>
+<tr><td>Contains</td><td>All features, functions, defects, bug fixes, enhancements, technology upgrades</td><td>Product Backlog items selected for the next Sprint (+ tasks)</td></tr>
+<tr><td>Owner</td><td>Product Owner</td><td>Scrum Team</td></tr>
+<tr><td>Chosen by</td><td>PO with input from all</td><td>Team + Scrum Master + PO in Sprint Planning</td></tr>
+<tr><td>Changes?</td><td>Constantly updated and re-prioritized</td><td>Stable until the Sprint ends</td></tr>
+<tr><td>Result</td><td>Defines all work in the project</td><td>All items done &rarr; new increment delivered</td></tr>
+</table></div>
+<p><strong>Planning poker</strong> with cards 1, 2, 3, 5, 8, 13, 21, ?: (1) the PO reads a story and the team asks questions; (2) each estimator privately picks a card; (3) all reveal together; (4) the highest and lowest explain their reasoning; (5) re-vote until consensus. Estimation is iterative: estimates become more accurate as more is known. It is done by the PO together with the Scrum Team.</p>
+<h3>Scrum events across a 10-day Sprint</h3>
+<div class="tscroll"><table>
+<tr><th>Event</th><th>When</th><th>What</th></tr>
+<tr><td>Sprint Planning</td><td>Day 1</td><td>Two-phase meeting run by the Scrum Master. Phase 1, WHAT: SM, management, PO and team set the Sprint goal and functionality. Phase 2, HOW: SM and team plan how to build the increment.</td></tr>
+<tr><td>Daily Scrum</td><td>Every day, about 15 min</td><td>Conducted by the Scrum Master. What was done since the last meeting? What next? Impediments identified and removed. Management may attend.</td></tr>
+<tr><td>Sprint Review</td><td>Last day</td><td>Team and SM present the working increment to management, customers, users and PO. Informal; decides next activities. May add backlog items or change direction.</td></tr>
+<tr><td>Sprint Retrospective</td><td>Last day, after review</td><td>Added in modern Scrum. The team inspects its own process: what went well, what to improve. Agrees concrete improvements for the next Sprint.</td></tr>
+</table></div>
+<div class="sorter" data-options="Product Owner|Scrum Master|Scrum Team">
+  <div class="head"><strong>Practice: who is responsible?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Product Owner" data-why="The PO manages and makes final decisions on the Product Backlog."><p class="item">Moves "refund status page" above "referral bonus" in the Product Backlog.</p></div>
+  <div class="sort" data-a="Scrum Master" data-why="Removing impediments is the Scrum Master's job."><p class="item">Gets the blocked test server fixed so the team can continue.</p></div>
+  <div class="sort" data-a="Scrum Team" data-why="The team estimates and creates the Sprint Backlog."><p class="item">Decides it can take 32 points into this Sprint and breaks the stories into tasks.</p></div>
+  <div class="sort" data-a="Scrum Master" data-why="The Scrum Master conducts the Daily Scrum and protects the process."><p class="item">Keeps the stand-up to 15 minutes and to the three questions.</p></div>
+</div>
+</section>
+
+<section id="burndown">
+<h2 data-short="Burndown"><span class="n">19</span>Tracking progress: the Sprint burndown chart</h2>
+<ul>
+<li>X-axis: days of the Sprint. Y-axis: work remaining.</li>
+<li>Above the ideal line: behind schedule. Below the ideal line: ahead of schedule.</li>
+<li>Updated daily from the Sprint Backlog.</li>
+</ul>
+<div class="box exact"><span class="lbl">Exam text: key formulas</span><p class="mono small">Ideal burn rate = committed points &divide; Sprint days<br>Actual rate = points completed &divide; days elapsed<br>Velocity = points completed per Sprint</p></div>
+<div class="calc" id="bd">
+  <div class="head"><strong>Calculator: burndown and forecast</strong><span class="tag">Exercise 4</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Committed points<input type="number" id="bd-c" value="60" min="1"></label>
+      <label class="field">Sprint days<input type="number" id="bd-d" value="10" min="1"></label>
+      <label class="field">Remaining at end of each day so far (day 0 first)<input type="text" id="bd-r" value="60, 57, 52, 50, 45, 40"></label>
+    </div>
+    <svg id="bd-svg" viewBox="0 0 360 200" role="img" aria-label="Burndown chart with ideal and actual lines"></svg>
+    <div class="out" id="bd-out"></div>
+    <div class="verdict" id="bd-v"></div>
+  </div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap: what Scrum says when you are behind</span><p>Raise it in the Daily Scrum. The Scrum Master removes impediments. The PO and team renegotiate scope (drop lowest-priority items). The Sprint is <strong>NOT extended</strong>. In the retrospective, plan nearer the real velocity next Sprint.</p></div>
+</section>
+
+<section id="dsdm">
+<h2 data-short="DSDM"><span class="n">20</span>Dynamic Systems Development Method (DSDM)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>A public-domain Rapid Application Development framework built from the experience of many vendor and user organisations (DSDM Consortium, UK, 1994); the UK's de-facto RAD standard. It fixes time and resources and flexes requirements, addressing current and imminent business needs rather than every perceived possibility.</p></div>
+<p>Today: DSDM / AgilePM, Agile Business Consortium. Motto: deliver what the business needs, when it needs it.</p>
+<h3>Traditional vs DSDM at British Airways (IM Department, Newcastle)</h3>
+<div class="tscroll"><table>
+<tr><th>Measure</th><th class="num">Traditional</th><th class="num">DSDM</th></tr>
+<tr><td>Average time to delivery</td><td class="num">18-24 months</td><td class="num">4-6 months</td></tr>
+<tr><td>Average project team size</td><td class="num">11 people</td><td class="num">5 people</td></tr>
+<tr><td>Projects rated good to excellent</td><td class="num">77%</td><td class="num">87%</td></tr>
+</table></div>
+<h3>Lifecycle and deliverables</h3>
+<div class="tscroll"><table>
+<tr><th>Stage</th><th>Activities</th><th>Deliverables</th></tr>
+<tr><td>Feasibility study</td><td>Is DSDM suitable? (project type, organisation, people)</td><td>Feasibility report and prototype; outline plan with development plan + risk log</td></tr>
+<tr><td>Business study</td><td>Workshops with customer experts. Analyse business and technology; agree priorities</td><td>Prioritized requirements list; business-area and system-architecture definitions; prototyping plan</td></tr>
+<tr><td>Functional model iteration (repeats)</td><td>Identify functional prototype; agree schedule; create functional prototype; review (user testing)</td><td>Functional model; functional prototype; prototyping review document</td></tr>
+<tr><td>Design and build iteration (repeats)</td><td>Identify design prototype (functional + non-functional); agree schedule; create design prototype; review (testing)</td><td>Implementation strategy; design prototype; user documentation; test record</td></tr>
+<tr><td>Implementation</td><td>User approval and guidelines; train users; implement at user site; review business</td><td>Approval; trained user population; delivered system; project review document</td></tr>
+</table></div>
+<p class="small">Iterative and revisitable: if "review business" shows the goals are not met, the project loops back to functional model or design and build iterations. Otherwise it moves to post-project.</p>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>F-B-F-D-I</strong>: "Five Busy Friends Drink Iced-tea". Feasibility, Business, Functional model, Design and build, Implementation.</p></div>
+<h3>Fixed time, flexible functionality</h3>
+<figure class="fig">
+<svg viewBox="0 0 360 160" role="img" aria-label="Two triangles: traditional fixes functionality, DSDM fixes time and resources">
+  <polygon points="90,20 20,140 160,140" class="f-box"/>
+  <polygon points="270,140 200,20 340,20" class="f-acc-t"/>
+  <g font-size="9" text-anchor="middle" font-weight="600">
+    <text x="90" y="42">Functionality</text><text x="90" y="53" font-weight="400" class="t-muted">FIXED</text>
+    <text x="46" y="132">Time</text><text x="46" y="122" font-weight="400" class="t-muted">varies</text>
+    <text x="134" y="132">Resources</text><text x="134" y="122" font-weight="400" class="t-muted">varies</text>
+    <text x="90" y="156" class="t-muted">Traditional</text>
+    <text x="226" y="36">Time</text><text x="226" y="47" font-weight="400" class="t-muted">FIXED</text>
+    <text x="314" y="36">Resources</text><text x="314" y="47" font-weight="400" class="t-muted">FIXED</text>
+    <text x="270" y="118">Functionality</text><text x="270" y="129" font-weight="400" class="t-muted">varies</text>
+    <text x="270" y="156" class="t-acc">DSDM / Agile</text>
+  </g>
+</svg>
+</figure>
+<ul>
+<li>Fundamental assumption: nothing is built perfectly the first time.</li>
+<li>In DSDM any step can be revisited, so each step need only be complete enough to move on.</li>
+<li>Traditional practice spends much time getting from the 80% solution to 100%, assuming no step is revisited. The result is late, over budget, or misses business needs.</li>
+</ul>
+<div class="box exact"><span class="lbl">Exam text: the 80:20 rule</span><p>A usable, useful 80% of the system can be produced in 20% of the total time.</p></div>
+<p>Consequence: the deadline is never moved. Lower-priority requirements are deferred (MoSCoW).</p>
+<h3>Techniques: timeboxing, prototyping, workshops</h3>
+<div class="cards">
+  <div class="c"><h4>Timeboxing</h4><p>Nested timeboxes inside a project timebox give a series of fixed deadlines (ideally 2 to 4 weeks). Focus on WHEN a business objective is met, not on tasks. The easiest 80% is produced in each timebox; the remaining 20% may be carried forward. Without it, prototyping teams lose focus.</p></div>
+  <div class="c"><h4>Prototyping</h4><p>Workshops set high-level requirements; prototypes let users check the DETAIL is right. Demonstrations broaden users' awareness of possibilities and trigger feedback. Speeds development and raises confidence the right solution is delivered.</p></div>
+  <div class="c"><h4>Facilitated workshops</h4><p>Goal: clear outcomes reached by consensus. Participants: sponsor, development team, scribes, observers, prototypers, facilitator. The facilitator helps the group understand common objectives. Types: business, usability, performance and capacity, capability/technique.</p><span class="ex">Advantages: speed, ownership, productivity, consensus, better decisions, synergy.</span></div>
+</div>
+</section>
+
+<section id="moscow">
+<h2 data-short="MoSCoW"><span class="n">21</span>MoSCoW prioritization</h2>
+<div class="tscroll"><table>
+<tr><th>Class</th><th>Meaning</th><th>Typical effort share</th><th>Bus ticketing example</th></tr>
+<tr><td>Must have</td><td>Fundamental to project success. Without it the system is useless or illegal</td><td class="num">&le; 60%</td><td>Search buses, pay online</td></tr>
+<tr><td>Should have</td><td>Important, but the project does not rely on it; a workaround exists</td><td class="num">&asymp; 20%</td><td>Cancellation and refund</td></tr>
+<tr><td>Could have</td><td>Can be left out without impact. First to drop if time runs short (contingency)</td><td class="num">&asymp; 20%</td><td>Dark-mode seat map</td></tr>
+<tr><td>Won't have this time</td><td>Valuable but can wait for later development: the "waiting list"</td><td class="num">0% now</td><td>Loyalty points</td></tr>
+</table></div>
+<p class="small muted">Created by Dai Clegg (Oracle UK, 1994); formalised in DSDM v3; listed in the IIBA BABOK. Coulds act as the timebox contingency.</p>
+<div class="calc" id="msc">
+  <div class="head"><strong>Planner: DSDM timebox with MoSCoW</strong><span class="tag">Exercise 5</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Developers<input type="number" id="m-dev" value="5" min="1"></label>
+      <label class="field">Days per week<input type="number" id="m-dpw" value="5" min="1"></label>
+      <label class="field">Weeks in timebox<input type="number" id="m-wk" value="4" min="1"></label>
+      <label class="field">Overrun on a Must (person-days)<input type="number" id="m-over" value="0" min="0"></label>
+    </div>
+    <div class="tscroll"><table id="m-tab">
+      <tr><th>ID</th><th>Requirement</th><th class="num">Effort</th><th>Class</th></tr>
+      <tr><td>R1</td><td>Search buses by route and date</td><td class="num">15</td><td><select><option selected>Must</option><option>Should</option><option>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R2</td><td>Seat selection</td><td class="num">15</td><td><select><option selected>Must</option><option>Should</option><option>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R3</td><td>Online payment (card / mobile wallet)</td><td class="num">20</td><td><select><option selected>Must</option><option>Should</option><option>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R4</td><td>E-ticket by SMS / e-mail</td><td class="num">10</td><td><select><option selected>Must</option><option>Should</option><option>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R5</td><td>Cancellation and refund</td><td class="num">12</td><td><select><option>Must</option><option selected>Should</option><option>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R6</td><td>Loyalty points</td><td class="num">10</td><td><select><option>Must</option><option>Should</option><option>Could</option><option selected>Won't</option></select></td></tr>
+      <tr><td>R7</td><td>Dark-mode seat map</td><td class="num">5</td><td><select><option>Must</option><option>Should</option><option selected>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R8</td><td>Bangla / English interface</td><td class="num">8</td><td><select><option>Must</option><option selected>Should</option><option>Could</option><option>Won't</option></select></td></tr>
+      <tr><td>R9</td><td>Bus-operator ratings and reviews</td><td class="num">10</td><td><select><option>Must</option><option>Should</option><option selected>Could</option><option>Won't</option></select></td></tr>
+    </table></div>
+    <div id="m-bar" style="display:flex;height:30px;border-radius:6px;overflow:hidden;border:1px solid var(--border-strong);margin-top:1rem;font:500 .72rem/30px var(--font-mono)"></div>
+    <div class="out" id="m-out"></div>
+    <div class="verdict" id="m-v"></div>
+    <p class="small muted" style="margin-top:.8rem">Try Q4: set the overrun to 10, then change R9 from Could to Won't. The plan fits again without moving the deadline.</p>
+  </div>
+</div>
+</section>
+
+<section id="fdd">
+<h2 data-short="FDD"><span class="n">22</span>Feature-Driven Development (FDD)</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>An agile, short-iteration process that delivers the system feature by feature. It combines key advantages of other agile approaches with industry best practices (domain modelling, inspections, class ownership) and was designed to scale to much larger projects and teams.</p></div>
+<p>History: Jeff De Luca (project manager and original creator, with Peter Coad's modelling), 1997, a Singapore bank loan-automation project with a 50-member team. First published in "Java Modeling in Color with UML" (1999). Motto: model first, then deliver client-valued features every two weeks or less.</p>
+<h3>What is a feature?</h3>
+<div class="box exact"><span class="lbl">Exam text</span><p>A small function expressed in client-valued terms that presents a customer requirement to be developed in a short iteration. Maximum 2 weeks; most take 1 to 5 days. Anything larger is split into smaller features.</p></div>
+<div class="box key"><span class="lbl">Naming template</span><p class="mono">&lt;action&gt; the &lt;result&gt; &lt;by | for | of | to&gt; a(n) &lt;object&gt;</p><p>Calculate the total of a sale. Validate the password of a user. Authorize the sales transaction of a customer.</p></div>
+<p>Three-level hierarchy: <strong>subject area</strong> (Sales Management) &rarr; <strong>business activity</strong> (Making a sale) &rarr; <strong>feature</strong> (Calculate the total of a sale; Print the receipt of a sale). Features are the unit of planning, design, build and progress reporting.</p>
+<h3>The five FDD processes</h3>
+<div class="tscroll"><table>
+<tr><th>Process</th><th>Scope</th><th>Activities</th></tr>
+<tr><td>1 Develop an overall model</td><td rowspan="3">Project-wide, up front: just enough design to build on</td><td>Form modelling team (domain experts + chief architect); domain walk-through; build high-level object model; record notes</td></tr>
+<tr><td>2 Build a features list</td><td>Decompose domain into subject areas &rarr; business activities &rarr; features; each feature &le; 2 weeks</td></tr>
+<tr><td>3 Plan by feature</td><td>Initial schedule at feature level; prioritize by business value, dependencies, difficulty, risk; assign feature sets to chief programmers and classes to owners</td></tr>
+<tr><td>4 Design by feature</td><td rowspan="2">Per feature, iterative, &le; 2 weeks</td><td>Chief programmer forms a feature team (3 to 5); detailed design (sequence diagrams); design inspection; update model</td></tr>
+<tr><td>5 Build by feature</td><td>Implement designed feature; unit and feature-level tests; mandated code inspection; promote to the regular build</td></tr>
+</table></div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>Model, List, Plan, Design, Build</strong>: "My Lovely Parrot Dances Badly".</p></div>
+<h3>Roles, class ownership and feature teams</h3>
+<div class="cards two">
+  <div class="c"><h4>Primary roles</h4><p>Project Manager; Chief Architect (overall design); Chief Programmers (lead feature teams); Class Owners (own and change their classes); Domain Experts (business knowledge).</p></div>
+  <div class="c"><h4>Supporting roles</h4><p>Language Guru (shared vocabulary); Toolsmith (builds tools); Tester; Technical Writer (documentation).</p></div>
+</div>
+<div class="tscroll"><table>
+<tr><th></th><th>Class ownership (FDD)</th><th>Collective ownership (XP)</th></tr>
+<tr><td>Who changes a class?</td><td>Its assigned owner</td><td>Any developer, any time</td></tr>
+<tr><td>Strength</td><td>Clear responsibility for integrity; an expert per class; fast changes</td><td>No bottlenecks; shared knowledge</td></tr>
+</table></div>
+<p>Feature teams: the chief programmer picks members by the classes the feature touches (3 to 5 people). Teams work concurrently and disband when the feature is done. A developer can be on several teams at once. Class ownership + dynamic feature teams = accountability AND flexibility, the key to scaling FDD.</p>
+<h3>Inspections and progress reporting</h3>
+<div style="display:flex;height:34px;border-radius:6px;overflow:hidden;border:1px solid var(--border-strong);margin:1rem 0 .4rem;font:500 .7rem/34px var(--font-mono);text-align:center">
+  <span style="flex:1;background:var(--bg-pill)" title="Domain walk-through 1%"></span><span style="flex:40;background:var(--text-primary);color:var(--bg-page)">Design 40%</span><span style="flex:3;background:var(--accent)" title="Design inspection 3%"></span><span style="flex:45;background:var(--border-strong)">Code 45%</span><span style="flex:10;background:var(--accent);color:#fff">C-insp 10</span><span style="flex:1;background:var(--bg-pill)" title="Promote to build 1%"></span>
+</div>
+<p class="small muted">Milestone weights: walk-through 1, design 40, design inspection 3, code 45, code inspection 10, promote to build 1. Sum = 100%.</p>
+<div class="box exact"><span class="lbl">Exam text: progress formula</span><p>Feature % = sum of weights of completed milestones. Feature set % = average of its features' %. Example: coded and inspected, not promoted = 1 + 40 + 3 + 45 + 10 = 99%.</p></div>
+<p>Why mandated code inspections? They find more, and different, bugs than any other form of testing, and they are a great learning experience. Reporting is accurate, meaningful and timely for all stakeholders (for example colour-coded "parking-lot" charts).</p>
+<div class="calc" id="fddc">
+  <div class="head"><strong>Calculator: FDD feature progress</strong><span class="tag">Exercise 6, part B</span></div>
+  <div class="body">
+    <p class="small muted">Tick the completed milestones. The preset is the library system from the slide.</p>
+    <div class="tscroll"><table id="f-tab">
+      <tr><th>Feature</th><th>Walk 1</th><th>Design 40</th><th>D-insp 3</th><th>Code 45</th><th>C-insp 10</th><th>Build 1</th><th class="num">%</th></tr>
+    </table></div>
+    <div class="out" id="f-out"></div>
+  </div>
+</div>
+</section>
+
+<section id="compare-agile">
+<h2 data-short="Agile compared"><span class="n">23</span>Comparing the agile methods</h2>
+<div class="tscroll"><table>
+<tr><th>Aspect</th><th>XP</th><th>Scrum</th><th>DSDM</th><th>FDD</th></tr>
+<tr><td>Primary focus</td><td>Engineering practices</td><td>Project management framework</td><td>Business need, fixed time and cost</td><td>Model-driven feature delivery</td></tr>
+<tr><td>Iteration</td><td>1 to 4 weeks</td><td>Sprint: 1 week to 1 month</td><td>Timebox: 2 to 4 weeks (nested)</td><td>&le; 2 weeks per feature</td></tr>
+<tr><td>Key roles</td><td>Customer, programmer, coach, tracker</td><td>Product Owner, Scrum Master, team</td><td>Sponsor, facilitator, users, team</td><td>Chief architect, chief programmers, class owners</td></tr>
+<tr><td>Signature practices</td><td>TDD, pairing, CI, refactoring</td><td>Backlogs, daily scrum, review</td><td>MoSCoW, prototyping, workshops</td><td>Overall model, inspections, class ownership</td></tr>
+<tr><td>Requirements as</td><td>User stories</td><td>Product Backlog items</td><td>Prioritized requirements list</td><td>Features list (3 levels)</td></tr>
+<tr><td>Best suited for</td><td>Small co-located teams, vague needs</td><td>Most product teams; combine with XP</td><td>Business systems with hard deadlines</td><td>Larger teams, rich domain models</td></tr>
+<tr><td>Main limitation</td><td>Needs on-site customer; scaling</td><td>Little engineering guidance</td><td>Heavier process; business commitment</td><td>Up-front modelling; less customer contact</td></tr>
+</table></div>
+<div class="box real"><span class="lbl">Real life</span><p>In practice teams blend them: Scrum for management + XP for engineering + MoSCoW for prioritization is a very common mix. Many Dhaka product teams (bKash, Pathao, ShopUp) run two-week Scrum sprints in Jira with pull-request reviews and CI, which are XP practices.</p></div>
+</section>
+
+<section id="exercises">
+<h2 data-short="Worked exercises"><span class="n">24</span>Worked exercises from the slides</h2>
+<p>Exercise 1 is the classifier in section 11. Exercise 5 and 6 are also live above. Full written solutions:</p>
+
+<div class="ex-card">
+  <header><h3>Exercise 2: Timeboxing and velocity planning (Byte Brigade)</h3>
+  <p>Campus-event app, 2-week iterations, last velocities 18, 22, 20. Stories in priority order: S1 sign-up and login 5, S2 browse events 8, S3 event details 5, S4 online ticket purchase 13, S5 push notifications 3, S6 organizer dashboard 8, S7 search and filter 5, S8 share link 3. Q1 planning velocity? Q2 iterations and weeks? Q3 plan each iteration (strict priority, stop when the next story does not fit). Q4 the customer asks for "seat map" (8 pts) mid-iteration 1.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>Q1</strong> Velocity = (18 + 22 + 20) / 3 = <strong>20 points per iteration</strong>.</p>
+    <p><strong>Q2</strong> Total = 5+8+5+13+3+8+5+3 = 50 pts &rarr; 50 / 20 = 2.5 &rarr; round up to <strong>3 iterations = 6 weeks</strong>.</p>
+    <div class="tscroll"><table><tr><th>Iteration</th><th>Stories</th><th class="num">Points</th><th>Why stop here?</th></tr>
+    <tr><td>1</td><td>S1 + S2 + S3</td><td class="num">18</td><td>adding S4 &rarr; 31 &gt; 20</td></tr>
+    <tr><td>2</td><td>S4 + S5</td><td class="num">16</td><td>adding S6 &rarr; 24 &gt; 20</td></tr>
+    <tr><td>3</td><td>S6 + S7 + S8</td><td class="num">16</td><td>backlog complete</td></tr></table></div>
+    <p><strong>Q4</strong> The timebox is NOT extended. "Seat map" goes to the backlog, the customer prioritizes it, and it enters iteration 2 or later by displacing lower-priority work so the total stays &le; 20 pts.</p>
+    <div class="box key"><span class="lbl">Key idea</span><p>Velocity turns a backlog into a forecast. The timebox protects the date by flexing scope.</p></div>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><h3>Exercise 3: XP release planning, CRC and TDD (online bookshop)</h3>
+  <p>Four programmers in 2 pairs; 2-week iterations; velocity 8 ideal days. Stories: login 2, browse catalogue 3, add to cart 3, checkout 5, order history 2, search books 4, wishlist 3. Q1 iterations and weeks? Q2 assign stories in priority order. Q3 CRC card for ShoppingCart. Q4 first failing unit test for the cart total (2 pens at Tk 20 + 1 book at Tk 150). Q5 which role (a) prioritizes, (b) estimates, (c) checks estimate accuracy?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>Q1</strong> Total = 22 ideal days &rarr; 22 / 8 = 2.75 &rarr; <strong>3 iterations = 6 weeks</strong>.</p>
+    <div class="tscroll"><table><tr><th>Iteration</th><th>Stories</th><th class="num">Days</th></tr>
+    <tr><td>1</td><td>Login 2 + Browse 3 + Add to cart 3</td><td class="num">8</td></tr>
+    <tr><td>2</td><td>Checkout 5 + Order history 2 (Search &rarr; 11 &gt; 8)</td><td class="num">7</td></tr>
+    <tr><td>3</td><td>Search 4 + Wishlist 3</td><td class="num">7</td></tr></table></div>
+    <p><strong>Q2 note</strong>: stories are taken in priority order; a story never splits across iterations.</p>
+    <p><strong>Q3</strong> CRC ShoppingCart. Responsibilities: hold items and quantities; add/remove item; compute total; hand items to checkout. Collaborators: Product, Customer, Order.</p>
+<pre><code>def test_cart_total():
+    cart = ShoppingCart()
+    cart.add(Product("Pen", 20), qty=2)
+    cart.add(Product("Book", 150), qty=1)
+    assert cart.total() == 190   # 2*20 + 150</code></pre>
+    <p><strong>Q4</strong> RED: fails because total() does not exist &rarr; GREEN: implement the sum of price &times; qty &rarr; REFACTOR.</p>
+    <p><strong>Q5</strong> (a) Customer prioritizes. (b) Programmers estimate. (c) Tracker compares estimates with actuals.</p>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><h3>Exercise 4: Burndown and velocity analysis</h3>
+  <p>60 points committed to a 10-working-day Sprint. Remaining at the end of days 0 to 5: 60, 57, 52, 50, 45, 40. Q1 ideal burn rate and ideal remaining at day 5? Q2 ahead or behind, by how much? Q3 actual average burn rate, and remaining at day 10 if it continues? Q4 rate needed in days 6 to 10? Q5 what should the team do, and what must NOT happen?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>Q1</strong> Ideal rate = 60 / 10 = <strong>6 pts/day</strong>; ideal remaining at day 5 = 60 &minus; 5&times;6 = <strong>30 pts</strong>.</p>
+    <p><strong>Q2</strong> Actual 40 vs ideal 30 &rarr; <strong>behind by 10 points</strong>.</p>
+    <p><strong>Q3</strong> Actual rate = (60 &minus; 40) / 5 = <strong>4 pts/day</strong>; day 10 remaining = 40 &minus; 5&times;4 = <strong>20 pts</strong> &rarr; only 40 of 60 (67%) done.</p>
+    <p><strong>Q4</strong> Required = 40 / 5 = <strong>8 pts/day</strong>: double the current pace, unrealistic.</p>
+    <p><strong>Q5</strong> Raise it in the Daily Scrum; the Scrum Master removes impediments; PO and team renegotiate scope (drop lowest-priority items). The Sprint is NOT extended. In the retrospective, plan about 40 pts next Sprint.</p>
+    <div class="box key"><span class="lbl">Key idea</span><p>The burndown exposes problems by day 5, not day 10. Early transparency enables adaptation.</p></div>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><h3>Exercise 5: DSDM timebox planning with MoSCoW</h3>
+  <p>Inter-city bus e-ticketing. Timebox 4 weeks; 5 developers, 5 days/week. R1 to R9 as in the planner. Q1 capacity? Q2 total demand, does it fit? Q3 classify with Musts &le; 60% so the plan fits. Q4 payment overruns by 10 person-days: what does DSDM do, and how would a traditional project react?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>Q1</strong> Capacity = 5 devs &times; 5 days &times; 4 weeks = <strong>100 person-days</strong>.</p>
+    <p><strong>Q2</strong> Demand = 15+15+20+10+12+10+5+8+10 = <strong>105 &gt; 100</strong> &rarr; it cannot all fit.</p>
+    <div class="tscroll"><table><tr><th>Class</th><th>Requirements</th><th class="num">Effort</th><th class="num">Share</th></tr>
+    <tr><td>Must</td><td>R1 search, R2 seats, R3 payment, R4 e-ticket</td><td class="num">60</td><td class="num">60% &#10003;</td></tr>
+    <tr><td>Should</td><td>R5 cancellation and refund, R8 Bangla/English</td><td class="num">20</td><td class="num">20%</td></tr>
+    <tr><td>Could</td><td>R9 ratings and reviews, R7 dark-mode map</td><td class="num">15</td><td class="num">15%</td></tr>
+    <tr><td>Won't</td><td>R6 loyalty points &rarr; waiting list</td><td class="num">10</td><td class="num">-</td></tr>
+    <tr class="total"><td>Planned</td><td>M + S + C (5 days contingency left)</td><td class="num">95</td><td class="num">&le; 100 &#10003;</td></tr></table></div>
+    <p><strong>Q4</strong> DSDM: time and team stay fixed. Use the 5-day contingency and drop the Could R9 (10 days) &rarr; 95 + 10 &minus; 10 = 95 &le; 100. Traditional: extend the deadline or add people (cost and schedule slip).</p>
+    <div class="box key"><span class="lbl">Key idea</span><p>Coulds are the buffer that lets DSDM protect the deadline without sacrificing the Musts.</p></div>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><h3>Exercise 6: FDD for a library management system</h3>
+  <p>Part A: rewrite as FDD features and group into a three-level hierarchy: compute the late-return fee; check that a borrower's membership is valid; put a hold on a book for a member; list all overdue loans. Part B: F1 all 6 milestones done; F2 all except build; F3 walk, design, design inspection; F4 walk only. B1 % per feature, B2 feature set %, B3 which feature needs attention?</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>Part A</strong> Subject area: Circulation Management.</p>
+    <ul><li>Lending &rarr; Validate the membership of a borrower</li><li>Returns &rarr; Calculate the fine for a late return</li><li>Reservations &rarr; Reserve the copy of a book for a member</li><li>Reporting &rarr; Generate the list of overdue loans</li></ul>
+    <p>Template check: &lt;Calculate&gt; the &lt;fine&gt; &lt;for&gt; a &lt;late return&gt; &#10003;</p>
+    <div class="tscroll"><table><tr><th>Feature</th><th>Completed milestones</th><th class="num">% complete</th></tr>
+    <tr><td>F1 Issue loan</td><td class="mono">1 + 40 + 3 + 45 + 10 + 1</td><td class="num">100%</td></tr>
+    <tr><td>F2 Record return</td><td class="mono">1 + 40 + 3 + 45 + 10</td><td class="num">99%</td></tr>
+    <tr><td>F3 Renew loan</td><td class="mono">1 + 40 + 3</td><td class="num">44%</td></tr>
+    <tr><td>F4 Send reminder</td><td class="mono">1</td><td class="num">1%</td></tr>
+    <tr class="total"><td>Feature set</td><td class="mono">(100 + 99 + 44 + 1) / 4 = 244 / 4</td><td class="num">61%</td></tr></table></div>
+    <p><strong>B3</strong> F4 has barely started (1%): schedule risk. F2 needs only "promote to build" (1%). F3 is mid-way: coding and code inspection remain.</p>
+    <div class="box key"><span class="lbl">Key idea</span><p>Fixed milestone weights turn "how far along are we?" into an objective, auditable number.</p></div>
+  </div></details>
+</div>
+</section>
+
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">25</span>Exam questions with model answers</h2>
+<p>From the Summer 2026 midterm and the answer template. The CLO1 rubric marks "understanding of traditional process models", "understanding of agile methodology", "knowledge of XP values and practices" and "analytical ability". So always link each point to the scenario.</p>
+
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Case study: Startup vs traditional bank</h3>
+  <p>A fintech startup (like bKash) ships new features every two weeks based on user feedback, with minimal documentation and daily developer-customer chats. A traditional bank's IT team follows a strict contract and spends months writing specifications before coding. The startup's app has higher satisfaction. State the four core values of the Agile Manifesto, and explain which behaviour in the scenario illustrates each value.</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <div class="tscroll"><table>
+    <tr><th>Agile value (left over right)</th><th>Startup behaviour that shows it</th><th>Bank behaviour (the right side)</th></tr>
+    <tr><td>Individuals and interactions over processes and tools</td><td>Developers and customers chat daily; problems are solved by talking</td><td>Formal process and hand-offs</td></tr>
+    <tr><td>Working software over comprehensive documentation</td><td>A working release every two weeks with minimal documentation</td><td>Months of specifications before any code</td></tr>
+    <tr><td>Customer collaboration over contract negotiation</td><td>Daily developer-customer chats shape the product</td><td>A strict contract defines the work</td></tr>
+    <tr><td>Responding to change over following a plan</td><td>Features are chosen from user feedback each cycle</td><td>The plan is fixed in the specification</td></tr>
+    </table></div>
+    <p>Close with one line: the items on the right still have value, but agile values the left more. That is why the startup reacts faster and has higher satisfaction. A bank's core ledger, which is regulated and safety-critical, may still need more plan-driven control.</p>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Case study: Shajgoj platform rebuild with XP</h3>
+  <p>Shajgoj, a Bangladeshi beauty e-commerce company, rebuilds its platform with XP. A small co-located team works with a product manager from the business. The tracker found a consistent velocity gap: estimated 20, delivered 14. (a) List and explain the five XP values; for each, identify one behaviour Shajgoj should show. [3] (b) Trace the rebuild through all phases of the XP lifecycle (Exploration to Death); one activity per phase. [5] (c) Which XP role is responsible for the velocity gap, and what should they do? Identify one other role. [2]</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <h4>(a) Five values</h4>
+    <div class="tscroll"><table><tr><th>Value</th><th>Meaning</th><th>Shajgoj behaviour</th></tr>
+    <tr><td>Communication</td><td>Oral culture; practices force interaction</td><td>Daily stand-up with the product manager on site; pair programming on checkout</td></tr>
+    <tr><td>Simplicity</td><td>Simplest product that meets today's needs</td><td>Build cash-on-delivery and bKash checkout first; no speculative AI recommender yet</td></tr>
+    <tr><td>Feedback</td><td>From customers every iteration</td><td>Show the new product page to real shoppers at the end of each 2-week iteration</td></tr>
+    <tr><td>Courage</td><td>Resist unrealistic commitments; refactor boldly</td><td>Tell management that 20 points per iteration is not realistic; refactor the old cart code</td></tr>
+    <tr><td>Respect</td><td>Care for each other and the project</td><td>Keep a 40-hour week during the Eid sale rush; no blame for estimate misses</td></tr></table></div>
+    <h4>(b) Lifecycle</h4>
+    <div class="tscroll"><table><tr><th>Phase</th><th>Shajgoj activity</th></tr>
+    <tr><td>Exploration</td><td>The business writes story cards for release 1 (browse, cart, checkout); the team tries the new framework and payment SDK</td></tr>
+    <tr><td>Planning</td><td>Programmers estimate the stories; release planning picks the stories for the first release and sets the schedule</td></tr>
+    <tr><td>Iterations to release</td><td>2-week iterations; iteration 1 builds the whole-system architecture; the customer picks stories each iteration</td></tr>
+    <tr><td>Productionizing</td><td>Load testing before the 11.11 sale; decide which late changes go in; document postponed ideas</td></tr>
+    <tr><td>Maintenance</td><td>Keep the live site running while building new iterations; handle customer support</td></tr>
+    <tr><td>Death</td><td>No new stories remain and the needs are met; write final documentation (or the system is retired when too costly)</td></tr></table></div>
+    <h4>(c) Roles</h4>
+    <p>The <strong>Tracker</strong> traces estimates vs actuals. They should report the gap (14 of 20 = 70%), use the measured velocity of 14 for the next planning game, and check whether the iteration goal is reachable. Another role: the <strong>Customer</strong> (the product manager who writes stories and sets priorities), or the <strong>Coach</strong> who guides the process.</p>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: Scrum burndown for "Chaldal" grocery app</h3>
+  <p>The team committed 48 points to an 8-day Sprint. After day 4, 30 points remain. Is the team ahead or behind? What rate is needed to finish? What should happen, according to Scrum?</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p>Ideal rate = 48 / 8 = 6 pts/day. Ideal remaining at day 4 = 48 &minus; 24 = 24. Actual 30 &gt; 24, so the team is <strong>behind by 6 points</strong>. Actual rate = (48 &minus; 30) / 4 = 4.5 pts/day. Needed = 30 / 4 = <strong>7.5 pts/day</strong>. Raise it at the Daily Scrum, the Scrum Master removes impediments, and the PO drops the lowest-priority items. The Sprint is not extended. Plan about 36 points (4.5 &times; 8) next Sprint.</p>
+  </div></details>
+</div>
+
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: choose and justify</h3>
+  <p>Bangladesh Bank wants a new real-time gross settlement module. Rules are fixed by regulation, every requirement must be traced to a test, and audits are strict. Which model and why? Why not Scrum?</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p><strong>V-Model.</strong> Requirements are fixed and regulated. Each development phase has a paired test phase (requirements &harr; acceptance, system design &harr; system test, architecture &harr; integration, module design &harr; unit), which gives full traceability for audits. Defects are caught near their source. Scrum is less suitable: agile is unsuited to safety-critical work with heavy certification documentation, and its strength (welcoming change) is not needed when requirements are fixed by law.</p>
+  </div></details>
+</div>
+</section>
+
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">26</span>Quiz</h2>
+<div class="quiz" id="q2">
+  <div class="mcq"><p class="q">Which model gives every development phase a directly associated testing phase?</p><div class="opts"><button>Waterfall</button><button data-ok>V-Model</button><button>Spiral</button><button>RAD</button></div><p class="why">The V-Model pairs each phase with a test phase.</p></div>
+  <div class="mcq"><p class="q">In the spiral model, what drives each loop?</p><div class="opts"><button>Customer stories</button><button>Fixed timeboxes</button><button data-ok>Explicit risk analysis</button><button>Feature lists</button></div><p class="why">Risk exposure = probability &times; impact; resolve the highest first.</p></div>
+  <div class="mcq"><p class="q">RAD targets a fully functional system in about:</p><div class="opts"><button>2 weeks</button><button data-ok>90 days, give or take 30</button><button>6 months</button><button>18 to 24 months</button></div><p class="why">60 to 120 days.</p></div>
+  <div class="mcq"><p class="q">The RUP milestone at the end of Elaboration is:</p><div class="opts"><button>LCO</button><button data-ok>LCA</button><button>IOC</button><button>PR</button></div><p class="why">Inception &rarr; LCO, Elaboration &rarr; LCA (Lifecycle Architecture), Construction &rarr; IOC, Transition &rarr; PR.</p></div>
+  <div class="mcq"><p class="q">An agile iteration is intentionally never longer than:</p><div class="opts"><button>1 week</button><button data-ok>30 days</button><button>3 months</button><button>6 months</button></div><p class="why">Agile iterations are 1 to 4 weeks, never over 30 days.</p></div>
+  <div class="mcq"><p class="q">If the chosen scope does not fit the timebox, agile says:</p><div class="opts"><button>Extend the iteration</button><button>Add developers</button><button data-ok>Reduce the scope to fit the iteration</button><button>Skip testing</button></div><p class="why">Fix the time, flex the scope.</p></div>
+  <div class="mcq"><p class="q">Which is NOT one of the five XP values?</p><div class="opts"><button>Courage</button><button>Feedback</button><button data-ok>Documentation</button><button>Respect</button></div><p class="why">Communication, simplicity, feedback, courage, respect.</p></div>
+  <div class="mcq"><p class="q">Who makes final decisions on the Product Backlog?</p><div class="opts"><button>Scrum Master</button><button data-ok>Product Owner</button><button>Management</button><button>The customer alone</button></div><p class="why">The PO manages, controls and makes visible the Product Backlog.</p></div>
+  <div class="mcq"><p class="q">A Sprint has 50 points over 10 days. After day 4, 34 points remain. The team is:</p><div class="opts"><button>Ahead by 4</button><button data-ok>Behind by 4</button><button>On track</button><button>Behind by 16</button></div><p class="why">Ideal = 50 &minus; 4&times;5 = 30. Actual 34 &gt; 30, so behind by 4.</p></div>
+  <div class="mcq"><p class="q">In DSDM, what is fixed?</p><div class="opts"><button>Functionality</button><button data-ok>Time and resources</button><button>Only cost</button><button>Nothing</button></div><p class="why">DSDM fixes time and resources and flexes requirements.</p></div>
+  <div class="mcq"><p class="q">Under MoSCoW in DSDM, Musts should take at most:</p><div class="opts"><button>20% of effort</button><button>40% of effort</button><button data-ok>60% of effort</button><button>80% of effort</button></div><p class="why">Musts &le; 60%; Shoulds and Coulds about 20% each.</p></div>
+  <div class="mcq"><p class="q">An FDD feature has walk-through, design and design inspection done. Its progress is:</p><div class="opts"><button>3%</button><button data-ok>44%</button><button>40%</button><button>89%</button></div><p class="why">1 + 40 + 3 = 44%.</p></div>
+</div>
+</section>
+
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">27</span>Exam checklist</h2>
+<p><span class="check-progress" data-for="ck2"></span></p>
+<ul class="checklist" id="ck2" data-key="main">
+  <li>Define software process and process model; list the 5 framework and 6 umbrella activities.</li>
+  <li>Draw Waterfall and the V-Model with the correct test pairs; give use-when and problems.</li>
+  <li>Separate prototyping, exploratory and throw-away prototyping.</li>
+  <li>Explain incremental, spiral (4 quadrants, risk = P &times; I), RAD (90 &plusmn; 30 days), CBD and RUP (phases and milestones).</li>
+  <li>Use the comparison table to choose and justify a model for any case.</li>
+  <li>Define agility and the agile model; state the timebox rules.</li>
+  <li>Write the four manifesto values word for word and map behaviours to them.</li>
+  <li>Recall the 12 principles and their four groups.</li>
+  <li>Compare agile and plan-driven on size, criticality, environment, personnel, culture.</li>
+  <li>Compute velocity, iterations needed and an iteration plan in strict priority order.</li>
+  <li>List XP values, lifecycle phases, roles and practices; explain TDD and pairing.</li>
+  <li>Explain Scrum phases, roles, artifacts, events and planning poker.</li>
+  <li>Compute ideal rate, actual rate, forecast and required rate from a burndown.</li>
+  <li>Explain DSDM: lifecycle, fixed time, 80:20 rule, timeboxing, workshops, MoSCoW with capacity.</li>
+  <li>Write FDD features with the template, name the 5 processes, and compute feature progress.</li>
+  <li>Compare XP, Scrum, DSDM and FDD in one table.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE,$=S.$,$$=S.$$,fmt=S.fmt;
+  /* velocity planner */
+  var presets={bb:{h:"18, 22, 20",w:2,s:"S1 Sign-up and login, 5\nS2 Browse event list, 8\nS3 Event details page, 5\nS4 Online ticket purchase, 13\nS5 Push notifications, 3\nS6 Organizer dashboard, 8\nS7 Event search and filter, 5\nS8 Share event link, 3"},
+               xp:{h:"8",w:2,s:"Login, 2\nBrowse catalogue, 3\nAdd to cart, 3\nCheckout, 5\nOrder history, 2\nSearch books, 4\nWishlist, 3"}};
+  function load(k){var p=presets[k];$("#v-hist").value=p.h;$("#v-weeks").value=p.w;$("#v-stories").value=p.s;}
+  load("bb");
+  $("#v-preset").addEventListener("change",function(){load(this.value);vel();});
+  function vel(){
+    var hist=$("#v-hist").value.split(/[,\s]+/).map(Number).filter(function(x){return x>0;});
+    var v=hist.length?hist.reduce(function(a,b){return a+b;},0)/hist.length:0;
+    var st=$("#v-stories").value.split("\n").map(function(l){var m=l.match(/^(.*),\s*([\d.]+)\s*$/);return m?{n:m[1].trim(),p:+m[2]}:null;}).filter(Boolean);
+    var tot=st.reduce(function(a,b){return a+b.p;},0), its=v?Math.ceil(tot/v-1e-9):0, w=S.num("#v-weeks");
+    var plan=[],cur={s:[],p:0},i=0,bad=false;
+    while(i<st.length){ if(st[i].p>v){bad=true;break;} if(cur.p+st[i].p<=v+1e-9){cur.s.push(st[i]);cur.p+=st[i].p;i++;} else {cur.why="adding "+st[i].n.split(" ")[0]+" &rarr; "+fmt(cur.p+st[i].p)+" &gt; "+fmt(v);plan.push(cur);cur={s:[],p:0};} }
+    if(cur.s.length){cur.why="backlog complete";plan.push(cur);}
+    $("#v-out").innerHTML='<div class="hl"><span>Planning velocity</span><b>'+fmt(v,v%1?1:0)+'</b></div><div><span>Total points</span><b>'+fmt(tot)+'</b></div><div><span>Points &divide; velocity</span><b>'+(v?fmt(tot/v,2):"-")+'</b></div><div><span>Iterations (by total)</span><b>'+its+'</b></div><div><span>Iterations in strict plan</span><b>'+plan.length+'</b></div><div><span>Weeks (strict plan)</span><b>'+plan.length*w+'</b></div>';
+    $("#v-plan").innerHTML='<tr><th>Iteration</th><th>Stories</th><th class="num">Points</th><th>Why stop here?</th></tr>'+(bad?'<tr><td colspan="4">A story is bigger than the velocity. Split it first.</td></tr>':plan.map(function(p,k){return '<tr><td>'+(k+1)+'</td><td>'+p.s.map(function(x){return S.esc(x.n);}).join(" + ")+'</td><td class="num">'+fmt(p.p)+'</td><td>'+p.why+'</td></tr>';}).join(""));
+  }
+  S.live($("#vel"),vel); $("#v-stories").addEventListener("input",vel);
+
+  /* burndown */
+  function bd(){
+    var c=S.num("#bd-c"),d=S.num("#bd-d")||1,r=$("#bd-r").value.split(/[,\s]+/).filter(function(x){return x!=="";}).map(Number);
+    var k=r.length-1, now=r[k], ideal=c/d, idealNow=c-ideal*k, done=c-now, rate=k?done/k:0, left=d-k, fc=now-rate*left, need=left?now/left:0;
+    var W=360,H=200,x0=34,y0=170,x1=350,y1=12, X=function(i){return x0+(x1-x0)*i/d;}, Y=function(v){return y0-(y0-y1)*v/c;};
+    var g='<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y0+'" class="s-line"/><line x1="'+x0+'" y1="'+y1+'" x2="'+x0+'" y2="'+y0+'" class="s-line"/>';
+    for(var i=0;i<=d;i++) g+='<text x="'+X(i)+'" y="'+(y0+13)+'" font-size="8" text-anchor="middle" class="t-muted">D'+i+'</text>';
+    [0,.5,1].forEach(function(f){g+='<text x="'+(x0-5)+'" y="'+(Y(c*f)+3)+'" font-size="8" text-anchor="end" class="t-muted">'+fmt(c*f)+'</text>';});
+    g+='<line x1="'+X(0)+'" y1="'+Y(c)+'" x2="'+X(d)+'" y2="'+Y(0)+'" class="s-line" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    g+='<polyline points="'+r.map(function(v,i){return X(i)+","+Y(v);}).join(" ")+'" class="s-ink" stroke-width="2.4"/>';
+    r.forEach(function(v,i){g+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="2.8" class="f-ink"/>';});
+    if(left>0) g+='<line x1="'+X(k)+'" y1="'+Y(now)+'" x2="'+X(d)+'" y2="'+Y(Math.max(fc,0))+'" class="s-acc" stroke-width="2" stroke-dasharray="3 3"/>';
+    g+='<text x="'+(x1-4)+'" y="'+(y1+10)+'" font-size="8.5" text-anchor="end">solid: actual; dashed grey: ideal; blue: forecast</text>';
+    $("#bd-svg").innerHTML=g;
+    var diff=now-idealNow;
+    $("#bd-out").innerHTML='<div><span>Ideal burn rate</span><b>'+fmt(ideal,2)+'/day</b></div><div><span>Ideal remaining at day '+k+'</span><b>'+fmt(idealNow,1)+'</b></div><div class="hl"><span>'+(diff>0?"Behind by":diff<0?"Ahead by":"On track")+'</span><b>'+fmt(Math.abs(diff),1)+' pts</b></div><div><span>Actual rate</span><b>'+fmt(rate,2)+'/day</b></div><div><span>Forecast left at day '+d+'</span><b>'+fmt(Math.max(fc,0),1)+'</b></div><div><span>Rate needed now</span><b>'+fmt(need,2)+'/day</b></div>';
+    var v=$("#bd-v"); v.className="verdict "+(diff>0?"no":"ok");
+    v.textContent=diff>0?"Behind: raise it at the Daily Scrum, remove impediments, renegotiate scope with the PO. Do not extend the Sprint.":"On or ahead of the ideal line.";
+  }
+  S.live($("#bd"),bd);
+
+  /* MoSCoW */
+  function msc(){
+    var cap=S.num("#m-dev")*S.num("#m-dpw")*S.num("#m-wk"), over=S.num("#m-over"), t={Must:0,Should:0,Could:0,"Won't":0};
+    $$("#m-tab tr").slice(1).forEach(function(r){t[$("select",r).value]+=+r.children[2].textContent;});
+    t.Must+=over; var plan=t.Must+t.Should+t.Could, mustPct=cap?t.Must/cap*100:0, cont=cap-plan;
+    var seg=function(v,bg,fg,l){return v>0?'<span style="flex:'+v+';background:'+bg+';color:'+fg+';padding-left:6px;white-space:nowrap;overflow:hidden">'+l+' '+v+'</span>':"";};
+    $("#m-bar").innerHTML=seg(t.Must,"var(--text-primary)","var(--bg-page)","M")+seg(t.Should,"var(--accent)","#fff","S")+seg(t.Could,"var(--border-strong)","var(--text-primary)","C")+(cont>0?'<span style="flex:'+cont+';background:var(--bg-sunk);color:var(--text-muted);padding-left:6px;white-space:nowrap;overflow:hidden">free '+cont+'</span>':"");
+    $("#m-out").innerHTML='<div><span>Capacity (person-days)</span><b>'+cap+'</b></div><div><span>Must</span><b>'+t.Must+' ('+fmt(mustPct,0)+'%)</b></div><div><span>Should</span><b>'+t.Should+'</b></div><div><span>Could</span><b>'+t.Could+'</b></div><div><span>Won\'t (waiting list)</span><b>'+t["Won't"]+'</b></div><div class="hl"><span>Planned M+S+C</span><b>'+plan+'</b></div>';
+    var ok=plan<=cap&&mustPct<=60.0001, v=$("#m-v"); v.className="verdict "+(ok?"ok":"no");
+    v.textContent=ok?"Fits the timebox with "+cont+" person-days contingency, and Musts are within 60%.":(plan>cap?"Over capacity by "+(plan-cap)+" person-days. Drop a Could (DSDM never moves the deadline).":"Musts exceed 60% of capacity. Move something down to Should.");
+  }
+  S.live($("#msc"),msc);
+
+  /* FDD progress */
+  var W=[1,40,3,45,10,1], F=[["F1 Issue the loan of a book",[1,1,1,1,1,1]],["F2 Record the return of a book",[1,1,1,1,1,0]],["F3 Renew the loan of a book",[1,1,1,0,0,0]],["F4 Send the reminder of a due date",[1,0,0,0,0,0]]];
+  $("#f-tab").insertAdjacentHTML("beforeend",F.map(function(f){return '<tr><td>'+f[0]+'</td>'+f[1].map(function(c){return '<td><input type="checkbox"'+(c?" checked":"")+'></td>';}).join("")+'<td class="num" data-p></td></tr>';}).join(""));
+  function fdd(){
+    var ps=$$("#f-tab tr").slice(1).map(function(r){var p=0;$$("input",r).forEach(function(c,i){if(c.checked)p+=W[i];});$("[data-p]",r).textContent=p+"%";return p;});
+    var avg=ps.reduce(function(a,b){return a+b;},0)/ps.length, lo=ps.indexOf(Math.min.apply(null,ps));
+    $("#f-out").innerHTML='<div class="hl"><span>Feature set %</span><b>'+fmt(avg,avg%1?1:0)+'%</b></div><div><span>Sum of features</span><b>'+ps.reduce(function(a,b){return a+b;},0)+'</b></div><div><span>Needs attention</span><b>F'+(lo+1)+' ('+ps[lo]+'%)</b></div>';
+  }
+  S.live($("#fddc"),fdd);
+})();
+</script>
+</body>
+</html>

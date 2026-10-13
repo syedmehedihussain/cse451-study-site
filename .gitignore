@@ -1,0 +1,11 @@
+# Local workspace notes (kept private)
+_project/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Local env and OS files
+.env
+.env.*
+.DS_Store

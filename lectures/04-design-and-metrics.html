@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Concepts and Metrics</title>
+<meta name="description" content="CSE451 Lecture 4: modularity, cohesion, coupling, UI golden rules, Fitts's law, function points, CK, Halstead and SMI.">
+<script>try{var t=localStorage.getItem('theme');if(t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root=".." data-slug="04-design-and-metrics">
+<a class="skip" href="#main">Skip to content</a>
+<header id="site-header"></header>
+<div class="chips" id="chips"></div>
+<main id="main">
+<div class="lecture">
+<nav class="rail" id="rail" aria-label="Lectures"></nav>
+<article class="article">
+
+<header class="lecture-head">
+  <p class="eyebrow">Lecture 04 &nbsp;/&nbsp; Mid exam</p>
+  <h1>Design concepts, UI design and product metrics</h1>
+  <p class="summary">How to structure a design (modularity, cohesion, coupling), how to judge an interface (golden rules, Fitts's law), and how to put numbers on what you build (function points, CK, Halstead, SMI).</p>
+  <p class="meta"><span><b>Source</b> Lecture 4, 30 slides</span><span><b>Reading</b> about 55 min</span><span><b>Exercises</b> 4 with solutions</span></p>
+  <div class="howto"><span class="h-exam">Blue: exact exam wording</span><span class="h-key">Green: key point</span><span class="h-trap">Red: exam trap</span><span class="h-real">Yellow: real life</span></div>
+</header>
+
+<div class="prose">
+
+<section id="design">
+<h2 data-short="What is design"><span class="n">01</span>What is software design?</h2>
+<div class="box exact"><span class="lbl">Exam text (Pressman)</span><p>Software design is the process of transforming requirements (the WHAT) into a blueprint (the HOW): the architecture, data structures, interfaces and components from which code is built. It is the first place where quality can be assessed and the place where requirements, business needs and technical constraints meet.</p></div>
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="Design model pyramid: data/class design at the base, then architectural, interface, component-level">
+  <polygon points="20,140 200,140 175,110 45,110" class="f-acc-t"/>
+  <polygon points="45,110 175,110 152,80 68,80" class="f-sunk"/>
+  <polygon points="68,80 152,80 130,50 90,50" class="f-box"/>
+  <polygon points="90,50 130,50 110,20" class="f-box"/>
+  <g font-size="9" text-anchor="middle" font-weight="600"><text x="110" y="129">Data / class design</text><text x="110" y="99">Architectural design</text><text x="110" y="69">Interface design</text><text x="110" y="44" font-size="7">Component</text></g>
+  <g font-size="9" text-anchor="middle"><rect x="232" y="18" width="110" height="20" rx="4" class="f-box"/><text x="287" y="32">Requirements</text>
+  <rect x="232" y="44" width="110" height="20" rx="4" class="f-ink"/><text x="287" y="58" class="t-inv" font-weight="700">Design</text>
+  <rect x="232" y="70" width="110" height="20" rx="4" class="f-box"/><text x="287" y="84">Code</text>
+  <rect x="232" y="96" width="110" height="20" rx="4" class="f-box"/><text x="287" y="110">Test</text>
+  <rect x="232" y="122" width="110" height="20" rx="4" class="f-box"/><text x="287" y="136">Maintain</text></g>
+</svg>
+<figcaption>Pressman's design model and where design sits in the life cycle. <span class="src">Slide 3</span></figcaption>
+</figure>
+<h3>Good design exhibits (Mitch Kapor, "Software Design Manifesto")</h3>
+<div class="cards">
+  <div class="c"><h4><span class="idx">1</span> Firmness</h4><p>No bugs that inhibit its function.</p><span class="ex">A payroll system never computes a wrong salary.</span></div>
+  <div class="c"><h4><span class="idx">2</span> Commodity</h4><p>Suitable for the purpose it was intended.</p><span class="ex">A POS app handles barcode, cash and card flows.</span></div>
+  <div class="c"><h4><span class="idx">3</span> Delight</h4><p>Using the program is a pleasurable experience.</p><span class="ex">A banking app transfers money in two taps.</span></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>F-C-D</strong>: "Firm Comfy Delight", like a good bed: it does not break, it fits you, you enjoy it.</p></div>
+<p class="small muted">Tools: UML class, component and sequence diagrams, C4 model; StarUML, Visual Paradigm, Enterprise Architect, draw.io. Industry: design reviews and Architecture Decision Records (ADRs) before coding.</p>
+</section>
+
+<section id="modularity">
+<h2 data-short="Modularity"><span class="n">02</span>Modularity: divide and conquer</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Modularity is the degree to which a system is separated into distinct, named, addressable parts (modules) that can be developed separately and recombined to satisfy the requirements.</p></div>
+<ul>
+<li><strong>Why?</strong> A monolithic program (one module) has too many control paths, variables and references to understand.</li>
+<li><strong>Benefits</strong>: lower complexity, parallel team work, reuse, easier testing and maintenance.</li>
+<li><strong>Principle</strong>: split until each module does one understandable job, but not further.</li>
+<li><strong>Good module</strong>: describable in one sentence, hides its internals, talks through a small interface.</li>
+</ul>
+<div class="cards two">
+  <div class="c" style="border-color:var(--trap-line)"><h4>Monolithic</h4><p>One 50,000-LOC module: login, catalog, cart, payment and shipping all tangled together.</p></div>
+  <div class="c" style="border-color:var(--key-line)"><h4>Modular</h4><p>Six cohesive modules with clear interfaces.</p><div class="flow" style="margin:.5rem 0 0"><span>Auth</span><span>Catalog</span><span>Cart</span><span>Payment</span><span>Shipping</span><span>Notify</span></div></div>
+</div>
+<h3>The trade-off: how many modules?</h3>
+<div class="calc" id="mod">
+  <div class="head"><strong>Slider: module count vs cost</strong><span class="tag">Illustrative model</span></div>
+  <div class="body">
+    <label class="field">Number of modules: <b class="mono" id="mod-n">4</b><input type="range" id="mod-r" min="1" max="20" value="4"></label>
+    <svg id="mod-svg" viewBox="0 0 360 200" role="img" aria-label="Cost curves: development cost falls, integration cost rises, total is U-shaped"></svg>
+    <div class="out" id="mod-out"></div>
+    <p class="small muted" style="margin-top:.6rem">Curves use 100/n for development and 5n for integration so the minimum lands near 4 to 5 modules, like the slide. The interface count n(n&minus;1)/2 is exact.</p>
+  </div>
+</div>
+<ul>
+<li><strong>Under-modularity</strong>: few huge modules &rarr; each is costly to build, test and understand.</li>
+<li><strong>Over-modularity</strong>: many tiny modules &rarr; interface, integration and communication cost explodes.</li>
+<li>As modules increase, per-module effort falls but integration effort rises. The optimal region M is where total cost is minimum (about 4 to 5 modules on the slide).</li>
+<li>Rule of thumb: one module = one responsibility that a developer can fully grasp.</li>
+</ul>
+<div class="box real"><span class="lbl">Real life</span><p>Large e-commerce and streaming platforms split into hundreds of independently deployable services. Teams that over-split into "nano-services" often re-merge them to cut network and deployment overhead.</p></div>
+</section>
+
+<section id="independence">
+<h2 data-short="Cohesion and coupling"><span class="n">03</span>Functional independence: cohesion and coupling</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>Functional independence: each module addresses one sub-function and has a simple interface with the rest of the program. It is judged by two criteria: cohesion (functional strength inside ONE module, aim HIGH) and coupling (interdependence BETWEEN modules, aim LOW).</p></div>
+<h3>Cohesion, worst to best</h3>
+<figure class="fig">
+<svg viewBox="0 0 360 120" role="img" aria-label="Seven cohesion types from coincidental (worst) to functional (best)">
+  <g font-size="8" text-anchor="middle" font-weight="600">
+  <rect x="2" y="30" width="48" height="56" class="f-trap"/><text x="26" y="52">Coinci-</text><text x="26" y="62">dental</text>
+  <rect x="52" y="30" width="48" height="56" class="f-trap" opacity=".75"/><text x="76" y="56">Logical</text>
+  <rect x="102" y="30" width="48" height="56" class="f-sunk"/><text x="126" y="56">Temporal</text>
+  <rect x="152" y="30" width="48" height="56" class="f-sunk"/><text x="176" y="52">Proce-</text><text x="176" y="62">dural</text>
+  <rect x="202" y="30" width="48" height="56" class="f-sunk"/><text x="226" y="52">Commu-</text><text x="226" y="62">nicational</text>
+  <rect x="252" y="30" width="48" height="56" class="f-key" opacity=".7"/><text x="276" y="52">Sequen-</text><text x="276" y="62">tial</text>
+  <rect x="302" y="30" width="56" height="56" class="f-key"/><text x="330" y="56">Functional</text></g>
+  <g font-size="7" text-anchor="middle" class="t-muted"><text x="26" y="78">unrelated</text><text x="76" y="78">same category</text><text x="126" y="78">same time</text><text x="176" y="78">one sequence</text><text x="226" y="78">same data</text><text x="276" y="78">out &rarr; in</text><text x="330" y="78">one thing</text></g>
+  <text x="4" y="20" font-size="9" fill="var(--bad)" font-weight="700">LOW (worst)</text><text x="356" y="20" font-size="9" text-anchor="end" fill="var(--ok)" font-weight="700">HIGH (best)</text>
+  <path d="M10,104 H350" class="s-ink" stroke-width="1.4"/><path d="M342,99 L352,104 L342,109" class="s-ink" stroke-width="1.4"/>
+  <text x="180" y="117" font-size="8" text-anchor="middle" class="t-muted">stronger cohesion</text>
+</svg>
+</figure>
+<div class="tscroll"><table>
+<tr><th>Cohesion</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>Coincidental</td><td>Unrelated tasks lumped together</td><td>A "Utils" class with tax, email and date code</td></tr>
+<tr><td>Logical</td><td>Same category of task</td><td>All I/O in one module</td></tr>
+<tr><td>Temporal</td><td>Run at the same time</td><td>init()</td></tr>
+<tr><td>Procedural</td><td>Follow one control sequence</td><td>Steps of a checkout run in order</td></tr>
+<tr><td>Communicational</td><td>Work on the same data</td><td>Read and print the same customer record</td></tr>
+<tr><td>Sequential</td><td>Output of one is the input of the next</td><td>Parse &rarr; validate &rarr; save</td></tr>
+<tr><td>Functional</td><td>Does exactly one thing</td><td>calculateGPA()</td></tr>
+</table></div>
+<div class="box mem"><span class="lbl">Memory aid (worst to best)</span><p><strong>C-L-T-P-C-S-F</strong>: "Can Lazy Tigers Play Chess Sitting Flat?"</p></div>
+<h3>Coupling, worst to best</h3>
+<div class="tscroll"><table>
+<tr><th>Coupling</th><th>Meaning</th><th>Strength</th></tr>
+<tr><td>Content</td><td>One module edits another's internals</td><td><span class="tag red">worst</span></td></tr>
+<tr><td>Common</td><td>Modules share global data</td><td></td></tr>
+<tr><td>Control</td><td>Pass flags that steer the other's logic</td><td></td></tr>
+<tr><td>Stamp</td><td>Pass a whole record, use only part of it</td><td></td></tr>
+<tr><td>Data</td><td>Pass only the needed parameters</td><td><span class="tag green">best</span></td></tr>
+</table></div>
+<div class="box mem"><span class="lbl">Memory aid (worst to best)</span><p><strong>C-C-C-S-D</strong>: "Cats Can Climb Steep Doors".</p></div>
+<div class="box key"><span class="lbl">Design goal</span><p>HIGH cohesion + LOW coupling &rarr; modules that are easier to test, change and reuse.</p></div>
+<div class="sorter" data-options="Coincidental|Logical|Temporal|Sequential|Communicational|Functional">
+  <div class="head"><strong>Practice: name the cohesion</strong><span class="score"></span></div>
+  <div class="sort" data-a="Functional" data-why="It does exactly one thing."><p class="item">A function that only computes the delivery fee from distance.</p></div>
+  <div class="sort" data-a="Temporal" data-why="Grouped only because they run at the same time."><p class="item">startup(): opens the DB, loads config, clears the cache, starts the logger.</p></div>
+  <div class="sort" data-a="Coincidental" data-why="Unrelated tasks lumped together."><p class="item">Helper class: convertTaka(), sendSMS(), parseDate(), resizeImage().</p></div>
+  <div class="sort" data-a="Sequential" data-why="Each step's output feeds the next step."><p class="item">readCSV() &rarr; cleanRows() &rarr; computeTotals(), each using the previous output.</p></div>
+  <div class="sort" data-a="Logical" data-why="Same category (all printing), chosen by a flag."><p class="item">print(type): prints an invoice, a label or a report depending on type.</p></div>
+  <div class="sort" data-a="Communicational" data-why="Different jobs on the same data."><p class="item">A module that both validates and saves the same Student record.</p></div>
+</div>
+<div class="sorter" data-options="Content|Common|Control|Stamp|Data">
+  <div class="head"><strong>Practice: name the coupling</strong><span class="score"></span></div>
+  <div class="sort" data-a="Content" data-why="It edits another module's internal data."><p class="item">ReportModule directly edits StudentManager.gradeArray[].</p></div>
+  <div class="sort" data-a="Common" data-why="Several classes share and change one global value."><p class="item">Five classes read and write the public static taxRate.</p></div>
+  <div class="sort" data-a="Control" data-why="A flag steers the logic inside the other module."><p class="item">calculate(order, isAdmin) runs different code when isAdmin is true.</p></div>
+  <div class="sort" data-a="Stamp" data-why="A whole record is passed but only one field is used."><p class="item">sendSMS(customer) is given the full Customer object but uses only the phone number.</p></div>
+  <div class="sort" data-a="Data" data-why="Only the needed parameter is passed."><p class="item">sendSMS(phone, text).</p></div>
+</div>
+<h3>From poor to good modular design</h3>
+<div class="cards two">
+<div class="c"><h4>Poor design</h4>
+<pre><code>class OrderManager {
+  public static double taxRate; // global
+  void createOrder(...)   {...}
+  void printInvoicePDF()  {...}
+  void sendSMS(String ph) {...}
+  void saveToMySQL()      {...}
+}
+// Report class writes taxRate directly</code></pre>
+<span class="ex">Low cohesion: business logic, printing, messaging and storage in one class. High coupling: other classes change the shared taxRate (common coupling). A change to SMS or DB code risks breaking order logic.</span></div>
+<div class="c"><h4>Better design</h4>
+<pre><code>class OrderService {
+  OrderService(OrderRepo r, Notifier n)
+  Order createOrder(Cart c)
+}
+class InvoicePrinter { print(Order o) }
+interface Notifier  { send(Message m) }
+interface OrderRepo { save(Order o) }
+class TaxPolicy { double rateFor(Region r) }</code></pre>
+<span class="ex">Functional cohesion: every class does one job. Data coupling: only the needed parameters. Notifier and OrderRepo can be swapped (SMS &rarr; email, MySQL &rarr; Postgres) without touching OrderService.</span></div>
+</div>
+<p class="small muted">Tools: Extract Class, Move Method, Encapsulate Field, Dependency Injection (Spring, .NET DI, Dagger); SOLID principles. Metrics: LCOM for cohesion; CBO, fan-in and fan-out for coupling (SonarQube, NDepend, JDepend, Structure101).</p>
+</section>
+
+<section id="aspects">
+<h2 data-short="Aspects and refactoring"><span class="n">04</span>Aspects (cross-cutting concerns) and refactoring</h2>
+<div class="cards two">
+  <div class="c"><h4>Aspect</h4><p>A concern that cuts across many modules. Requirement A crosscuts B if B cannot be satisfied without taking A into account (every function must log and check security).</p><span class="ex">Solution: write the concern once as an aspect and "weave" it into all modules (Aspect-Oriented Programming: AspectJ, Spring AOP, PostSharp).</span></div>
+  <div class="c"><h4>Refactoring</h4><p>Changing a system so that its external behaviour stays the same while its internal structure improves (remove duplication, simplify, clarify).</p><span class="ex">Common moves: Extract Method/Class, Rename, Move Method, Replace Conditional with Polymorphism. Always keep tests green.</span></div>
+</div>
+<div class="cards two">
+<div class="c"><h4>Before</h4><pre><code>double total() {
+  double t = 0;
+  for (Item i : items)
+    t += i.price*i.qty;
+  if (t > 1000)
+    t = t * 0.95;
+  return t;
+}</code></pre></div>
+<div class="c"><h4>After (Extract Method)</h4><pre><code>double total() {
+  return discount(subtotal());
+}
+double subtotal() {...}
+double discount(double t) {...}</code></pre></div>
+</div>
+<div class="box real"><span class="lbl">Real life</span><p>Logging, security and transactions are handled as aspects in enterprise frameworks. XP teams refactor continuously (the "Boy Scout rule": leave the code cleaner than you found it).</p></div>
+</section>
+
+<section id="ex1">
+<h2 data-short="Exercise 1"><span class="n">05</span>Exercise 1: diagnose and refactor a design</h2>
+<div class="ex-card">
+  <header><h3>StudentManager</h3>
+<pre><code>class StudentManager {
+  void   addStudent(Student s)
+  double calculateGPA(int id)
+  void   printTranscript(int id)
+  void   sendEmailToParent(int id)
+  void   connectToMySQL()
+  void   backupFilesAtMidnight()
+  // every method also writes log.txt
+}
+// ReportModule directly edits StudentManager.gradeArray[]</code></pre>
+  <p>(a) What type of cohesion does the class show? (b) What coupling exists with ReportModule? (c) Which concern is an aspect? (d) Propose a refactored modular design.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>(a)</strong> Coincidental / logical cohesion (LOW): data, calculation, printing, messaging, DB and backup are unrelated jobs.</p>
+    <p><strong>(b)</strong> Content coupling (worst): ReportModule modifies another module's internals. Fix: make gradeArray private and expose getGrades(id) &rarr; data coupling.</p>
+    <p><strong>(c)</strong> Logging is cross-cutting &rarr; one logging aspect or framework (Spring AOP, Log4j).</p>
+    <p><strong>(d)</strong> Split into functionally cohesive classes:</p>
+    <div class="flow"><span>Student</span><span>StudentRepository</span><span>GPACalculator</span><span>TranscriptPrinter</span><span>NotificationService</span><span>BackupScheduler</span></div>
+  </div></details>
+</div>
+</section>
+
+<section id="ui">
+<h2 data-short="UI: why it matters"><span class="n">06</span>User interface design: why it matters</h2>
+<p>UI design creates an effective communication medium between a human and a computer. It identifies interface objects and actions, then turns them into a screen layout that becomes a usable prototype. <strong>To the user, the interface IS the system.</strong></p>
+<div class="cards two">
+  <div class="c"><h4>Typical design errors</h4><p><b>Lack of consistency</b>: Save is Ctrl+S on one screen and F2 on another. <b>Too much memorization</b>: the user must remember product codes. <b>No guidance or help</b>. <b>No context sensitivity</b>: same help text everywhere. <b>Obscure or unfriendly</b>: "Error 0x80004005".</p></div>
+  <div class="c"><h4>A good UI answers "yes" to</h4><p><b>Easy to learn?</b> Time for a new user to finish a task. <b>Easy to use?</b> Task time and error rate of regular users. <b>Easy to understand?</b> The user can predict what each control does.</p></div>
+</div>
+</section>
+
+<section id="golden">
+<h2 data-short="Golden rules"><span class="n">07</span>Theo Mandel's three golden rules</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>1. Place the user in control. 2. Reduce the user's memory load. 3. Make the interface consistent.</p></div>
+<div class="cards">
+  <div class="c"><h4><span class="idx">1</span> Place the user in control</h4><p>Non-forcing modes: enter and exit easily (Esc closes a dialog). Flexible interaction: keyboard, mouse, touch, voice. Interruptible and undoable: Ctrl+Z, drafts are kept. Customizable: macros and shortcuts for experts. Hide technical internals: never type OS commands. Direct manipulation: drag-and-drop, sliders.</p></div>
+  <div class="c"><h4><span class="idx">2</span> Reduce the user's memory load</h4><p>Recognize, don't recall: recent-files list, visual cues. Meaningful defaults: balance shows 0.00, with a reset option. Intuitive shortcuts: Alt+P prints. Real-world metaphors: printer icon, shopping cart. Progressive disclosure: essentials first, "Advanced" later.</p></div>
+  <div class="c"><h4><span class="idx">3</span> Make the interface consistent</h4><p>Meaningful context: titles and breadcrumbs (Home &rsaquo; Courses &rsaquo; CSE451). Consistent across a family: the MS Office ribbon in Word, Excel, PowerPoint. Keep conventions: Ctrl+S always saves. Same look, same action: identical icons, colours and positions.</p></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>Control, Memory, Consistency</strong>: "Users Must Click". User in control, Memory load, Consistent.</p></div>
+<div class="sorter" data-options="User in control|Reduce memory load|Consistent">
+  <div class="head"><strong>Practice: which golden rule fixes it?</strong><span class="score"></span></div>
+  <div class="sort" data-a="Reduce memory load" data-why="A 12-step process to remember is short-term memory overload. Use a wizard, defaults and saved templates (recognize, don't recall)."><p class="item">10 Minute School admins must memorize a 12-step process to generate a report.</p></div>
+  <div class="sort" data-a="Consistent" data-why="Same family, same look and behaviour on every platform."><p class="item">The quiz screen looks and behaves differently on desktop and mobile.</p></div>
+  <div class="sort" data-a="User in control" data-why="Direct interaction: put the control next to the object the user is editing."><p class="item">Teachers cannot find the "publish lesson" button; it is buried in a menu.</p></div>
+  <div class="sort" data-a="User in control" data-why="Interruptible and undoable actions keep the user in control."><p class="item">Deleting a draft order cannot be undone.</p></div>
+  <div class="sort" data-a="Reduce memory load" data-why="Recognize, don't recall: show a picker instead of making users remember codes."><p class="item">Shop staff must type a product code from memory to add an item.</p></div>
+  <div class="sort" data-a="Consistent" data-why="Keep conventions: the same shortcut must do the same thing."><p class="item">Ctrl+S saves on one screen and prints on another.</p></div>
+</div>
+</section>
+
+<section id="ui-analysis">
+<h2 data-short="Interface analysis"><span class="n">08</span>UI design process and interface analysis</h2>
+<p>The UI process is iterative (a spiral): interface analysis and modeling &rarr; interface design &rarr; construction (prototype) &rarr; interface validation, then round again.</p>
+<div class="cards">
+  <div class="c"><h4>Users</h4><p>Who interacts with the system? Skills, education, age, language, frequency of use.</p></div>
+  <div class="c"><h4>Tasks</h4><p>What work do users perform, and in which sequence (workflow)?</p></div>
+  <div class="c"><h4>Content</h4><p>What information is presented, and how is it organized and formatted?</p></div>
+  <div class="c"><h4>Environment</h4><p>Where is it used? Noise, lighting, mobile device, embedded or kiosk system.</p></div>
+</div>
+<div class="box mem"><span class="lbl">Memory aid</span><p><strong>U-T-C-E</strong>: "Users Type Code Everywhere".</p></div>
+<h3>User analysis: know the user</h3>
+<p>Trained professionals, technicians or casual users? Education, age and gender range? Expert typists or keyboard-phobic? Primary language? Daily use or occasional? Domain experts? Do they care about the technology? What is the consequence of a mistake (a bank transfer)?</p>
+<h3>Task analysis and modeling</h3>
+<p>Answers: what work, which tasks and subtasks, which domain objects, in what sequence? Use cases define basic interaction. Task elaboration refines tasks. Object elaboration finds interface objects. Workflow analysis shows multi-role work as a swimlane diagram.</p>
+<figure class="fig">
+<svg viewBox="0 0 360 170" role="img" aria-label="Swimlane diagram for a prescription refill">
+  <defs><marker id="sw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-ink"/></marker></defs>
+  <rect x="2" y="2" width="356" height="52" class="f-box"/><rect x="2" y="56" width="356" height="56" class="f-sunk"/><rect x="2" y="114" width="356" height="52" class="f-box"/>
+  <g font-size="8.5" font-weight="700"><text x="8" y="16">Patient</text><text x="8" y="70">Pharmacist</text><text x="8" y="128">Physician</text></g>
+  <g font-size="8" text-anchor="middle">
+  <rect x="62" y="20" width="62" height="22" rx="10" class="f-box"/><text x="93" y="34">Request refill</text>
+  <rect x="62" y="74" width="62" height="22" rx="10" class="f-box"/><text x="93" y="88">Check record</text>
+  <polygon points="170,85 194,73 218,85 194,97" class="f-acc-t"/><text x="194" y="88" font-size="7">Refills left?</text>
+  <rect x="246" y="74" width="72" height="22" rx="10" class="f-box"/><text x="282" y="88">Fill prescription</text>
+  <rect x="246" y="20" width="72" height="22" rx="10" class="f-key"/><text x="282" y="34">Pick up medicine</text>
+  <rect x="160" y="130" width="68" height="22" rx="10" class="f-box"/><text x="194" y="144">Approve refill</text></g>
+  <g class="s-ink" stroke-width="1.1" marker-end="url(#sw)"><path d="M93,42 V72"/><path d="M124,85 H168"/><path d="M218,85 H244"/><path d="M282,74 V44"/><path d="M194,97 V128"/><path d="M228,141 Q282,141 282,98"/></g>
+  <g font-size="7" class="t-muted"><text x="224" y="80">yes</text><text x="198" y="114">no</text></g>
+</svg>
+<figcaption>Workflow analysis: each role in its own lane. <span class="src">Slide 13</span></figcaption>
+</figure>
+<h3>Analysis of display content</h3>
+<ol>
+<li><strong>Consistent location</strong>: the same data type always in the same place (photo top-right).</li>
+<li><strong>Partition large reports</strong>: paging, tabs or collapsible sections.</li>
+<li><strong>Jump to summary</strong>: dashboards for large collections of data.</li>
+<li><strong>Scale to the device</strong>: responsive layout for smartphones.</li>
+<li><strong>Meaningful colour</strong>: red = error, green = success (never colour alone).</li>
+<li><strong>Clear errors and warnings</strong>: say what went wrong and how to fix it ("Invalid course code. Use the format CSE451.").</li>
+</ol>
+<p>Typography carries a message too: font, size and weight change how content is read.</p>
+</section>
+
+<section id="principles">
+<h2 data-short="Design principles"><span class="n">09</span>Interface design principles (web apps and apps)</h2>
+<div class="cards">
+  <div class="c"><h4>Anticipation</h4><p>Predict the user's next move and offer it.</p></div>
+  <div class="c"><h4>Communication</h4><p>Report the status of every activity (progress bar).</p></div>
+  <div class="c"><h4>Consistency</h4><p>Same navigation, menus, icons and colours on every page.</p></div>
+  <div class="c"><h4>Controlled autonomy</h4><p>Free movement, within the app's navigation conventions.</p></div>
+  <div class="c"><h4>Efficiency</h4><p>Optimize the user's work, not the developer's.</p></div>
+  <div class="c"><h4>Focus</h4><p>Keep content on the task at hand; cut clutter.</p></div>
+  <div class="c"><h4>Fitts's law</h4><p>Time to hit a target depends on its distance and size.</p></div>
+  <div class="c"><h4>Human interface objects</h4><p>Reuse proven components (Bootstrap, Material UI).</p></div>
+  <div class="c"><h4>Latency reduction</h4><p>Let users keep working while operations finish.</p></div>
+  <div class="c"><h4>Learnability</h4><p>Minimal learning time; minimal relearning on return.</p></div>
+  <div class="c"><h4>Work product integrity</h4><p>Auto-save forms so an error never loses work.</p></div>
+  <div class="c"><h4>Readability</h4><p>Legible size, contrast and language for all users.</p></div>
+  <div class="c"><h4>Track state</h4><p>Store state so users can log off and resume later.</p></div>
+  <div class="c"><h4>Visible navigation</h4><p>Bring work to the user instead of long scrolling.</p></div>
+  <div class="c"><h4>White space</h4><p>Don't fear white space; emphasize content over style.</p></div>
+  <div class="c"><h4>Layout flow</h4><p>Organize elements from top-left to bottom-right.</p></div>
+</div>
+<div class="box real"><span class="lbl">Real life</span><p>Auto-save (Google Docs), progress indicators (file uploads) and resumable sessions (online banking) apply these daily.</p></div>
+</section>
+
+<section id="fitts">
+<h2 data-short="Fitts's law"><span class="n">10</span>Fitts's law: sizing and placing targets</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>The time to acquire a target is a function of the distance to it and its size.</p><p class="mono">T = a + b &middot; log<sub>2</sub>(1 + D / W)</p></div>
+<ul class="small"><li><b>T</b>: movement time to reach the target (s)</li><li><b>D</b>: distance from start to target centre</li><li><b>W</b>: target width along the direction of motion</li><li><b>a, b</b>: device/user constants from experiments</li><li><b>log<sub>2</sub>(1 + D/W)</b>: index of difficulty (ID) in bits</li></ul>
+<div class="calc" id="fit">
+  <div class="head"><strong>Calculator: compare two buttons</strong><span class="tag">Slide 16 and Exercise 2</span></div>
+  <div class="body">
+    <div class="fields">
+      <label class="field">Preset<select id="ft-p"><option value="s">Slide example</option><option value="e">Exercise 2 login</option></select></label>
+      <label class="field">a (s)<input type="number" id="ft-a" value="0.1" step="0.01"></label>
+      <label class="field">b (s/bit)<input type="number" id="ft-b" value="0.15" step="0.01"></label>
+      <label class="field">A: distance D (px)<input type="number" id="ft-d1" value="300"></label>
+      <label class="field">A: width W (px)<input type="number" id="ft-w1" value="20"></label>
+      <label class="field">B: distance D (px)<input type="number" id="ft-d2" value="300"></label>
+      <label class="field">B: width W (px)<input type="number" id="ft-w2" value="100"></label>
+    </div>
+    <svg id="ft-svg" viewBox="0 0 360 110" role="img" aria-label="Start point and two target buttons drawn to scale"></svg>
+    <div class="out" id="ft-out"></div>
+  </div>
+</div>
+<div class="box key"><span class="lbl">Worked example from the slide (a = 0.1 s, b = 0.15 s/bit, D = 300 px)</span><p class="mono small">A (W = 20): ID = log2(1 + 300/20) = log2 16 = 4 bits &rarr; T = 0.1 + 0.15&times;4 = 0.70 s<br>B (W = 100): ID = log2(1 + 300/100) = log2 4 = 2 bits &rarr; T = 0.1 + 0.15&times;2 = 0.40 s</p><p>The larger button B is selected about 43% faster.</p></div>
+<div class="box real"><span class="lbl">Real life</span><p>Menus on screen edges (effectively infinite width), large "Buy now" buttons, and context menus at the cursor all exploit Fitts's law. The bKash "Send Money" tile is large and near the thumb for the same reason.</p></div>
+<h3>Mapping user objectives: wireframing</h3>
+<p>List what users must achieve, then map each objective to a menu item and a screen region. A <strong>wireframe</strong> is a low-fidelity skeleton that shows WHERE content and controls go, without colours or styling.</p>
+<div class="tscroll"><table><tr><th>#</th><th>Online bookstore objective</th><th>Where on the wireframe</th></tr>
+<tr><td>1</td><td>Search for a book</td><td>Search bar in the header</td></tr><tr><td>2</td><td>Browse by category</td><td>Categories menu</td></tr>
+<tr><td>3</td><td>Review and pay for the cart</td><td>Cart menu + cart panel with subtotal and [Checkout]</td></tr><tr><td>4</td><td>Track an order</td><td>Track order menu</td></tr><tr><td>5</td><td>Manage my account</td><td>Account menu</td></tr></table></div>
+<p class="small muted">Paper sketches &rarr; low-fi wireframes (Balsamiq, Moqups) &rarr; mid-fi (Figma, Axure RP) &rarr; hi-fi mockup &rarr; clickable prototype. Stakeholders sign off wireframes before visual design and coding, because changing a box is cheaper than changing code.</p>
+</section>
+
+<section id="ex2">
+<h2 data-short="Exercise 2"><span class="n">11</span>Exercise 2: evaluate and fix a login screen</h2>
+<div class="ex-card">
+  <header><h3>University portal login screen</h3><p>1. Student ID must be typed as "IUB-2021-0457"; no format hint. 2. A wrong password shows "ERR_403: AUTH_FAIL" and clears all fields. 3. No "Forgot password?" or help link. 4. The login button is tiny and grey in the far corner; everywhere else the main button is large, green and below the form. 5. A 20-field registration form loses all data on session timeout.<br>(a) Map each problem to the rule or principle it violates and propose a fix. (b) Fitts's law (a = 0.1 s, b = 0.15 s/bit): the button is at D = 480 px with W = 32 px; the redesign puts it at D = 192 px with W = 64 px. Compute both times.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <div class="tscroll"><table><tr><th>#</th><th>Violated rule / principle</th><th>Fix</th></tr>
+    <tr><td>1</td><td>Reduce memory load</td><td>Placeholder "IUB-YYYY-NNNN", auto-insert prefix</td></tr>
+    <tr><td>2</td><td>Communication; work integrity</td><td>"Incorrect password, try again"; keep ID filled</td></tr>
+    <tr><td>3</td><td>User in control; guidance</td><td>Add "Forgot password?" and help links</td></tr>
+    <tr><td>4</td><td>Consistency; Fitts's law</td><td>Same large green button below the fields</td></tr>
+    <tr><td>5</td><td>Work integrity; track state</td><td>Auto-save draft, warn before timeout</td></tr></table></div>
+    <p class="mono small">Old: T = 0.1 + 0.15&middot;log2(1 + 480/32) = 0.1 + 0.15&middot;4 = 0.70 s<br>New: T = 0.1 + 0.15&middot;log2(1 + 192/64) = 0.1 + 0.15&middot;2 = 0.40 s</p>
+    <p>The redesign is about 43% faster to hit.</p>
+  </div></details>
+</div>
+</section>
+
+<section id="metrics">
+<h2 data-short="Measure, metric, indicator"><span class="n">12</span>Product metrics: measure, metric, indicator</h2>
+<div class="cards">
+  <div class="c"><h4><span class="idx">1</span> Measure</h4><p>A quantitative indication of extent, amount or size of an attribute.</p><span class="ex">24 defects found in review</span></div>
+  <div class="c"><h4><span class="idx">2</span> Metric</h4><p>The degree to which a system or component possesses an attribute.</p><span class="ex">2.4 defects per KLOC</span></div>
+  <div class="c"><h4><span class="idx">3</span> Indicator</h4><p>A metric (or combination) that gives insight to adjust the product or process.</p><span class="ex">Density rising &rarr; add code reviews</span></div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>A measure is a raw count (24 defects). A metric relates it to something (per KLOC). An indicator tells you what to do. Give one example of each.</p></div>
+<div class="tscroll"><table><tr><th>Phase</th><th>Analysis</th><th>Design</th><th>Code</th><th>Testing</th><th>Maintenance</th></tr>
+<tr><td>Metrics</td><td>Function Points (FP)</td><td>Whitmire OO; CK suite; Lorenz and Kidd</td><td>Halstead; LOC; cyclomatic complexity</td><td>Binder testability: LCOM, PAP, PAD, NOR</td><td>Software Maturity Index (SMI)</td></tr></table></div>
+<p>Why measure? "You can't control what you can't measure" (Tom DeMarco). Metrics turn opinions about quality into numbers we can compare, estimate with, and act on. In CI/CD, quality gates block a merge when metrics (complexity, duplication, coverage) cross thresholds.</p>
+</section>
+
+<section id="fp">
+<h2 data-short="Function points"><span class="n">13</span>Function points</h2>
+<div class="box exact"><span class="lbl">Exam text</span><p>The Function Point (FP) metric (Albrecht, 1979) measures the functionality delivered by a system, independent of language, from countable information-domain values and a complexity assessment.</p></div>
+<div class="cards">
+  <div class="c"><h4>EI: External Inputs</h4><p>Input transactions that update internal files.</p><span class="ex">add student</span></div>
+  <div class="c"><h4>EO: External Outputs</h4><p>Derived data sent to the user.</p><span class="ex">printed report, invoice</span></div>
+  <div class="c"><h4>EQ: External Inquiries</h4><p>Retrieve information without updating files.</p><span class="ex">search</span></div>
+  <div class="c"><h4>ILF: Internal Logical Files</h4><p>A data group maintained inside the system.</p><span class="ex">order file</span></div>
+  <div class="c"><h4>EIF: External Interface Files</h4><p>A data group owned by another application but referenced.</p><span class="ex">exchange rates</span></div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>EO vs EQ: an output has <em>derived</em> data (a calculated report, an invoice). An inquiry just <em>retrieves</em> (search, view status). ILF vs EIF: who maintains the data? Inside the boundary = ILF. Owned by another system = EIF.</p></div>
+<h3>Weights</h3>
+<div class="tscroll"><table><tr><th>Information domain value</th><th class="num">Simple</th><th class="num">Average</th><th class="num">Complex</th></tr>
+<tr><td>External Inputs (EIs)</td><td class="num">3</td><td class="num">4</td><td class="num">6</td></tr>
+<tr><td>External Outputs (EOs)</td><td class="num">4</td><td class="num">5</td><td class="num">7</td></tr>
+<tr><td>External Inquiries (EQs)</td><td class="num">3</td><td class="num">4</td><td class="num">6</td></tr>
+<tr><td>Internal Logical Files (ILFs)</td><td class="num">7</td><td class="num">10</td><td class="num">15</td></tr>
+<tr><td>External Interface Files (EIFs)</td><td class="num">5</td><td class="num">7</td><td class="num">10</td></tr></table></div>
+<div class="box mem"><span class="lbl">Memory aid for the weights</span><p>Inputs and inquiries are the same: <strong>3-4-6</strong>. Outputs are one more: <strong>4-5-7</strong>. ILF: <strong>7-10-15</strong>. EIF: <strong>5-7-10</strong>.</p></div>
+<div class="box exact"><span class="lbl">Exam text: the formula</span><p class="mono">Count total = &Sigma; (count &times; weight)<br>FP = Count total &times; [0.65 + 0.01 &times; &Sigma;Fi]</p><p>Fi (i = 1..14) are value adjustment factors, each rated 0 (no influence) to 5 (essential). The VAF ranges 0.65 to 1.35, which is &plusmn;35%.</p></div>
+<p class="small">The 14 factors: backup and recovery; data communications; distributed processing; performance critical; heavily used environment; online data entry; multi-screen input; ILFs updated online; complex inputs/outputs/queries; complex internal processing; reusable code; conversion and installation; multiple installations; ease of change and use. Scale: 0 none, 1 incidental, 2 moderate, 3 average, 4 significant, 5 essential.</p>
+<div class="calc" id="fpc">
+  <div class="head"><strong>Calculator: function points and effort</strong><span class="tag">Library example and Exercise 3</span></div>
+  <div class="body">
+    <div class="fields"><label class="field">Preset<select id="fp-p"><option value="lib">Library system (slide 22)</option><option value="food">Food ordering (Exercise 3)</option></select></label></div>
+    <div class="tscroll"><table id="fp-t"><tr><th>Value</th><th>Count</th><th>Complexity</th><th class="num">Weight</th><th class="num">Total</th></tr></table></div>
+    <div class="fields">
+      <label class="field">Sum of 14 factors &Sigma;Fi (0 to 70)<input type="number" id="fp-f" value="42" min="0" max="70"></label>
+      <label class="field">Productivity (FP per person-month)<input type="number" id="fp-pr" value="7" min="1"></label>
+      <label class="field">Team size<input type="number" id="fp-team" value="4" min="1"></label>
+    </div>
+    <div class="out" id="fp-out"></div>
+  </div>
+</div>
+<div class="ex-card">
+  <header><h3>Worked example: library management system (slide 22)</h3></header>
+  <div class="inner">
+    <div class="tscroll"><table><tr><th>Value</th><th>Items</th><th class="num">Count</th><th>Complexity</th><th class="num">Weight</th><th class="num">Total</th></tr>
+    <tr><td>EI</td><td>Add member, add book, issue book, return book</td><td class="num">4</td><td>Average</td><td class="num">4</td><td class="num">16</td></tr>
+    <tr><td>EO</td><td>Overdue report, fine receipt, monthly statistics</td><td class="num">3</td><td>Average</td><td class="num">5</td><td class="num">15</td></tr>
+    <tr><td>EQ</td><td>Search book, check member status</td><td class="num">2</td><td>Simple</td><td class="num">3</td><td class="num">6</td></tr>
+    <tr><td>ILF</td><td>Member, Book, Loan files</td><td class="num">3</td><td>Average</td><td class="num">10</td><td class="num">30</td></tr>
+    <tr><td>EIF</td><td>University student database</td><td class="num">1</td><td>Simple</td><td class="num">5</td><td class="num">5</td></tr>
+    <tr class="total"><td colspan="5">Count total</td><td class="num">72</td></tr></table></div>
+    <p>All 14 factors rated "average" (3) &rarr; &Sigma;Fi = 42 &rarr; VAF = 0.65 + 0.01 &times; 42 = <strong>1.07</strong>. FP = 72 &times; 1.07 = 77.04 &asymp; <strong>77 FP</strong>. At 7 FP per person-month, effort &asymp; 77 / 7 = <strong>11 person-months</strong>.</p>
+  </div>
+</div>
+</section>
+
+<section id="oo-metrics">
+<h2 data-short="OO and code metrics"><span class="n">14</span>Design, class and code metrics</h2>
+<h3>Whitmire's nine characteristics of OO design</h3>
+<div class="cards">
+  <div class="c"><h4>Size</h4><p>Volume, length and functionality (number of classes and operations).</p></div>
+  <div class="c"><h4>Complexity</h4><p>How the classes of a design are interrelated.</p></div>
+  <div class="c"><h4>Coupling</h4><p>Physical connections between design elements (associations, messages).</p></div>
+  <div class="c"><h4>Cohesion</h4><p>Degree to which operations work together for one well-defined purpose.</p></div>
+  <div class="c"><h4>Sufficiency</h4><p>The abstraction has the features the current application requires.</p></div>
+  <div class="c"><h4>Completeness</h4><p>Has all features needed in any context; indicates reuse potential.</p></div>
+  <div class="c"><h4>Primitiveness</h4><p>Degree to which an operation or class is atomic (not composed of others).</p></div>
+  <div class="c"><h4>Similarity</h4><p>How alike two or more classes are in structure, function, behaviour, purpose.</p></div>
+  <div class="c"><h4>Volatility</h4><p>Likelihood that a design component will change.</p></div>
+</div>
+<div class="box trap"><span class="lbl">Exam trap</span><p>Sufficiency = features the <em>current</em> application needs. Completeness = features needed in <em>any</em> context (reuse).</p></div>
+<h3>CK metrics suite (Chidamber and Kemerer)</h3>
+<div class="tscroll"><table><tr><th>Metric</th><th>Meaning</th><th>Prefer</th></tr>
+<tr><td>WMC</td><td>Weighted Methods per Class: &Sigma; complexity of its methods</td><td>Low</td></tr>
+<tr><td>DIT</td><td>Depth of Inheritance Tree: longest path from class to root</td><td>Moderate</td></tr>
+<tr><td>NOC</td><td>Number of Children: immediate subclasses</td><td>Moderate</td></tr>
+<tr><td>CBO</td><td>Coupling Between Object classes: collaborating classes</td><td>Low</td></tr>
+<tr><td>LCOM</td><td>Lack of Cohesion in Methods: methods sharing no attributes</td><td>Low</td></tr></table></div>
+<figure class="fig">
+<svg viewBox="0 0 360 160" role="img" aria-label="Shape hierarchy: Shape has Circle and Polygon; Polygon has Triangle and Rectangle; Rectangle has Square">
+  <g font-size="9" text-anchor="middle" font-weight="600">
+  <rect x="150" y="6" width="60" height="22" rx="4" class="f-acc-t"/><text x="180" y="21">Shape</text>
+  <rect x="60" y="50" width="60" height="22" rx="4" class="f-box"/><text x="90" y="65">Circle</text>
+  <rect x="240" y="50" width="60" height="22" rx="4" class="f-box"/><text x="270" y="65">Polygon</text>
+  <rect x="180" y="94" width="60" height="22" rx="4" class="f-box"/><text x="210" y="109">Triangle</text>
+  <rect x="290" y="94" width="66" height="22" rx="4" class="f-box"/><text x="323" y="109">Rectangle</text>
+  <rect x="290" y="134" width="66" height="22" rx="4" class="f-key"/><text x="323" y="149">Square</text></g>
+  <g class="s-ink" stroke-width="1.1"><path d="M180,28 V39 H90 V50 M180,39 H270 V50 M270,72 V83 H210 V94 M270,83 H323 V94 M323,116 V134"/></g>
+  <text x="10" y="120" font-size="9">DIT(Square) = 3</text><text x="10" y="134" font-size="9">NOC(Shape) = 2</text><text x="10" y="148" font-size="9">NOC(Polygon) = 2</text>
+</svg>
+</figure>
+<p><strong>Lorenz and Kidd.</strong> Class-oriented: class size (operations + attributes); NOO, operations overridden by a subclass; NOA, operations added by a subclass. Operation-oriented: average operation size (OSavg); operation complexity (OC); average number of parameters per operation (NPavg).</p>
+<h3>Halstead's software science</h3>
+<div class="tscroll"><table><tr><th>Symbol</th><th>Meaning</th><th>Measure</th><th>Formula</th></tr>
+<tr><td>n1</td><td>distinct operators</td><td>Program length</td><td class="mono">N = N1 + N2</td></tr>
+<tr><td>n2</td><td>distinct operands</td><td>Vocabulary</td><td class="mono">n = n1 + n2</td></tr>
+<tr><td>N1</td><td>total operator occurrences</td><td>Volume (bits)</td><td class="mono">V = N &times; log2 n</td></tr>
+<tr><td>N2</td><td>total operand occurrences</td><td>Difficulty</td><td class="mono">D = (n1 / 2) &times; (N2 / n2)</td></tr>
+<tr><td></td><td></td><td>Effort</td><td class="mono">E = D &times; V</td></tr>
+<tr><td></td><td></td><td>Time (seconds)</td><td class="mono">T = E / 18</td></tr></table></div>
+<div class="calc" id="hal">
+  <div class="head"><strong>Calculator: Halstead from one statement</strong><span class="tag">Slide 25 and Exercise 4C</span></div>
+  <div class="body">
+    <label class="field">Statement (identifiers and numbers are operands; "( )" counts as one operator; ";" is an operator)<input type="text" id="hl-in" value="z = x + y * x;"></label>
+    <div class="out" id="hl-out"></div>
+    <p class="small muted" style="margin-top:.6rem">Try <code>avg = (a + b + c) / 3;</code> from Exercise 4.</p>
+  </div>
+</div>
+<div class="box key"><span class="lbl">Worked example: z = x + y * x;</span><p class="mono small">Operators {=, +, *, ;}: n1 = 4, N1 = 4. Operands {z, x, y}: n2 = 3, N2 = 4.<br>N = 4 + 4 = 8; n = 4 + 3 = 7<br>V = 8 &times; log2 7 = 8 &times; 2.807 = 22.46 bits<br>D = (4/2) &times; (4/3) = 2.67<br>E = 2.67 &times; 22.46 &asymp; 59.9; T = 59.9 / 18 &asymp; 3.3 s</p></div>
+<p class="small muted">Halstead Volume feeds the Maintainability Index used by Visual Studio and many defect-prediction models. Tools: Radon (Python), Understand, lizard.</p>
+</section>
+
+<section id="test-metrics">
+<h2 data-short="Testing and SMI"><span class="n">15</span>Metrics for testing and maintenance</h2>
+<h3>Binder's design metrics that affect testability</h3>
+<div class="cards two">
+  <div class="c"><h4>LCOM</h4><p>Higher &rarr; more states to test per class.</p></div>
+  <div class="c"><h4>PAP</h4><p>% public and protected attributes &rarr; more side effects.</p></div>
+  <div class="c"><h4>PAD</h4><p>Public access to data &rarr; encapsulation broken.</p></div>
+  <div class="c"><h4>NOR</h4><p>More root classes &rarr; more hierarchies to test.</p></div>
+  <div class="c"><h4>NOC / DIT</h4><p>Deeper, wider trees &rarr; retest inherited methods.</p></div>
+</div>
+<h3>Software Maturity Index (IEEE Std 982.1-1988)</h3>
+<div class="box exact"><span class="lbl">Exam text</span><p class="mono">SMI = [MT &minus; (Fa + Fc + Fd)] / MT</p><p>MT = modules in the current release; Fc = changed; Fa = added; Fd = deleted from the previous release. As SMI approaches 1.0 the product is stabilizing.</p></div>
+<div class="bars" aria-hidden="true">
+  <div class="bar"><span class="val">0.62</span><div class="fill soft" style="height:62%"></div></div>
+  <div class="bar"><span class="val">0.71</span><div class="fill soft" style="height:71%"></div></div>
+  <div class="bar"><span class="val">0.85</span><div class="fill" style="height:85%"></div></div>
+  <div class="bar"><span class="val">0.90</span><div class="fill" style="height:90%"></div></div>
+  <div class="bar"><span class="val">0.95</span><div class="fill acc" style="height:95%"></div></div>
+</div>
+<div class="bar-labels"><span>R1</span><span>R2</span><span>R3</span><span>R4</span><span>R5</span></div>
+<div class="calc" id="smi">
+  <div class="head"><strong>Calculator: SMI for two releases</strong><span class="tag">Exercise 4B</span></div>
+  <div class="body">
+    <div class="tscroll"><table><tr><th>Release</th><th>MT</th><th>Fa added</th><th>Fc changed</th><th>Fd deleted</th><th class="num">SMI</th></tr>
+    <tr><td>3.0</td><td><input type="number" class="sm" value="940"></td><td><input type="number" class="sm" value="40"></td><td><input type="number" class="sm" value="90"></td><td><input type="number" class="sm" value="12"></td><td class="num" data-s></td></tr>
+    <tr><td>3.1</td><td><input type="number" class="sm" value="960"></td><td><input type="number" class="sm" value="25"></td><td><input type="number" class="sm" value="40"></td><td><input type="number" class="sm" value="5"></td><td class="num" data-s></td></tr></table></div>
+    <div class="verdict" id="smi-v"></div>
+  </div>
+</div>
+<div class="box key"><span class="lbl">Slide example</span><p>MT = 120, Fa = 6, Fc = 10, Fd = 2 &rarr; SMI = (120 &minus; 18) / 120 = <strong>0.85</strong>.</p></div>
+</section>
+
+<section id="exercises">
+<h2 data-short="Exercises 3 and 4"><span class="n">16</span>Exercises 3 and 4 from the slides</h2>
+<div class="ex-card">
+  <header><h3>Exercise 3: function points for a food ordering app</h3><p>6 EIs (register, add restaurant, place order, cancel order, add menu item, update profile), average. 4 EOs (receipt, daily sales report, delivery invoice, monthly revenue chart), complex. 5 EQs (search restaurant, view menu, track order, order history, view offers), simple. 4 ILFs (User, Menu, Order, Payment log), average. 2 EIFs (payment gateway, map service data), average. &Sigma;Fi = 46. Find (a) count total (b) VAF (c) FP (d) effort at 8 FP per person-month and duration for a team of 4.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <div class="tscroll"><table><tr><th>Value</th><th class="num">Count</th><th class="num">Weight</th><th class="num">Total</th></tr>
+    <tr><td>EI (average)</td><td class="num">6</td><td class="num">4</td><td class="num">24</td></tr>
+    <tr><td>EO (complex)</td><td class="num">4</td><td class="num">7</td><td class="num">28</td></tr>
+    <tr><td>EQ (simple)</td><td class="num">5</td><td class="num">3</td><td class="num">15</td></tr>
+    <tr><td>ILF (average)</td><td class="num">4</td><td class="num">10</td><td class="num">40</td></tr>
+    <tr><td>EIF (average)</td><td class="num">2</td><td class="num">7</td><td class="num">14</td></tr>
+    <tr class="total"><td colspan="3">(a) Count total</td><td class="num">121</td></tr></table></div>
+    <p>(b) VAF = 0.65 + 0.01 &times; 46 = <strong>1.11</strong>. (c) FP = 121 &times; 1.11 = 134.31 &asymp; <strong>134 FP</strong>. (d) Effort = 134.31 / 8 = 16.8 &asymp; <strong>17 person-months</strong>. Duration = 16.8 / 4 &asymp; <strong>4.2 months</strong>.</p>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><h3>Exercise 4: CK metrics, SMI and Halstead</h3><p>A: Vehicle has children Truck, Car, Bike; Car has children ElectricCar and SportsCar. Car has 5 methods with complexity 1, 2, 1, 3, 1. Find DIT(ElectricCar), NOC(Vehicle), NOC(Car), WMC(Car). B: Release 3.0: MT = 940, Fc = 90, Fa = 40, Fd = 12. Release 3.1: MT = 960, Fc = 40, Fa = 25, Fd = 5. Compute both SMIs; is the product stabilizing? C: For <code>avg = (a + b + c) / 3;</code> (count "( )" as one operator and ";" as an operator), compute n1, n2, N1, N2, N, n, V, D and E.</p></header>
+  <details><summary>Full solution</summary><div class="sol">
+    <p><strong>A</strong> DIT(ElectricCar) = 2 (Vehicle &rarr; Car &rarr; ElectricCar). NOC(Vehicle) = 3. NOC(Car) = 2. WMC(Car) = 1+2+1+3+1 = 8.</p>
+    <p><strong>B</strong> SMI(3.0) = [940 &minus; (40+90+12)] / 940 = 798 / 940 = <strong>0.849</strong>. SMI(3.1) = [960 &minus; (25+40+5)] / 960 = 890 / 960 = <strong>0.927</strong>. SMI rises toward 1.0 &rarr; stabilizing.</p>
+    <p><strong>C</strong> Operators {=, ( ), +, /, ;}: n1 = 5, N1 = 6. Operands {avg, a, b, c, 3}: n2 = 5, N2 = 5. N = 11, n = 10. V = 11 &times; log2 10 = 36.5 bits. D = (5/2) &times; (5/5) = 2.5. E = 2.5 &times; 36.5 &asymp; 91.4.</p>
+  </div></details>
+</div>
+</section>
+
+<section id="exam">
+<h2 data-short="Exam questions"><span class="n">17</span>Exam questions with model answers</h2>
+<p>The course's own answer template uses a 10 Minute School (10ms) case. Its structure is what examiners expect: a table that names the concept, the problem in the case, and the fix.</p>
+<div class="ex-card">
+  <header><span class="marks">10 marks</span><h3>Case study: 10 Minute School platform</h3><p>Students cannot track course progress (it breaks). Admins need 12 steps to generate a report. There is no "pick up where you left off". The admin dashboard is one giant module for users, content, payments and reports. Teachers cannot find the "publish lesson" button. The quiz looks different on desktop and mobile. (a) Apply Kapor's three design qualities. [3] (b) Explain why the monolithic dashboard is a modularity problem, propose a redesign, and discuss the trade-off in the number of modules. [4] (c) Apply Mandel's three golden rules. [3]</p></header>
+  <details><summary>Model answer (from the course template)</summary><div class="sol">
+    <h4>(a) Kapor's three design qualities</h4>
+    <div class="tscroll"><table><tr><th>Quality</th><th>Definition</th><th>10ms problem</th><th>Fix</th></tr>
+    <tr><td>Firmness</td><td>No bugs that inhibit its function</td><td>Students cannot track course progress: a core function is broken</td><td>Reliable progress tracking (last-watched lesson saved to server); no crashes, no data loss on logout</td></tr>
+    <tr><td>Commodity</td><td>Suitable for its intended purpose</td><td>Admins need 12 steps to generate a report</td><td>Report generation in 2 to 3 clicks with pre-set templates</td></tr>
+    <tr><td>Delight</td><td>Using the program should be pleasurable</td><td>No smooth "pick up where you left off"</td><td>A "Continue Learning" button with a progress bar per course</td></tr></table></div>
+    <h4>(b) Modularity</h4>
+    <p>The dashboard is monolithic: one module handles user management, content, payments AND reports. It has <b>low cohesion</b> (many unrelated jobs) and <b>high coupling</b> (changing payment logic can break reporting). Understanding it needs all four domains at once, which makes it intellectually unmanageable.</p>
+    <p><b>Redesign</b>: four modules: User Management, Content, Payment, Report. Each has one responsibility (high cohesion) and they talk through defined interfaces (low coupling).</p>
+    <p><b>Trade-off</b>: too few modules = low integration cost but high complexity; adding "batch enrollment" touches the whole monolith. Too many = each is simple, but integration cost rises: 20 modules give 20 &times; 19 / 2 = 190 possible interfaces. The optimum minimizes development + integration cost; four domain-aligned modules is a reasonable balance.</p>
+    <h4>(c) Golden rules</h4>
+    <div class="tscroll"><table><tr><th>Rule</th><th>10ms problem</th><th>Guideline applied</th></tr>
+    <tr><td>Place the user in control</td><td>Teachers cannot find "publish lesson"</td><td>Design for direct interaction with objects on screen: put Publish next to the lesson being edited</td></tr>
+    <tr><td>Reduce the user's memory load</td><td>12-step report process to memorize</td><td>Recognize, don't recall: a wizard with a progress indicator (Step 3 of 5), pre-filled defaults (last month), saved templates</td></tr>
+    <tr><td>Make the interface consistent</td><td>Quiz differs on desktop and mobile</td><td>Consistent across a family of applications: same layout, buttons, colours; show "Question 4 of 10" on both for meaningful context</td></tr></table></div>
+  </div></details>
+</div>
+<div class="ex-card">
+  <header><span class="marks">5 marks</span><h3>Practice: function points for "Shohoz bus ticketing"</h3><p>EIs: book ticket, cancel ticket, add trip (average). EOs: e-ticket, operator sales report (average). EQs: search trips, check booking (simple). ILFs: Trip, Booking, Customer (average). EIF: bKash payment status (simple). &Sigma;Fi = 38. Productivity 6 FP per person-month. Compute FP and effort.</p></header>
+  <details><summary>Model answer</summary><div class="sol">
+    <p class="mono small">EI 3 &times; 4 = 12; EO 2 &times; 5 = 10; EQ 2 &times; 3 = 6; ILF 3 &times; 10 = 30; EIF 1 &times; 5 = 5.<br>Count total = 63. VAF = 0.65 + 0.38 = 1.03. FP = 63 &times; 1.03 = 64.89 &asymp; 65 FP.<br>Effort = 64.89 / 6 &asymp; 10.8 person-months.</p>
+    <p>State why FP is used: it is language-independent and can be counted from requirements before any code exists.</p>
+  </div></details>
+</div>
+</section>
+
+<section id="quiz">
+<h2 data-short="Quiz"><span class="n">18</span>Quiz</h2>
+<div class="quiz" id="q4">
+  <div class="mcq"><p class="q">Kapor's quality "commodity" means:</p><div class="opts"><button>No bugs that inhibit function</button><button data-ok>Suitable for the purpose it was intended</button><button>Pleasurable to use</button><button>Cheap to build</button></div><p class="why">Firmness = no bugs; commodity = fit for purpose; delight = pleasurable.</p></div>
+  <div class="mcq"><p class="q">Which cohesion is the best?</p><div class="opts"><button>Sequential</button><button>Communicational</button><button data-ok>Functional</button><button>Temporal</button></div><p class="why">Functional cohesion: the module does exactly one thing.</p></div>
+  <div class="mcq"><p class="q">Modules sharing global data is which coupling?</p><div class="opts"><button>Content</button><button data-ok>Common</button><button>Stamp</button><button>Data</button></div><p class="why">Common coupling = shared globals.</p></div>
+  <div class="mcq"><p class="q">With 12 modules, how many possible interfaces are there?</p><div class="opts"><button>24</button><button>132</button><button data-ok>66</button><button>144</button></div><p class="why">12 &times; 11 / 2 = 66.</p></div>
+  <div class="mcq"><p class="q">Logging that every function must do is an example of:</p><div class="opts"><button>A refactoring</button><button data-ok>An aspect (cross-cutting concern)</button><button>Content coupling</button><button>A metric</button></div><p class="why">Write it once as an aspect and weave it in.</p></div>
+  <div class="mcq"><p class="q">"Recognize, don't recall" belongs to which golden rule?</p><div class="opts"><button>Place the user in control</button><button data-ok>Reduce the user's memory load</button><button>Make the interface consistent</button><button>None</button></div><p class="why">Recent-files lists and visual cues reduce memory load.</p></div>
+  <div class="mcq"><p class="q">Fitts's law with a = 0.2, b = 0.1, D = 150, W = 50. T =</p><div class="opts"><button>0.30 s</button><button data-ok>0.40 s</button><button>0.50 s</button><button>0.35 s</button></div><p class="why">ID = log2(1 + 3) = 2. T = 0.2 + 0.1 &times; 2 = 0.40 s.</p></div>
+  <div class="mcq"><p class="q">"2.4 defects per KLOC" is a:</p><div class="opts"><button>Measure</button><button data-ok>Metric</button><button>Indicator</button><button>Function point</button></div><p class="why">A measure is the raw count; a metric relates it (per KLOC).</p></div>
+  <div class="mcq"><p class="q">A search screen that only retrieves data is counted as:</p><div class="opts"><button>EI</button><button>EO</button><button data-ok>EQ</button><button>ILF</button></div><p class="why">External inquiry: retrieve without updating files.</p></div>
+  <div class="mcq"><p class="q">Count total 100 and &Sigma;Fi = 55. FP =</p><div class="opts"><button>100</button><button>155</button><button data-ok>120</button><button>65</button></div><p class="why">VAF = 0.65 + 0.55 = 1.20. FP = 120.</p></div>
+  <div class="mcq"><p class="q">In the CK suite, DIT measures:</p><div class="opts"><button>Number of immediate subclasses</button><button data-ok>Longest path from the class to the root</button><button>Collaborating classes</button><button>Sum of method complexity</button></div><p class="why">Depth of Inheritance Tree.</p></div>
+  <div class="mcq"><p class="q">MT = 200, Fa = 10, Fc = 20, Fd = 10. SMI =</p><div class="opts"><button>0.90</button><button data-ok>0.80</button><button>0.85</button><button>0.95</button></div><p class="why">(200 &minus; 40) / 200 = 0.80.</p></div>
+</div>
+</section>
+
+<section id="checklist">
+<h2 data-short="Exam checklist"><span class="n">19</span>Exam checklist</h2>
+<p><span class="check-progress" data-for="ck4"></span></p>
+<ul class="checklist" id="ck4" data-key="main">
+  <li>Define software design and draw Pressman's design model.</li>
+  <li>Explain Kapor's firmness, commodity and delight with examples.</li>
+  <li>Define modularity; explain the cost trade-off and n(n&minus;1)/2 interfaces.</li>
+  <li>List the 7 cohesion types and 5 coupling types in order; classify examples.</li>
+  <li>Refactor a poor class into cohesive, loosely coupled classes; explain aspects and refactoring.</li>
+  <li>List typical UI errors and the three ways to judge a UI.</li>
+  <li>State Mandel's three golden rules with their guidelines and apply them to a case.</li>
+  <li>Explain interface analysis (users, tasks, content, environment) and draw a swimlane.</li>
+  <li>Name the display-content guidelines and the 16 design principles.</li>
+  <li>Use Fitts's law: compute ID and T for two targets and the % speed-up.</li>
+  <li>Separate measure, metric and indicator; map metrics to phases.</li>
+  <li>Count EI, EO, EQ, ILF, EIF with weights; compute VAF, FP and effort.</li>
+  <li>Name Whitmire's nine characteristics, the CK suite and Lorenz and Kidd metrics.</li>
+  <li>Compute Halstead N, n, V, D, E, T for a statement.</li>
+  <li>Name Binder's testability metrics and compute SMI across releases.</li>
+</ul>
+</section>
+
+</div>
+<div class="done-row" id="done"></div>
+<nav class="pager" id="pager" aria-label="Lecture navigation"></nav>
+</article>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var S=window.SE,$=S.$,$$=S.$$,fmt=S.fmt;
+  /* modularity */
+  function mod(){
+    var n=+$("#mod-r").value, dev=function(k){return 100/k;}, int=function(k){return 5*k;};
+    $("#mod-n").textContent=n;
+    var x0=34,x1=350,y0=175,y1=10,X=function(k){return x0+(x1-x0)*(k-1)/19;},Y=function(v){return y0-(y0-y1)*Math.min(v,130)/130;};
+    function path(f){var d="";for(var k=1;k<=20;k+=0.25)d+=(d?"L":"M")+X(k).toFixed(1)+","+Y(f(k)).toFixed(1);return d;}
+    var g='<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y0+'" class="s-line"/><line x1="'+x0+'" y1="'+y1+'" x2="'+x0+'" y2="'+y0+'" class="s-line"/>';
+    g+='<rect x="'+X(3.5)+'" y="'+y1+'" width="'+(X(5.5)-X(3.5))+'" height="'+(y0-y1)+'" class="f-key" stroke="none" opacity=".5"/><text x="'+X(4.5)+'" y="22" font-size="8" text-anchor="middle" class="t-muted">region M</text>';
+    g+='<path d="'+path(dev)+'" class="s-line" stroke-width="2"/><path d="'+path(int)+'" class="s-acc" stroke-width="2" stroke-dasharray="5 3"/><path d="'+path(function(k){return dev(k)+int(k);})+'" class="s-ink" stroke-width="2.4"/>';
+    g+='<line x1="'+X(n)+'" y1="'+y1+'" x2="'+X(n)+'" y2="'+y0+'" class="s-bad" stroke-dasharray="3 3"/><circle cx="'+X(n)+'" cy="'+Y(dev(n)+int(n))+'" r="4" class="f-ink"/>';
+    [1,5,10,15,20].forEach(function(k){g+='<text x="'+X(k)+'" y="'+(y0+12)+'" font-size="8" text-anchor="middle" class="t-muted">'+k+'</text>';});
+    g+='<text x="'+(x1-2)+'" y="'+(y0-6)+'" font-size="8" text-anchor="end" class="t-muted">modules</text><text x="'+(x0+6)+'" y="'+(y1+10)+'" font-size="8">total (black), dev cost (grey), integration (blue)</text>';
+    $("#mod-svg").innerHTML=g;
+    $("#mod-out").innerHTML='<div><span>Development cost</span><b>'+fmt(dev(n),1)+'</b></div><div><span>Integration cost</span><b>'+fmt(int(n),1)+'</b></div><div class="hl"><span>Total cost</span><b>'+fmt(dev(n)+int(n),1)+'</b></div><div><span>Possible interfaces n(n&minus;1)/2</span><b>'+n*(n-1)/2+'</b></div>';
+  }
+  $("#mod-r").addEventListener("input",mod); mod();
+
+  /* Fitts */
+  var fpre={s:[0.1,0.15,300,20,300,100],e:[0.1,0.15,480,32,192,64]};
+  $("#ft-p").addEventListener("change",function(){var p=fpre[this.value];["a","b","d1","w1","d2","w2"].forEach(function(k,i){$("#ft-"+k).value=p[i];});fit();});
+  function fit(){
+    var a=S.num("#ft-a"),b=S.num("#ft-b"),d1=S.num("#ft-d1"),w1=S.num("#ft-w1")||1,d2=S.num("#ft-d2"),w2=S.num("#ft-w2")||1;
+    var id1=Math.log2(1+d1/w1),id2=Math.log2(1+d2/w2),t1=a+b*id1,t2=a+b*id2;
+    var mx=Math.max(d1+w1/2,d2+w2/2,1),sc=300/mx,g='';
+    g+='<circle cx="20" cy="30" r="5" class="f-ink"/><text x="20" y="18" font-size="8" text-anchor="middle" class="t-muted">start</text>';
+    g+='<line x1="20" y1="30" x2="'+(20+d1*sc)+'" y2="30" class="s-line" stroke-dasharray="3 3"/><rect x="'+(20+(d1-w1/2)*sc)+'" y="18" width="'+Math.max(w1*sc,2)+'" height="24" rx="3" class="f-trap"/><text x="'+(20+d1*sc)+'" y="54" font-size="8.5" text-anchor="middle">A '+fmt(t1,2)+' s</text>';
+    g+='<circle cx="20" cy="80" r="5" class="f-ink"/><line x1="20" y1="80" x2="'+(20+d2*sc)+'" y2="80" class="s-line" stroke-dasharray="3 3"/><rect x="'+(20+(d2-w2/2)*sc)+'" y="68" width="'+Math.max(w2*sc,2)+'" height="24" rx="3" class="f-key"/><text x="'+(20+d2*sc)+'" y="104" font-size="8.5" text-anchor="middle">B '+fmt(t2,2)+' s</text>';
+    $("#ft-svg").innerHTML=g;
+    var faster=t1>t2?(1-t2/t1)*100:(1-t1/t2)*100;
+    $("#ft-out").innerHTML='<div><span>A: ID = log2(1 + '+d1+'/'+w1+')</span><b>'+fmt(id1,2)+' bits</b></div><div><span>A: T</span><b>'+fmt(t1,2)+' s</b></div><div><span>B: ID = log2(1 + '+d2+'/'+w2+')</span><b>'+fmt(id2,2)+' bits</b></div><div><span>B: T</span><b>'+fmt(t2,2)+' s</b></div><div class="hl"><span>'+(t1>t2?"B":"A")+' is faster by</span><b>'+fmt(faster,0)+'%</b></div>';
+  }
+  S.live($("#fit"),fit);
+
+  /* Function points */
+  var WT={EI:[3,4,6],EO:[4,5,7],EQ:[3,4,6],ILF:[7,10,15],EIF:[5,7,10]}, LV=["Simple","Average","Complex"];
+  var FPP={lib:{c:[4,3,2,3,1],x:[1,1,0,1,0],f:42,p:7,t:4},food:{c:[6,4,5,4,2],x:[1,2,0,1,1],f:46,p:8,t:4}};
+  var keys=["EI","EO","EQ","ILF","EIF"];
+  $("#fp-t").insertAdjacentHTML("beforeend",keys.map(function(k){return '<tr data-k="'+k+'"><td>'+k+'</td><td><input type="number" min="0" value="0"></td><td><select>'+LV.map(function(l,i){return '<option value="'+i+'">'+l+'</option>';}).join("")+'</select></td><td class="num" data-w></td><td class="num" data-t></td></tr>';}).join("")+'<tr class="total"><td colspan="4">Count total</td><td class="num" id="fp-ct"></td></tr>');
+  function fpLoad(k){var p=FPP[k];$$("#fp-t tr[data-k]").forEach(function(r,i){$("input",r).value=p.c[i];$("select",r).value=p.x[i];});$("#fp-f").value=p.f;$("#fp-pr").value=p.p;$("#fp-team").value=p.t;}
+  fpLoad("lib");
+  $("#fp-p").addEventListener("change",function(){fpLoad(this.value);fp();});
+  function fp(){
+    var ct=0;$$("#fp-t tr[data-k]").forEach(function(r){var w=WT[r.getAttribute("data-k")][+$("select",r).value],c=S.num($("input",r));$("[data-w]",r).textContent=w;$("[data-t]",r).textContent=c*w;ct+=c*w;});
+    $("#fp-ct").textContent=ct;
+    var f=Math.max(0,Math.min(70,S.num("#fp-f"))),vaf=0.65+0.01*f,F=ct*vaf,e=F/(S.num("#fp-pr")||1),d=e/(S.num("#fp-team")||1);
+    $("#fp-out").innerHTML='<div><span>Count total</span><b>'+ct+'</b></div><div><span>VAF = 0.65 + 0.01 &times; '+f+'</span><b>'+fmt(vaf,2)+'</b></div><div class="hl"><span>FP</span><b>'+fmt(F,2)+'</b></div><div><span>Effort (person-months)</span><b>'+fmt(e,1)+'</b></div><div><span>Duration (months)</span><b>'+fmt(d,1)+'</b></div>';
+  }
+  S.live($("#fpc"),fp);
+
+  /* Halstead */
+  function hal(){
+    var s=$("#hl-in").value, toks=s.match(/[A-Za-z_]\w*|\d+(\.\d+)?|==|!=|<=|>=|&&|\|\||\+\+|--|[^\s\w]/g)||[];
+    var ops={},opd={},N1=0,N2=0;
+    toks.forEach(function(t){ if(t===")")return; if(/^[A-Za-z_]\w*$|^\d/.test(t)){opd[t]=1;N2++;} else {var k=t==="("?"( )":t;ops[k]=1;N1++;} });
+    var n1=Object.keys(ops).length,n2=Object.keys(opd).length,N=N1+N2,n=n1+n2,V=n>1?N*Math.log2(n):0,D=n2?(n1/2)*(N2/n2):0,E=D*V;
+    $("#hl-out").innerHTML='<div><span>Operators {'+S.esc(Object.keys(ops).join(", "))+'}</span><b>n1 = '+n1+', N1 = '+N1+'</b></div><div><span>Operands {'+S.esc(Object.keys(opd).join(", "))+'}</span><b>n2 = '+n2+', N2 = '+N2+'</b></div><div><span>N and n</span><b>'+N+' and '+n+'</b></div><div><span>Volume V</span><b>'+fmt(V,2)+' bits</b></div><div><span>Difficulty D</span><b>'+fmt(D,2)+'</b></div><div class="hl"><span>Effort E</span><b>'+fmt(E,1)+'</b></div><div><span>Time T = E/18</span><b>'+fmt(E/18,1)+' s</b></div>';
+  }
+  $("#hl-in").addEventListener("input",hal); hal();
+
+  /* SMI */
+  S.live($("#smi"),function(){
+    var v=$$("#smi tr").slice(1).map(function(r){var i=$$("input",r).map(function(x){return S.num(x);});var s=i[0]?(i[0]-(i[1]+i[2]+i[3]))/i[0]:0;$("[data-s]",r).textContent=fmt(s,3);return s;});
+    var el=$("#smi-v"),up=v[1]>v[0];el.className="verdict "+(up?"ok":"no");
+    el.textContent=up?"SMI rises from "+fmt(v[0],3)+" to "+fmt(v[1],3)+": the product is stabilizing.":"SMI did not rise: the product is not stabilizing yet.";
+  });
+})();
+</script>
+</body>
+</html>
